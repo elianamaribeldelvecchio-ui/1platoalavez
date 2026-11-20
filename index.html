@@ -289,6 +289,12 @@ textarea.ta{width:100%;min-height:70px;padding:10px;border:1px solid var(--line)
   <section class="view" id="v-progreso" hidden>
     <h2 class="sec-title">Mi progreso</h2>
     <div id="progCards"></div>
+    <div class="card">
+      <h3 style="font-size:1rem">💾 Copia de seguridad de mis datos</h3>
+      <p style="font-size:.82rem;color:var(--muted);margin:4px 0 10px">Tus comidas, entrenamientos y mediciones se guardan solo en este celular. Exportalos para pasarlos a otro dispositivo o por si cambiás de teléfono.</p>
+      <button class="btn wide" id="bkAllOut">Exportar mis datos</button>
+      <label class="btn sec wide" style="cursor:pointer">Importar datos desde archivo<input type="file" id="bkAllIn" accept=".json,application/json,text/plain" hidden></label>
+    </div>
   </section>
 
   <section class="view" id="v-comidas" hidden>
@@ -384,6 +390,7 @@ textarea.ta{width:100%;min-height:70px;padding:10px;border:1px solid var(--line)
   <button class="ghost" id="cAddDay">+ Agregar día</button>
   <div id="cAnBox">
     <h3 style="margin:16px 0 8px">Antropometría</h3>
+    <div class="grid2"><div class="field"><label>📅 Próxima antro</label><input type="date" id="cNx"></div><div class="field"><label>Indicación (opcional)</label><input id="cNxt" placeholder="Ej: venir en ayunas"></div></div>
     <div class="grid3">
       <div class="field"><label>Fecha</label><input type="date" id="aD"></div>
       <div class="field"><label>Peso kg</label><input type="number" step="0.1" id="aPeso"></div>
@@ -403,6 +410,12 @@ textarea.ta{width:100%;min-height:70px;padding:10px;border:1px solid var(--line)
   <button class="primary" id="cLink" style="background:var(--warm)">🔗 Generar link para el alumno</button>
   <div id="cOut"></div>
   <button class="ghost" id="cDel" style="color:#c8364b">Borrar este alumno de mi lista</button>
+  <div class="card" style="background:var(--bg);margin-top:14px">
+    <h3 style="font-size:1rem">💾 Respaldo de mis alumnos</h3>
+    <p style="font-size:.82rem;color:var(--muted);margin:4px 0 10px">Guardá tu lista en un archivo para pasarla a otro celular o computadora, o como copia de seguridad.</p>
+    <button class="btn wide" id="bkAluOut">Exportar mis alumnos</button>
+    <label class="btn sec wide" style="cursor:pointer">Importar alumnos desde archivo<input type="file" id="bkAluIn" accept=".json,application/json,text/plain" hidden></label>
+  </div>
   <button class="ghost" id="cLock" style="color:var(--muted)">🔒 Bloquear modo entrenadora en este celular</button>
 </div></div>
 
@@ -1315,6 +1328,7 @@ function renderHoy(){
   $("helloSub").textContent = new Date().toLocaleDateString("es-AR",{weekday:"long",day:"numeric",month:"long"});
   let h = "";
   if(S.coachMsg) h += `<div class="card msg"><h3>💬 Mensaje de tu entrenadora</h3><p>${esc(S.coachMsg)}</p></div>`;
+  h += nextAnCard();
   if(S.mod.e){
     const p = S.plan;
     if(!p) h += `<div class="card"><div class="kv"><h3>🏋️ Entrenamiento</h3></div><p style="font-size:.88rem;color:var(--muted);margin-top:6px">Cuando tu entrenadora te mande tu rutina por link, la vas a ver acá.</p><button class="btn sec wide" data-go="entreno">Ver biblioteca de ejercicios</button></div>`;
@@ -1345,12 +1359,22 @@ function lineChart(pts, unit){
   const d = pts.map((q,i)=>(i?"L":"M")+X(i).toFixed(1)+" "+Y(q.v).toFixed(1)).join(" ");
   return `<svg viewBox="0 0 ${W} ${H}" width="100%" style="margin-top:8px"><path d="${d}" fill="none" stroke="var(--accent)" stroke-width="2.5"/>${pts.map((q,i)=>`<circle cx="${X(i)}" cy="${Y(q.v)}" r="3.5" fill="var(--accent)"/>`).join("")}<text x="${X(0)}" y="${H-4}" font-size="10" fill="var(--muted)">${dLabel(pts[0].d)}</text><text x="${X(pts.length-1)}" y="${H-4}" font-size="10" fill="var(--muted)" text-anchor="end">${dLabel(pts[pts.length-1].d)}</text><text x="${X(pts.length-1)}" y="${Y(pts[pts.length-1].v)-8}" font-size="11" font-weight="700" fill="var(--ink)" text-anchor="end">${fmtN(pts[pts.length-1].v)} ${unit}</text></svg>`;
 }
+function nextAnTxt(){
+  const n = S.nextAn; if(!S.mod.a || !n || !n.d || n.d < todayK()) return "";
+  const days = Math.round((new Date(n.d+"T12:00") - new Date(todayK()+"T12:00"))/864e5);
+  return `<b>${dLabel(n.d)}</b> · ${days===0?"¡es hoy!":days===1?"mañana":"faltan "+days+" días"}`;
+}
+function nextAnCard(){
+  const t = nextAnTxt(); if(!t) return "";
+  return `<div class="card"><h3 style="font-size:1rem">📅 Próxima antropometría</h3><p style="margin-top:6px">${t}</p>${S.nextAn.t?`<p style="font-size:.85rem;color:var(--muted);margin-top:4px">📝 ${esc(S.nextAn.t)}</p>`:""}</div>`;
+}
 function renderProg(){
   let h = `<div class="card"><h3 style="font-size:1rem">⚖️ Peso corporal</h3><div class="grid2" style="margin-top:10px"><div class="field" style="margin:0"><input type="number" step="0.1" inputmode="decimal" id="bwIn" placeholder="Ej: 62,5 kg"></div><button class="btn" id="bwSave">Guardar</button></div>`;
   const bw = [...S.bw].sort((a,b)=>a.d<b.d?-1:1);
   h += bw.length ? lineChart(bw.slice(-12).map(x=>({d:x.d,v:x.kg})),"kg") + (bw.length===1?`<p style="font-size:.85rem;margin-top:8px">Último registro: <b>${fmtN(bw[0].kg)} kg</b> (${dLabel(bw[0].d)})</p>`:"") : `<p style="font-size:.85rem;color:var(--muted);margin-top:8px">Registrá tu peso una vez por semana, siempre en las mismas condiciones.</p>`;
   h += `</div>`;
   if(S.mod.a){
+    h += nextAnCard();
     const an = [...S.antro].sort((a,b)=>a.d<b.d?-1:1);
     if(!an.length) h += `<div class="card"><h3 style="font-size:1rem">📏 Antropometría</h3><p style="font-size:.85rem;color:var(--muted);margin-top:6px">Tus mediciones aparecen acá después de cada control presencial con 1dz.</p></div>`;
     else {
@@ -1418,6 +1442,7 @@ $("impOk").onclick = () => {
   if(P.k > 0){ S.profile.goal = +P.k; S.profile.manual = +P.k; }
   if(P.p){ if(!S.plan || S.plan.name !== P.p.name) { S.draft = null; } S.plan = P.p; }
   S.coachMsg = P.msg || "";
+  if("nx" in P) S.nextAn = P.nx ? {d:P.nx, t:P.nxt||""} : null;
   (P.an || []).forEach(m => { S.antro = S.antro.filter(x => x.d !== m.d); S.antro.push(m); });
   save(); PENDING = null;
   history.replaceState(null, "", location.pathname);
@@ -1427,7 +1452,7 @@ window.addEventListener("hashchange", () => { if(!checkHash() && location.hash==
 
 /* ---------- MODO ENTRENADORA ---------- */
 let CS = null, pickCb = null, pkG = "all";
-const blankStudent = () => ({n:"", msg:"", mod:{e:1,c:1,a:0}, k:"", p:{name:"Mesociclo 1", start:todayK(), weeks:8, dl:[4,8], dm:"auto", dn:"", rir:0, days:[{n:"Día A", it:[]}]}, an:[]});
+const blankStudent = () => ({n:"", msg:"", mod:{e:1,c:1,a:0}, k:"", p:{name:"Mesociclo 1", start:todayK(), weeks:8, dl:[4,8], dm:"auto", dn:"", rir:0, days:[{n:"Día A", it:[]}]}, an:[], nx:"", nxt:""});
 let taps = 0, tapT = null;
 $("logo").addEventListener("click", () => { taps++; clearTimeout(tapT); tapT = setTimeout(() => taps = 0, 1500); if(taps >= 5){ taps = 0; openCoach(); } });
 const PIN_H = "3af2124a3c4030936b3566a7a026953d24455d8c585d08e0db7c8b984fdfd3c7";
@@ -1441,17 +1466,18 @@ $("pinIn").addEventListener("keydown", e => { if(e.key==="Enter") tryPin(); });
 $("cLock").onclick = () => { S.coachOk = 0; save(); $("ovCoach").classList.remove("open"); toast("Modo entrenadora bloqueado"); };
 function fillCoach(){
   const names = Object.keys(S.coach.students).sort();
-  $("cSel").innerHTML = `<option value="">— Nuevo alumno —</option>` + names.map(n => `<option${n===CS.n?" selected":""}>${esc(n)}</option>`).join("");
+  $("cSel").innerHTML = `<option value="">— Nuevo alumno —</option>` + names.map(n => { const x = S.coach.students[n].nx; return `<option value="${esc(n)}"${n===CS.n?" selected":""}>${x&&x<todayK()?"⚠️ ":""}${esc(n)}${x?" · antro "+dLabel(x):""}</option>`; }).join("");
   $("cName").value = CS.n; $("cMsg").value = CS.msg; $("cKcal").value = CS.k || "";
   $("cModE").checked = !!CS.mod.e; $("cModC").checked = !!CS.mod.c; $("cModA").checked = !!CS.mod.a;
   const p = CS.p; $("cPName").value = p.name; $("cStart").value = p.start; $("cWeeks").value = p.weeks;
   $("cDl").value = (p.dl||[]).join(","); $("cDm").value = p.dm; $("cDn").value = p.dn||""; $("cRir").checked = !!p.rir;
-  $("aD").value = todayK();
+  $("aD").value = todayK(); $("cNx").value = CS.nx || ""; $("cNxt").value = CS.nxt || "";
   renderCDays(); renderCAn(); $("cOut").innerHTML = "";
   $("cAnBox").style.display = CS.mod.a ? "" : "none";
 }
 function readCoach(){
   CS.n = $("cName").value.trim(); CS.msg = $("cMsg").value.trim(); CS.k = +$("cKcal").value || "";
+  CS.nx = $("cNx").value || ""; CS.nxt = $("cNxt").value.trim();
   CS.mod = {e: $("cModE").checked?1:0, c: $("cModC").checked?1:0, a: $("cModA").checked?1:0};
   const p = CS.p; p.name = $("cPName").value.trim() || "Mesociclo"; p.start = $("cStart").value || todayK();
   p.weeks = Math.max(1, Math.min(16, +$("cWeeks").value || 8));
@@ -1502,7 +1528,7 @@ $("cLink").onclick = () => {
   if(!CS.n){ toast("Poné el nombre del alumno"); return; }
   if(CS.mod.e && !CS.p.days.some(d => d.it.length)){ toast("Agregá al menos un ejercicio"); return; }
   S.coach.students[CS.n] = JSON.parse(JSON.stringify(CS)); save();
-  const pay = {v:1, n:CS.n, msg:CS.msg, mod:CS.mod, k:CS.k||0, p: CS.mod.e ? CS.p : null, an: CS.mod.a ? CS.an : []};
+  const pay = {v:1, n:CS.n, msg:CS.msg, mod:CS.mod, k:CS.k||0, p: CS.mod.e ? CS.p : null, an: CS.mod.a ? CS.an : [], nx: CS.mod.a ? (CS.nx||"") : "", nxt: CS.mod.a ? (CS.nxt||"") : ""};
   const url = location.origin + location.pathname + "#p=" + enc(pay);
   const txt = `Hola ${CS.n}! 💪 Te mando tu plan de 1dz. Abrilo desde el celular y tocá "Cargar mi plan":\n${url}`;
   $("cOut").innerHTML = `<div class="linkbox" id="cUrl">${esc(url)}</div><div class="grid2" style="margin-top:8px"><button class="btn sec" id="cCopy">Copiar link</button><a class="btn" style="text-decoration:none;background:#1a8a4a" href="https://wa.me/?text=${encodeURIComponent(txt)}" target="_blank" rel="noopener">Enviar por WhatsApp</a></div>`;
@@ -1516,6 +1542,30 @@ function renderPick2(){
 $("pkQ").addEventListener("input", renderPick2);
 $("pkList").addEventListener("click", e => { const b = e.target.closest("[data-pk]"); if(b && pickCb){ pickCb(b.dataset.pk); $("ovPick").classList.remove("open"); toast("Ejercicio agregado"); } });
 
+
+/* ---------- respaldos (exportar / importar) ---------- */
+async function shareOrDownload(name, obj){
+  const txt = JSON.stringify(obj);
+  const file = new File([txt], name, {type:"application/json"});
+  try{ if(navigator.canShare && navigator.canShare({files:[file]})){ await navigator.share({files:[file], title:name}); toast("Respaldo listo ✓"); return; } }catch(e){ if(e && e.name==="AbortError") return; }
+  const a = document.createElement("a"); a.href = URL.createObjectURL(file); a.download = name; document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(()=>URL.revokeObjectURL(a.href), 4000); toast("Archivo descargado ✓");
+}
+function readFile(input){ return new Promise((res,rej)=>{ const f = input.files && input.files[0]; if(!f) return rej(); const r = new FileReader(); r.onload = () => { try{ res(JSON.parse(r.result)); }catch(e){ rej(e); } }; r.onerror = rej; r.readAsText(f); }); }
+$("bkAluOut").onclick = () => { readCoach(); if(CS.n) S.coach.students[CS.n] = JSON.parse(JSON.stringify(CS)); save();
+  const n = Object.keys(S.coach.students).length; if(!n){ toast("Todavía no guardaste alumnos"); return; }
+  shareOrDownload(`1dz-alumnos-${todayK()}.json`, {t:"1dz-alumnos", v:1, d:todayK(), students:S.coach.students}); };
+$("bkAluIn").onchange = async e => { try{ const o = await readFile(e.target); if(o.t!=="1dz-alumnos"||!o.students) throw 0;
+  const names = Object.keys(o.students); names.forEach(n => S.coach.students[n] = o.students[n]); save(); fillCoach(); toast(`${names.length} alumno(s) importado(s) ✓`);
+  }catch(err){ toast("Ese archivo no es un respaldo de alumnos de 1dz"); } e.target.value = ""; };
+$("bkAllOut").onclick = () => { const c = JSON.parse(JSON.stringify(S)); delete c.coachOk; delete c.draft;
+  shareOrDownload(`1dz-mis-datos-${todayK()}.json`, {t:"1dz-datos", v:1, d:todayK(), data:c}); };
+$("bkAllIn").onchange = async e => { try{ const o = await readFile(e.target); if(o.t!=="1dz-datos"||!o.data) throw 0;
+  if(!confirm("Esto reemplaza los datos de este celular por los del archivo. ¿Seguir?")){ e.target.value=""; return; }
+  const ok = S.coachOk; Object.keys(S).forEach(k => delete S[k]); Object.assign(S, o.data); S.coachOk = ok;
+  S.train=S.train||[]; S.bw=S.bw||[]; S.antro=S.antro||[]; S.coach=S.coach||{students:{}}; S.mod=S.mod||{e:1,c:1,a:0}; S.log=S.log||{}; S.custom=S.custom||[];
+  save(); applyMods(); show("hoy"); toast("Datos importados ✓");
+  }catch(err){ toast("Ese archivo no es un respaldo de datos de 1dz"); } e.target.value = ""; };
 /* ---------- arranque ---------- */
 applyMods();
 if(!checkHash() && location.hash === "#entrenadora") openCoach();
