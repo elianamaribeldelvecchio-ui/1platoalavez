@@ -1238,6 +1238,12 @@ function suggest(it, dl){
   return {kg: mx||"", txt:`Última vez: ${prev}. Mismo peso y sumá repeticiones hasta ${it.r2}.`};
 }
 
+/* ---------- run helpers ---------- */
+const isRun = d => d && d.t === "run";
+const fmtT = sec => { sec = Math.round(sec||0); const h = Math.floor(sec/3600), m = Math.floor(sec%3600/60), x = sec%60; return (h?h+":"+String(m).padStart(2,"0"):m)+":"+String(x).padStart(2,"0"); };
+const pace = r => r && r.km > 0 && r.sec > 0 ? fmtT(r.sec / r.km) + "/km" : "";
+const runTxt = r => [r.km ? fmtN(r.km)+" km" : "", r.sec ? "en "+fmtT(r.sec) : "", pace(r) ? "("+pace(r)+")" : "", r.rpe ? "· RPE "+r.rpe : "", r.fc ? "· FC "+r.fc : ""].filter(Boolean).join(" ");
+
 /* ---------- ENTRENO ---------- */
 let entTab = "rut", selDay = null, wodAnyway = false, libG = "all";
 $("segEnt").addEventListener("click", e => { const b=e.target.closest("button"); if(!b) return; entTab=b.dataset.v;
@@ -1257,8 +1263,17 @@ function renderEnt(){
     $("entRut").innerHTML = h + `<div class="banner wod">💪 <b>Semana de WOD presencial con 1dz.</b><br>Esta semana entrenás en el gym con tu entrenadora.${p.dn?"<br>"+esc(p.dn):""}</div><button class="btn sec wide" id="wodAny">Igual quiero registrar mi rutina</button>`;
     $("wodAny").onclick = () => { wodAnyway = true; renderEnt(); }; return;
   }
-  if(dl) h += `<div class="banner dl">🔵 <b>Semana de descarga:</b> hacé una serie menos en cada ejercicio, con los pesos que ya alcanzaste.${p.dn?"<br>"+esc(p.dn):""}</div>`;
+  if(dl) h += `<div class="banner dl">🔵 <b>Semana de descarga:</b> ${isRun(d)?"en el run bajá el volumen y hacelo a ritmo cómodo.":"hacé una serie menos en cada ejercicio, con los pesos que ya alcanzaste."}${p.dn?"<br>"+esc(p.dn):""}</div>`;
   h += `<div class="chips2">${p.days.map((x,i)=>`<button class="chip${i===selDay?" on":""}" data-day="${i}">${esc(x.n)}</button>`).join("")}</div>`;
+  if(isRun(d)){
+    const r = S.draft.run || (S.draft.run = {km:"", m:"", s:"", rpe:"", fc:""});
+    const km = parseFloat(String(r.km).replace(",",".")) || 0, sec = (+r.m||0)*60 + (+r.s||0);
+    h += `<div class="card"><h3>🏃 ${esc(d.n)}</h3>${d.rx?`<div class="note2" style="font-size:.9rem">📋 ${esc(d.rx).replace(/\n/g,"<br>")}</div>`:""}
+      <div class="grid3" style="margin-top:12px"><div class="field"><label>Distancia km</label><input inputmode="decimal" data-rk="km" value="${esc(r.km)}" placeholder="Ej: 5,2"></div><div class="field"><label>Minutos</label><input inputmode="numeric" data-rk="m" value="${esc(r.m)}" placeholder="32"></div><div class="field"><label>Segundos</label><input inputmode="numeric" data-rk="s" value="${esc(r.s)}" placeholder="15"></div></div>
+      <div class="sug" id="runPace">${km&&sec?"Ritmo promedio: <b>"+pace({km,sec})+"</b>":"El ritmo se calcula solo cuando cargás distancia y tiempo."}</div>
+      <div class="grid2" style="margin-top:10px"><div class="field"><label>Esfuerzo (RPE 1–10)</label><select data-rk="rpe"><option value="">–</option>${[1,2,3,4,5,6,7,8,9,10].map(n=>`<option${String(r.rpe)===String(n)?" selected":""}>${n}</option>`).join("")}</select></div><div class="field"><label>FC promedio (opcional)</label><input inputmode="numeric" data-rk="fc" value="${esc(r.fc)}" placeholder="Ej: 150"></div></div>
+      <p style="font-size:.78rem;color:var(--muted)">RPE: 1 = muy suave, 10 = máximo esfuerzo. Los datos los podés copiar del reloj o de la app con la que corriste.</p></div>`;
+  }
   const cols = p.rir ? "28px 1fr 1fr 64px 44px" : "28px 1fr 1fr 44px";
   d.it.forEach((it, xi) => {
     const e = EXI[it.x] || {n:"Ejercicio",img:"",d:"",m:""};
@@ -1273,9 +1288,9 @@ function renderEnt(){
       + rows.map((r,si)=>`<div class="setrow" style="grid-template-columns:${cols}"><span class="n">${si+1}</span><input inputmode="decimal" data-k="kg" data-x="${xi}" data-s="${si}" value="${r.kg??""}" placeholder="–"><input inputmode="numeric" data-k="r" data-x="${xi}" data-s="${si}" value="${r.r??""}" placeholder="${it.r2}">${p.rir?`<input inputmode="numeric" data-k="rir" data-x="${xi}" data-s="${si}" value="${r.rir??""}" placeholder="–">`:""}<button class="okb${r.ok?" done":""}" data-ok="${xi}" data-s="${si}" data-rest="${it.d||0}">✓</button></div>`).join("")
       + `</div>`;
   });
-  h += `<div class="card"><div class="field" style="margin:0"><label>Comentario para tu entrenadora (opcional)</label><textarea class="ta" id="entCom" placeholder="Ej: me molestó el hombro en el press">${esc(S.draft.c||"")}</textarea></div><button class="primary" id="entSave">Terminar y guardar entrenamiento</button></div>`;
+  h += `<div class="card"><div class="field" style="margin:0"><label>Comentario para tu entrenadora (opcional)</label><textarea class="ta" id="entCom" placeholder="${isRun(d)?"Ej: cómo te sentiste, terreno, calor, molestias":"Ej: me molestó el hombro en el press"}">${esc(S.draft.c||"")}</textarea></div><button class="primary" id="entSave">Terminar y guardar entrenamiento</button></div>`;
   const mine = S.train.filter(t=>t.plan===p.name).slice(-6).reverse();
-  if(mine.length) h += `<div class="card"><h3 style="font-size:1rem;margin-bottom:6px">Últimos entrenamientos</h3>${mine.map(t=>`<div class="hist"><b>${dLabel(t.date)} · ${esc(t.dn)}</b>${t.dl?' <span class="badge">descarga</span>':""}<br>${t.items.map(i=>esc((EXI[i.x]||{}).n||"")+": "+i.sets.map(s=>(s.kg?fmtN(s.kg)+"×":"")+s.r).join(", ")).join("<br>")}</div>`).join("")}</div>`;
+  if(mine.length) h += `<div class="card"><h3 style="font-size:1rem;margin-bottom:6px">Últimos entrenamientos</h3>${mine.map(t=>`<div class="hist"><b>${dLabel(t.date)} · ${esc(t.dn)}</b>${t.dl?' <span class="badge">descarga</span>':""}<br>${t.run?"🏃 "+esc(runTxt(t.run))+(t.c?"<br>💬 "+esc(t.c):""):""}${t.items.map(i=>esc((EXI[i.x]||{}).n||"")+": "+i.sets.map(s=>(s.kg?fmtN(s.kg)+"×":"")+s.r).join(", ")).join("<br>")}</div>`).join("")}</div>`;
   $("entRut").innerHTML = h;
   save();
 }
@@ -1289,15 +1304,22 @@ $("entRut").addEventListener("click", e => {
 $("entRut").addEventListener("input", e => {
   const t = e.target;
   if(t.id==="entCom"){ S.draft.c = t.value; save(); return; }
+  if(t.dataset.rk){ S.draft.run[t.dataset.rk] = t.value; save();
+    const r = S.draft.run, km = parseFloat(String(r.km).replace(",",".")) || 0, sec = (+r.m||0)*60 + (+r.s||0);
+    if($("runPace")) $("runPace").innerHTML = km&&sec ? "Ritmo promedio: <b>"+pace({km,sec})+"</b>" : "El ritmo se calcula solo cuando cargás distancia y tiempo."; return; }
   if(t.dataset.k){ S.draft.rows[+t.dataset.x][+t.dataset.s][t.dataset.k] = t.value.replace(",","."); save(); }
 });
 function saveSession(){
   const p = S.plan, d = p.days[S.draft.di], w = planWeek();
   const items = d.it.map((it, xi) => ({x: it.x, sets: (S.draft.rows[xi]||[]).filter(r => String(r.r).trim()!=="").map(r => ({kg: r.kg===""?0:+r.kg||0, r: +r.r||0, rir: r.rir===""?undefined:+r.rir}))})).filter(i => i.sets.length);
-  if(!items.length){ toast("Cargá al menos las repeticiones de una serie"); return; }
-  S.train.push({date: todayK(), plan: p.name, w, dl: isDl(w)?1:0, di: S.draft.di, dn: d.n, items, c: S.draft.c||""});
+  let run;
+  if(isRun(d)){ const r = S.draft.run || {}; run = {km: parseFloat(String(r.km||"").replace(",",".")) || 0, sec: (+r.m||0)*60 + (+r.s||0), rpe: +r.rpe || 0, fc: +r.fc || 0};
+    if(!run.km && !run.sec){ toast("Cargá la distancia o el tiempo"); return; } }
+  else if(!items.length){ toast("Cargá al menos las repeticiones de una serie"); return; }
+  const rec = {date: todayK(), plan: p.name, w, dl: isDl(w)?1:0, di: S.draft.di, dn: d.n, items, c: S.draft.c||""}; if(run) rec.run = run;
+  S.train.push(rec);
   S.draft = null; selDay = null; save(); stopTimer(); renderEnt();
-  toast("¡Entrenamiento guardado! 💪");
+  toast(run ? "¡Run guardado! 🏃" : "¡Entrenamiento guardado! 💪");
 }
 
 /* ---------- temporizador de descanso ---------- */
@@ -1336,8 +1358,8 @@ function renderHoy(){
       const w = planWeek(), dl = isDl(w), done = S.train.find(t => t.date===todayK() && t.plan===p.name);
       const nd = p.days[nextDay()];
       h += `<div class="card"><div class="kv"><h3>🏋️ Entrenamiento</h3><small>${w===0?"empieza "+dLabel(p.start):"semana "+w+" de "+p.weeks}${dl?' <span class="badge">descarga</span>':""}</small></div>`
-        + (done ? `<div class="big2">✅ ¡Hoy ya entrenaste!</div><p style="font-size:.85rem;color:var(--muted)">${esc(done.dn)} · ${done.items.length} ejercicios registrados</p>`
-                : (dl && p.dm==="wod" ? `<div class="big2">💪 Semana de WOD presencial</div>` : `<div class="big2">Te toca: ${esc(nd?nd.n:"")}</div><p style="font-size:.85rem;color:var(--muted)">${nd?nd.it.length:0} ejercicios</p>`))
+        + (done ? `<div class="big2">✅ ¡Hoy ya entrenaste!</div><p style="font-size:.85rem;color:var(--muted)">${esc(done.dn)} · ${done.run ? esc(runTxt(done.run)) : done.items.length+" ejercicios registrados"}</p>`
+                : (dl && p.dm==="wod" ? `<div class="big2">💪 Semana de WOD presencial</div>` : `<div class="big2">Te toca: ${esc(nd?nd.n:"")}</div><p style="font-size:.85rem;color:var(--muted)">${isRun(nd) ? "🏃 "+esc(nd.rx||"Run") : (nd?nd.it.length:0)+" ejercicios"}</p>`))
         + `<button class="btn wide" data-go="entreno">${done?"Ver mi rutina":"Empezar a entrenar"}</button></div>`;
     }
   }
@@ -1393,6 +1415,15 @@ function renderProg(){
     const rec = {}; S.train.forEach(t => t.items.forEach(i => i.sets.forEach(s => { if(!s.kg) return; const r = rec[i.x]; if(!r || s.kg>r.kg || (s.kg===r.kg && s.r>r.r)) rec[i.x] = {kg:s.kg, r:s.r, d:t.date}; })));
     const ks = Object.keys(rec);
     h += `<div class="card"><h3 style="font-size:1rem">🏆 Mis récords</h3>` + (ks.length ? `<div class="tblwrap" style="margin-top:8px"><table class="tbl"><tr><th>Ejercicio</th><th>Mejor</th><th>Fecha</th></tr>${ks.map(x=>`<tr><td style="white-space:normal">${esc((EXI[x]||{}).n||x)}</td><td><b>${fmtN(rec[x].kg)} kg</b> × ${rec[x].r}</td><td>${dLabel(rec[x].d)}</td></tr>`).join("")}</table></div>` : `<p style="font-size:.85rem;color:var(--muted);margin-top:6px">Tus mejores marcas aparecen acá cuando registres entrenamientos.</p>`);
+    const runs = S.train.filter(t => t.run && (t.run.km || t.run.sec));
+    if(runs.length || (S.plan && S.plan.days.some(isRun))){
+      const ago = n => S.train.filter(t => t.run && (new Date() - new Date(t.date+"T12:00")) < n*864e5).reduce((a,t)=>a+(t.run.km||0),0);
+      const wp = runs.filter(t=>t.run.km>=1&&t.run.sec).sort((a,b)=>a.run.sec/a.run.km-b.run.sec/b.run.km)[0];
+      const lg = runs.filter(t=>t.run.km).sort((a,b)=>b.run.km-a.run.km)[0];
+      h += `</div><div class="card"><h3 style="font-size:1rem">🏃 Mis runs</h3>` + (runs.length ? `<div class="grid2" style="margin-top:8px"><div><small style="color:var(--muted)">Últimos 7 días</small><div class="big2">${fmtN(Math.round(ago(7)*10)/10)} km</div></div><div><small style="color:var(--muted)">Últimas 4 semanas</small><div class="big2">${fmtN(Math.round(ago(28)*10)/10)} km</div></div></div>`
+        + `<p style="font-size:.85rem;margin-top:6px">${wp?"⚡ Mejor ritmo: <b>"+pace(wp.run)+"</b> ("+dLabel(wp.date)+")<br>":""}${lg?"📏 Más larga: <b>"+fmtN(lg.run.km)+" km</b> ("+dLabel(lg.date)+")":""}</p>`
+        + runs.slice(-5).reverse().map(t=>`<div class="hist"><b>${dLabel(t.date)}</b> · ${esc(runTxt(t.run))}</div>`).join("") : `<p style="font-size:.85rem;color:var(--muted);margin-top:6px">Tus salidas a correr aparecen acá cuando las registres.</p>`);
+    }
     const n28 = S.train.filter(t => (new Date() - new Date(t.date+"T12:00")) < 28*864e5).length;
     h += `<p style="font-size:.85rem;margin-top:10px">Entrenamientos en las últimas 4 semanas: <b>${n28}</b></p></div>`;
   }
@@ -1411,7 +1442,8 @@ buildReport = function(){
     const ses = S.train.filter(x => new Date(x.date+"T12:00") >= from);
     const w = planWeek();
     t += `\n\n🏋️ *Entrenamiento* — ${S.plan.name}, semana ${w} de ${S.plan.weeks}${isDl(w)?" (descarga)":""}\n`;
-    t += ses.length ? ses.map(s => `• ${dLabel(s.date)} · ${s.dn}\n` + s.items.map(i => `   - ${(EXI[i.x]||{}).n||i.x}: ${i.sets.map(z => (z.kg?fmtN(z.kg)+"×":"")+z.r+(z.rir!=null&&z.rir!==""&&!isNaN(z.rir)?" (RIR "+z.rir+")":"")).join(", ")}`).join("\n") + (s.c ? `\n   💬 ${s.c}` : "")).join("\n") + `\nSesiones: ${ses.length}` : "Sin entrenamientos registrados en este período.";
+    const rk = ses.filter(s=>s.run).reduce((a,s)=>a+(s.run.km||0),0);
+    t += ses.length ? ses.map(s => `• ${dLabel(s.date)} · ${s.dn}\n` + (s.run ? `   🏃 ${runTxt(s.run)}` : "") + s.items.map(i => `   - ${(EXI[i.x]||{}).n||i.x}: ${i.sets.map(z => (z.kg?fmtN(z.kg)+"×":"")+z.r+(z.rir!=null&&z.rir!==""&&!isNaN(z.rir)?" (RIR "+z.rir+")":"")).join(", ")}`).join("\n") + (s.c ? `\n   💬 ${s.c}` : "")).join("\n") + `\nSesiones: ${ses.length}` + (rk ? ` · Run: ${fmtN(Math.round(rk*10)/10)} km` : "") : "Sin entrenamientos registrados en este período.";
   }
   const bw = [...S.bw].sort((a,b)=>a.d<b.d?-1:1);
   if(bw.length){ const l = bw[bw.length-1], p = bw[bw.length-2]; t += `\n\n⚖️ Peso: ${fmtN(l.kg)} kg (${dLabel(l.d)})${p?" · antes "+fmtN(p.kg)+" kg":""}`; }
@@ -1485,16 +1517,17 @@ function readCoach(){
   p.dm = $("cDm").value; p.dn = $("cDn").value.trim(); p.rir = $("cRir").checked ? 1 : 0;
 }
 function renderCDays(){
-  $("cDays").innerHTML = CS.p.days.map((d, di) => `<div class="cday"><div class="dh"><input value="${esc(d.n)}" data-dn="${di}"><button class="xbtn" data-deld="${di}" aria-label="Borrar día">🗑</button></div>`
-    + d.it.map((it, xi) => { const e = EXI[it.x] || {n:it.x, img:""};
+  $("cDays").innerHTML = CS.p.days.map((d, di) => `<div class="cday"><div class="dh"><input value="${esc(d.n)}" data-dn="${di}"><select data-dt="${di}" style="padding:9px;border:1px solid var(--line);border-radius:10px;background:var(--card)"><option value=""${isRun(d)?"":" selected"}>🏋️ Fuerza</option><option value="run"${isRun(d)?" selected":""}>🏃 Run</option></select><button class="xbtn" data-deld="${di}" aria-label="Borrar día">🗑</button></div>`
+    + (isRun(d) ? `<div class="field" style="margin:8px 0 0"><label>Indicación del run</label><textarea class="ta" data-rx="${di}" placeholder="Ej: 40 min suave (Z2)&#10;o: 10 min trote + 6×400 m rápido con 90 s pausa + 10 min suave">${esc(d.rx||"")}</textarea></div></div>` : d.it.map((it, xi) => { const e = EXI[it.x] || {n:it.x, img:""};
       return `<div class="cex"><div class="top"><img src="${e.img}" alt="" onerror="this.style.visibility='hidden'"><b>${esc(e.n)}</b><button class="xbtn" data-up="${di}:${xi}" aria-label="Subir">↑</button><button class="xbtn" data-delx="${di}:${xi}" aria-label="Quitar">✕</button></div>`
       + `<div class="cnum"><div><label>Series</label><input type="number" data-f="s" data-i="${di}:${xi}" value="${it.s}"></div><div><label>Reps mín</label><input type="number" data-f="r1" data-i="${di}:${xi}" value="${it.r1}"></div><div><label>Reps máx</label><input type="number" data-f="r2" data-i="${di}:${xi}" value="${it.r2}"></div><div><label>Desc. s</label><input type="number" data-f="d" data-i="${di}:${xi}" value="${it.d}"></div></div>`
       + `<div class="on"><input data-f="o" data-i="${di}:${xi}" value="${esc(it.o||"")}" placeholder="Observación para el alumno (opcional)"></div></div>`; }).join("")
-    + `<button class="ghost" data-addx="${di}">+ Agregar ejercicio</button></div>`).join("");
+    + `<button class="ghost" data-addx="${di}">+ Agregar ejercicio</button></div>`)).join("");
 }
 $("cDays").addEventListener("input", e => {
   const t = e.target;
   if(t.dataset.dn !== undefined){ CS.p.days[+t.dataset.dn].n = t.value; return; }
+  if(t.dataset.rx !== undefined){ CS.p.days[+t.dataset.rx].rx = t.value; return; }
   if(t.dataset.f){ const [di, xi] = t.dataset.i.split(":").map(Number); const it = CS.p.days[di].it[xi];
     it[t.dataset.f] = t.dataset.f==="o" ? t.value : (+t.value || 0); }
 });
@@ -1505,6 +1538,8 @@ $("cDays").addEventListener("click", e => {
   if(b.dataset.up){ const [di, xi] = b.dataset.up.split(":").map(Number); if(xi>0){ const a = CS.p.days[di].it; [a[xi-1], a[xi]] = [a[xi], a[xi-1]]; renderCDays(); } }
   if(b.dataset.deld !== undefined){ CS.p.days.splice(+b.dataset.deld, 1); renderCDays(); }
 });
+$("cDays").addEventListener("change", e => { const t = e.target; if(t.dataset.dt === undefined) return;
+  const d = CS.p.days[+t.dataset.dt]; if(t.value === "run"){ d.t = "run"; d.rx = d.rx || ""; if(/^Día [A-H]$/.test(d.n)) d.n = "Run"; } else { delete d.t; } renderCDays(); });
 $("cAddDay").onclick = () => { const L = "ABCDEFGH"; CS.p.days.push({n:"Día "+(L[CS.p.days.length]||CS.p.days.length+1), it:[]}); renderCDays(); };
 $("cModA").onchange = () => { $("cAnBox").style.display = $("cModA").checked ? "" : "none"; };
 $("cSel").onchange = () => { readCoach(); const n = $("cSel").value; CS = n ? JSON.parse(JSON.stringify(S.coach.students[n])) : blankStudent(); fillCoach(); };
@@ -1526,7 +1561,7 @@ $("cDel").onclick = () => { readCoach(); if(CS.n && S.coach.students[CS.n]){ del
 $("cLink").onclick = () => {
   readCoach();
   if(!CS.n){ toast("Poné el nombre del alumno"); return; }
-  if(CS.mod.e && !CS.p.days.some(d => d.it.length)){ toast("Agregá al menos un ejercicio"); return; }
+  if(CS.mod.e && !CS.p.days.some(d => d.it.length || isRun(d))){ toast("Agregá al menos un ejercicio"); return; }
   S.coach.students[CS.n] = JSON.parse(JSON.stringify(CS)); save();
   const pay = {v:1, n:CS.n, msg:CS.msg, mod:CS.mod, k:CS.k||0, p: CS.mod.e ? CS.p : null, an: CS.mod.a ? CS.an : [], nx: CS.mod.a ? (CS.nx||"") : "", nxt: CS.mod.a ? (CS.nxt||"") : ""};
   const url = location.origin + location.pathname + "#p=" + enc(pay);
