@@ -3,14 +3,14 @@
   "short_name": "1dz",
   "description": "Entrenamiento, nutrición y antropometría",
   "lang": "es-AR",
-  "start_url": "./",
+  "start_url": "./?app=1dz",
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#f3f4f7",
   "theme_color": "#0e0e10",
   "icons": [
-    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
-    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+    { "src": "1dz-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "1dz-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
   ]
 }
