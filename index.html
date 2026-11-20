@@ -205,6 +205,12 @@ header{display:flex;align-items:center;justify-content:space-between;margin-bott
 textarea.ta{width:100%;min-height:70px;padding:10px;border:1px solid var(--line);border-radius:12px;background:var(--bg);font:inherit;resize:vertical}
 .hist{font-size:.82rem;border-top:1px dashed var(--line);padding:8px 0}
 .hist b{font-size:.88rem}
+details.hisf summary,details.hisw summary{cursor:pointer;list-style:none}
+details.hisf summary::-webkit-details-marker,details.hisw summary::-webkit-details-marker{display:none}
+details.hisf>summary::after{content:"▾";float:right;color:var(--muted)}
+details.hisf:not([open])>summary::after{content:"▸"}
+details.hisw{border-top:1px solid var(--line);margin-top:10px;padding-top:10px}
+details.hisw>summary{font-weight:700;font-size:.9rem}
 .libgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .libitem{background:var(--card);border:1px solid var(--line);border-radius:14px;overflow:hidden;text-align:left;padding:0}
 .libitem img{width:100%;aspect-ratio:3/2;object-fit:cover;background:#f1f2f5;display:block}
@@ -276,8 +282,9 @@ textarea.ta{width:100%;min-height:70px;padding:10px;border:1px solid var(--line)
   </section>
 
   <section class="view" id="v-entreno" hidden>
-    <div class="seg" id="segEnt" style="margin-bottom:14px"><button data-v="rut" class="on">Mi rutina</button><button data-v="lib">Biblioteca</button></div>
+    <div class="seg" id="segEnt" style="margin-bottom:14px"><button data-v="rut" class="on">Mi rutina</button><button data-v="his">Historial</button><button data-v="lib">Biblioteca</button></div>
     <div id="entRut"></div>
+    <div id="entHis" hidden></div>
     <div id="entLib" hidden>
       <div class="field" style="margin-bottom:8px"><input type="search" id="libQ" placeholder="Buscar ejercicio…" autocomplete="off"></div>
       <div class="chips2" id="libChips"></div>
@@ -1209,7 +1216,7 @@ new MutationObserver(ms => ms.forEach(m => { const o = m.target; if(o.classList.
 window.addEventListener("popstate", e => {
   const ov = [...document.querySelectorAll(".overlay.open")];
   if(ov.length){ ov.forEach(o => o.classList.remove("open")); try{ history.pushState({v:VIEW}, ""); }catch(x){} return; }
-  if(VIEW==="entreno" && entTab==="lib"){ document.querySelector('#segEnt [data-v="rut"]').click(); try{ history.pushState({v:VIEW}, ""); }catch(x){} return; }
+  if(VIEW==="entreno" && entTab!=="rut"){ document.querySelector('#segEnt [data-v="rut"]').click(); try{ history.pushState({v:VIEW}, ""); }catch(x){} return; }
   show((e.state && e.state.v) || "hoy", true);
 });
 $("nav").addEventListener("click", e => { const b = e.target.closest("button"); if(b) show(b.dataset.v); });
@@ -1263,8 +1270,9 @@ let entTab = "rut", selDay = null, wodAnyway = false, libG = "all";
 $("segEnt").addEventListener("click", e => { const b=e.target.closest("button"); if(!b) return; entTab=b.dataset.v;
   document.querySelectorAll("#segEnt button").forEach(x=>x.classList.toggle("on",x===b)); renderEnt(); });
 function renderEnt(){
-  $("entRut").hidden = entTab!=="rut"; $("entLib").hidden = entTab!=="lib";
+  $("entRut").hidden = entTab!=="rut"; $("entLib").hidden = entTab!=="lib"; $("entHis").hidden = entTab!=="his";
   if(entTab==="lib") return renderLib();
+  if(entTab==="his") return renderHis();
   const p = S.plan;
   if(!p){ $("entRut").innerHTML = `<div class="card empty2">Todavía no tenés una rutina cargada.<br>Tu entrenadora te la manda por un link de WhatsApp: abrilo y se carga sola.<br><br><button class="btn sec" id="goLib">Ver la biblioteca de ejercicios</button></div>`;
     $("goLib").onclick = () => document.querySelector('#segEnt [data-v="lib"]').click(); return; }
@@ -1312,8 +1320,9 @@ function renderEnt(){
       + `</div>`;
   });
   h += `<div class="card"><div class="field" style="margin:0"><label>Comentario para tu entrenadora (opcional)</label><textarea class="ta" id="entCom" placeholder="${isRun(d)?"Ej: cómo te sentiste, terreno, calor, molestias":"Ej: me molestó el hombro en el press"}">${esc(S.draft.c||"")}</textarea></div><button class="primary" id="entSave">${S.draft.edit!=null?"Guardar cambios":"Terminar y guardar entrenamiento"}</button></div>`;
-  const mine = S.train.map((t,i)=>({...t, _i:i})).filter(t=>t.plan===p.name).slice(-6).reverse();
+  const mine = S.train.map((t,i)=>({...t, _i:i})).filter(t=>t.plan===p.name).slice(-3).reverse();
   if(mine.length) h += `<div class="card"><h3 style="font-size:1rem;margin-bottom:6px">Últimos entrenamientos</h3>${mine.map(t=>`<div class="hist"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><span><b>${dLabel(t.date)} · ${esc(t.dn)}</b>${t.dl?' <span class="badge">descarga</span>':""}</span><button class="ghost" data-edit="${t._i}" style="width:auto;margin:0;padding:4px 10px;font-size:.78rem">✏️ Editar</button></div>${t.run?"🏃 "+esc(runTxt(t.run))+(t.c?"<br>💬 "+esc(t.c):""):""}${t.items.map(i=>esc((EXI[i.x]||{}).n||"")+": "+i.sets.map(s=>(s.kg?fmtN(s.kg)+"×":"")+s.r).join(", ")).join("<br>")}</div>`).join("")}</div>`;
+  if(S.train.length) h += `<button class="btn sec wide" id="goHis">📂 Ver historial completo (${S.train.length})</button>`;
   $("entRut").innerHTML = h;
   save();
 }
@@ -1325,6 +1334,7 @@ $("entRut").addEventListener("click", e => {
     if(r.ok && String(r.r??"").trim()===""){ const inp = ok.parentElement.querySelector('[data-k="r"]'); if(inp && inp.placeholder){ r.r = inp.placeholder; inp.value = r.r; } } ok.classList.toggle("done", !!r.ok); save();
     if(r.ok && +ok.dataset.rest) startTimer(+ok.dataset.rest); return; }
   if(e.target.id==="entSave") saveSession();
+  if(e.target.id==="goHis"){ document.querySelector('#segEnt [data-v="his"]').click(); window.scrollTo(0,0); return; }
   if(e.target.id==="edCancel"){ S.draft = null; selDay = null; save(); renderEnt(); window.scrollTo(0,0); return; }
   const ed = e.target.closest("[data-edit]"); if(ed){ startEdit(+ed.dataset.edit); return; }
 });
@@ -1336,6 +1346,32 @@ $("entRut").addEventListener("input", e => {
     if($("runPace")) $("runPace").innerHTML = km&&sec ? "Ritmo promedio: <b>"+pace({km,sec})+"</b>" : "El ritmo se calcula solo cuando cargás distancia y tiempo."; return; }
   if(t.dataset.k){ S.draft.rows[+t.dataset.x][+t.dataset.s][t.dataset.k] = t.value.replace(",","."); save(); }
 });
+function sesHtml(t, canEdit){
+  const body = t.run ? "🏃 "+esc(runTxt(t.run)) : t.items.map(i=>esc((EXI[i.x]||{}).n||i.x)+": "+i.sets.map(s=>(s.kg?fmtN(s.kg)+"×":"")+s.r+(s.rir!=null&&s.rir!==""&&!isNaN(s.rir)?" (RIR "+s.rir+")":"")).join(", ")).join("<br>");
+  return `<div class="hist"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><span><b>${dLabel(t.date)} · ${esc(t.dn)}</b></span>${canEdit?`<button class="ghost" data-hedit="${t._i}" style="width:auto;margin:0;padding:4px 10px;font-size:.78rem">✏️ Editar</button>`:""}</div>${body}${t.c?"<br>💬 "+esc(t.c):""}</div>`;
+}
+function renderHis(){
+  const all = S.train.map((t,i)=>({...t,_i:i}));
+  if(!all.length){ $("entHis").innerHTML = `<div class="card empty2">Todavía no hay entrenamientos guardados.<br>Cada vez que termines un entrenamiento, queda guardado acá ordenado por mesociclo y semana.</div>`; return; }
+  const plans = [];
+  all.forEach(t => { let g = plans.find(x=>x.name===t.plan); if(!g){ g = {name:t.plan, ses:[]}; plans.push(g); } g.ses.push(t); });
+  plans.forEach(g => { g.first = g.ses.reduce((a,t)=>t.date<a?t.date:a, g.ses[0].date); g.last = g.ses.reduce((a,t)=>t.date>a?t.date:a, g.ses[0].date); });
+  plans.sort((a,b)=> a.last<b.last?1:-1);
+  const total = all.length, km = all.reduce((a,t)=>a+(t.run&&t.run.km||0),0);
+  let h = `<div class="card"><h3 style="font-size:1rem">📂 Historial de entrenamientos</h3><p style="font-size:.85rem;color:var(--muted);margin-top:4px">${total} entrenamiento(s) guardados${km?" · "+fmtN(Math.round(km*10)/10)+" km corridos":""}. Tocá cada carpeta para abrirla.</p></div>`;
+  plans.forEach((g, gi) => {
+    const cur = S.plan && g.name === S.plan.name;
+    const weeks = {}; g.ses.forEach(t => { const k = t.w || 0; (weeks[k] = weeks[k] || []).push(t); });
+    const wk = Object.keys(weeks).map(Number).sort((a,b)=>b-a);
+    h += `<details class="card hisf"${gi===0?" open":""}><summary><b>📁 ${esc(g.name)}</b>${cur?' <span class="badge">actual</span>':""}<br><small style="color:var(--muted)">${dLabel(g.first)} → ${dLabel(g.last)} · ${g.ses.length} entrenamiento(s)</small></summary>`
+      + wk.map((w, wi) => { const ss = weeks[w].sort((a,b)=>a.date<b.date?1:a.date>b.date?-1:b._i-a._i); const dl = ss.some(t=>t.dl);
+          return `<details class="hisw"${gi===0&&wi===0?" open":""}><summary>📅 ${w?"Semana "+w:"Antes de empezar"}${dl?' <span class="badge">descarga</span>':""} <small style="color:var(--muted)">· ${ss.length} entreno(s)</small></summary>${ss.map(t=>sesHtml(t, cur)).join("")}</details>`; }).join("")
+      + `</details>`;
+  });
+  $("entHis").innerHTML = h;
+}
+$("entHis").addEventListener("click", e => { const b = e.target.closest("[data-hedit]"); if(!b) return;
+  entTab = "rut"; document.querySelectorAll("#segEnt button").forEach(x=>x.classList.toggle("on",x.dataset.v==="rut")); $("entHis").hidden = true; $("entRut").hidden = false; startEdit(+b.dataset.hedit); });
 function startEdit(i){
   const t = S.train[i], p = S.plan; if(!t || !p) return;
   const di = t.di < p.days.length ? t.di : 0, d = p.days[di];
