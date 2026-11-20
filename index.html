@@ -322,6 +322,7 @@ textarea.ta{width:100%;min-height:70px;padding:10px;border:1px solid var(--line)
       <div class="macro"><div class="top"><span>Grasas</span><span id="mG">0 g</span></div><div class="bar"><i id="bG" style="background:var(--g)"></i></div></div>
     </div>
   </div>
+  <button class="btn sec wide" id="btnGoal2" style="margin:-4px 0 12px">✏️ Cambiar mis calorías y macros</button>
 
   <div id="meals"></div>
 
@@ -372,7 +373,9 @@ textarea.ta{width:100%;min-height:70px;padding:10px;border:1px solid var(--line)
     <label class="chk"><input type="checkbox" id="cModC" checked> Comidas</label>
     <label class="chk"><input type="checkbox" id="cModA"> Antropometría (seguimiento presencial)</label>
   </div>
-  <div class="field"><label>Objetivo de calorías (opcional)</label><input type="number" id="cKcal" placeholder="Ej: 1900"></div>
+  <div class="field"><label>Objetivo de calorías (opcional)</label><input type="number" inputmode="numeric" id="cGoalK" placeholder="Ej: 1900"></div>
+  <div class="grid3"><div class="field"><label>Proteínas g</label><input type="number" inputmode="numeric" id="cMP" placeholder="Ej: 120"></div><div class="field"><label>Carbohidratos g</label><input type="number" inputmode="numeric" id="cMC" placeholder="Ej: 200"></div><div class="field"><label>Grasas g</label><input type="number" inputmode="numeric" id="cMG" placeholder="Ej: 60"></div></div>
+  <p style="font-size:.78rem;color:var(--muted);margin:-4px 0 8px" id="cMacHint">Macros opcionales. Si los dejás vacíos, la app reparte 25% proteínas, 50% carbohidratos y 25% grasas.</p>
   <h3 style="margin:16px 0 8px">Mesociclo</h3>
   <div class="grid2">
     <div class="field"><label>Nombre</label><input id="cPName" placeholder="Mesociclo 1"></div>
@@ -431,7 +434,7 @@ textarea.ta{width:100%;min-height:70px;padding:10px;border:1px solid var(--line)
 <div class="overlay" id="ovSettings">
   <div class="sheet">
     <div class="sheet-head">
-      <div><h2 id="setTitle">Tu objetivo diario</h2><p class="lead" id="setLead">Completá tus datos y calculamos una referencia de calorías. Podés cambiarla cuando quieras.</p></div>
+      <div><h2 id="setTitle">Mis calorías y macros</h2><p class="lead" id="setLead">Completá tus datos y calculamos una referencia de calorías. Podés cambiarla cuando quieras.</p></div>
       <button class="close" data-close="ovSettings">✕</button>
     </div>
     <div class="field"><label>Sexo</label>
@@ -455,6 +458,7 @@ textarea.ta{width:100%;min-height:70px;padding:10px;border:1px solid var(--line)
     </div>
     <div class="goal-preview">Tu referencia: <b id="goalCalc">—</b> kcal/día</div>
     <div class="field" style="margin-top:10px"><label>O escribí tu propio objetivo (opcional)</label><input type="number" id="inManual" placeholder="Ej: 1800 (te lo indicó tu nutricionista)"></div>
+    <div class="grid3"><div class="field"><label>Proteínas g</label><input type="number" inputmode="numeric" id="inMP" placeholder="Opcional"></div><div class="field"><label>Carbos g</label><input type="number" inputmode="numeric" id="inMC" placeholder="Opcional"></div><div class="field"><label>Grasas g</label><input type="number" inputmode="numeric" id="inMG" placeholder="Opcional"></div></div>
     <button class="primary" id="saveSettings">Guardar</button>
   </div>
 </div>
@@ -873,7 +877,7 @@ function render(){
   $("ringLbl").textContent=rest<0?"por encima":"restantes";
   $("sGoal").textContent=goal.toLocaleString("es-AR")+" kcal";
   $("sEaten").textContent=k.toLocaleString("es-AR")+" kcal";
-  const gp=goal*.25/4, gc=goal*.5/4, gg=goal*.25/9;
+  const PF=S.profile, gp=PF.mp>0?+PF.mp:goal*.25/4, gc=PF.mc>0?+PF.mc:goal*.5/4, gg=PF.mg>0?+PF.mg:goal*.25/9;
   [["P",p,gp],["C",c,gc],["G",g,gg]].forEach(([m,v,t])=>{
     $("m"+m).textContent=`${Math.round(v)} / ${Math.round(t)} g`;
     $("b"+m).style.width=Math.min(100,v/t*100)+"%";
@@ -1142,8 +1146,8 @@ function setSeg(id,v){document.querySelectorAll(`#${id} button`).forEach(b=>b.cl
 function updPreview(){const g=calcGoal();$("goalCalc").textContent=g?g.toLocaleString("es-AR"):"—"}
 function openSettings(welcome){
   const P=S.profile;tmpSex=P.sex;tmpObj=P.obj;
-  $("setTitle").textContent=welcome?"¡Bienvenida/o a 1 plato a la vez!":"Tu objetivo diario";
-  $("inAge").value=P.age;$("inW").value=P.w;$("inH").value=P.h;$("inAct").value=P.act;$("inManual").value=P.manual;
+  $("setTitle").textContent=welcome?"¡Bienvenida/o a 1 plato a la vez!":"Mis calorías y macros";
+  $("inAge").value=P.age;$("inW").value=P.w;$("inH").value=P.h;$("inAct").value=P.act;$("inManual").value=P.manual;$("inMP").value=P.mp||"";$("inMC").value=P.mc||"";$("inMG").value=P.mg||"";
   setSeg("segSex",tmpSex);setSeg("segObj",tmpObj);updPreview();$("ovSettings").classList.add("open");
 }
 $("segSex").onclick=e=>{const b=e.target.closest("button");if(b){tmpSex=b.dataset.v;setSeg("segSex",tmpSex);updPreview()}};
@@ -1152,7 +1156,7 @@ $("segObj").onclick=e=>{const b=e.target.closest("button");if(b){tmpObj=b.datase
 $("saveSettings").onclick=()=>{
   const manual=parseInt($("inManual").value),calc=calcGoal();
   const goal=manual>0?manual:(calc||S.profile.goal||2000);
-  S.profile={name:S.profile.name||"",sex:tmpSex,age:$("inAge").value,w:$("inW").value,h:$("inH").value,act:$("inAct").value,obj:tmpObj,manual:manual>0?manual:"",goal};
+  S.profile={name:S.profile.name||"",sex:tmpSex,age:$("inAge").value,w:$("inW").value,h:$("inH").value,act:$("inAct").value,obj:tmpObj,manual:manual>0?manual:"",goal,mp:+$("inMP").value||"",mc:+$("inMC").value||"",mg:+$("inMG").value||""};
   save();render();$("ovSettings").classList.remove("open");toast("Objetivo: "+goal+" kcal");
 };
 
@@ -1165,7 +1169,7 @@ document.addEventListener("click",e=>{
 document.querySelectorAll(".overlay").forEach(o=>o.addEventListener("click",e=>{if(e.target===o)o.classList.remove("open")}));
 $("prevDay").onclick=()=>{cur.setDate(cur.getDate()-1);render()};
 $("nextDay").onclick=()=>{cur.setDate(cur.getDate()+1);render()};
-$("btnSettings").onclick=()=>openSettings(false);
+$("btnSettings").onclick=()=>openSettings(false);$("btnGoal2").onclick=()=>openSettings(false);
 
 render();
 if(firstRun)openSettings(true);
@@ -1472,6 +1476,7 @@ $("impOk").onclick = () => {
   if(P.n) S.profile.name = P.n;
   S.mod = {e: P.mod ? +P.mod.e : 1, c: P.mod ? +P.mod.c : 1, a: P.mod ? +P.mod.a : 0};
   if(P.k > 0){ S.profile.goal = +P.k; S.profile.manual = +P.k; }
+  if("mp" in P){ S.profile.mp = +P.mp || ""; S.profile.mc = +P.mc || ""; S.profile.mg = +P.mg || ""; }
   if(P.p){ if(!S.plan || S.plan.name !== P.p.name) { S.draft = null; } S.plan = P.p; }
   S.coachMsg = P.msg || "";
   if("nx" in P) S.nextAn = P.nx ? {d:P.nx, t:P.nxt||""} : null;
@@ -1499,7 +1504,7 @@ $("cLock").onclick = () => { S.coachOk = 0; save(); $("ovCoach").classList.remov
 function fillCoach(){
   const names = Object.keys(S.coach.students).sort();
   $("cSel").innerHTML = `<option value="">— Nuevo alumno —</option>` + names.map(n => { const x = S.coach.students[n].nx; return `<option value="${esc(n)}"${n===CS.n?" selected":""}>${x&&x<todayK()?"⚠️ ":""}${esc(n)}${x?" · antro "+dLabel(x):""}</option>`; }).join("");
-  $("cName").value = CS.n; $("cMsg").value = CS.msg; $("cKcal").value = CS.k || "";
+  $("cName").value = CS.n; $("cMsg").value = CS.msg; $("cGoalK").value = CS.k || ""; $("cMP").value = CS.mp || ""; $("cMC").value = CS.mc || ""; $("cMG").value = CS.mg || ""; macHint();
   $("cModE").checked = !!CS.mod.e; $("cModC").checked = !!CS.mod.c; $("cModA").checked = !!CS.mod.a;
   const p = CS.p; $("cPName").value = p.name; $("cStart").value = p.start; $("cWeeks").value = p.weeks;
   $("cDl").value = (p.dl||[]).join(","); $("cDm").value = p.dm; $("cDn").value = p.dn||""; $("cRir").checked = !!p.rir;
@@ -1508,7 +1513,8 @@ function fillCoach(){
   $("cAnBox").style.display = CS.mod.a ? "" : "none";
 }
 function readCoach(){
-  CS.n = $("cName").value.trim(); CS.msg = $("cMsg").value.trim(); CS.k = +$("cKcal").value || "";
+  CS.n = $("cName").value.trim(); CS.msg = $("cMsg").value.trim(); CS.mp = +$("cMP").value || ""; CS.mc = +$("cMC").value || ""; CS.mg = +$("cMG").value || "";
+  CS.k = +$("cGoalK").value || ((CS.mp||CS.mc||CS.mg) ? Math.round((+CS.mp||0)*4 + (+CS.mc||0)*4 + (+CS.mg||0)*9) : "");
   CS.nx = $("cNx").value || ""; CS.nxt = $("cNxt").value.trim();
   CS.mod = {e: $("cModE").checked?1:0, c: $("cModC").checked?1:0, a: $("cModA").checked?1:0};
   const p = CS.p; p.name = $("cPName").value.trim() || "Mesociclo"; p.start = $("cStart").value || todayK();
@@ -1540,6 +1546,12 @@ $("cDays").addEventListener("click", e => {
 });
 $("cDays").addEventListener("change", e => { const t = e.target; if(t.dataset.dt === undefined) return;
   const d = CS.p.days[+t.dataset.dt]; if(t.value === "run"){ d.t = "run"; d.rx = d.rx || ""; if(/^Día [A-H]$/.test(d.n)) d.n = "Run"; } else { delete d.t; } renderCDays(); });
+function macHint(){ const p=+$("cMP").value||0, c=+$("cMC").value||0, g=+$("cMG").value||0, k=+$("cGoalK").value||0;
+  if(!(p||c||g)){ $("cMacHint").textContent = "Macros opcionales. Si los dejás vacíos, la app reparte 25% proteínas, 50% carbohidratos y 25% grasas."; return; }
+  const mk = Math.round(p*4+c*4+g*9);
+  $("cMacHint").innerHTML = `Tus macros suman <b>${mk.toLocaleString("es-AR")} kcal</b>` + (k ? (Math.abs(k-mk) > 50 ? ` · ⚠️ distinto del objetivo (${k.toLocaleString("es-AR")})` : " ✓") : " · se usa como objetivo de calorías");
+}
+["cGoalK","cMP","cMC","cMG"].forEach(id => $(id).addEventListener("input", macHint));
 $("cAddDay").onclick = () => { const L = "ABCDEFGH"; CS.p.days.push({n:"Día "+(L[CS.p.days.length]||CS.p.days.length+1), it:[]}); renderCDays(); };
 $("cModA").onchange = () => { $("cAnBox").style.display = $("cModA").checked ? "" : "none"; };
 $("cSel").onchange = () => { readCoach(); const n = $("cSel").value; CS = n ? JSON.parse(JSON.stringify(S.coach.students[n])) : blankStudent(); fillCoach(); };
@@ -1563,7 +1575,7 @@ $("cLink").onclick = () => {
   if(!CS.n){ toast("Poné el nombre del alumno"); return; }
   if(CS.mod.e && !CS.p.days.some(d => d.it.length || isRun(d))){ toast("Agregá al menos un ejercicio"); return; }
   S.coach.students[CS.n] = JSON.parse(JSON.stringify(CS)); save();
-  const pay = {v:1, n:CS.n, msg:CS.msg, mod:CS.mod, k:CS.k||0, p: CS.mod.e ? CS.p : null, an: CS.mod.a ? CS.an : [], nx: CS.mod.a ? (CS.nx||"") : "", nxt: CS.mod.a ? (CS.nxt||"") : ""};
+  const pay = {v:1, n:CS.n, msg:CS.msg, mod:CS.mod, k:CS.k||0, mp:CS.mp||0, mc:CS.mc||0, mg:CS.mg||0, p: CS.mod.e ? CS.p : null, an: CS.mod.a ? CS.an : [], nx: CS.mod.a ? (CS.nx||"") : "", nxt: CS.mod.a ? (CS.nxt||"") : ""};
   const url = location.origin + location.pathname + "#p=" + enc(pay);
   const txt = `Hola ${CS.n}! 💪 Te mando tu plan de 1dz. Abrilo desde el celular y tocá "Cargar mi plan":\n${url}`;
   $("cOut").innerHTML = `<div class="linkbox" id="cUrl">${esc(url)}</div><div class="grid2" style="margin-top:8px"><button class="btn sec" id="cCopy">Copiar link</button><a class="btn" style="text-decoration:none;background:#1a8a4a" href="https://wa.me/?text=${encodeURIComponent(txt)}" target="_blank" rel="noopener">Enviar por WhatsApp</a></div>`;
