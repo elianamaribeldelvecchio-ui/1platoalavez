@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>1 plato a la vez — 1dz</title>
-<meta name="description" content="Contador de calorías de 1dz · 1 día a la vez">
+<title>1dz — 1 día a la vez</title>
+<meta name="description" content="1dz · Entrenamiento, nutrición y antropometría">
 <meta name="theme-color" content="#0e0e10">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" href="icon-192.png">
@@ -12,7 +12,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black">
-<meta name="apple-mobile-web-app-title" content="1 plato">
+<meta name="apple-mobile-web-app-title" content="1dz">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Fraunces:opsz,wght@9..144,600;9..144,700&display=swap" rel="stylesheet">
 <style>
@@ -152,16 +152,147 @@ header{display:flex;align-items:center;justify-content:space-between;margin-bott
 .scan-close{padding:11px;border-radius:11px;background:#24252a;color:#fff;font-weight:700}
 .toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--ink);color:#fff;padding:10px 18px;border-radius:12px;font-size:.88rem;transition:transform .25s;z-index:60}
 .toast.show{transform:translateX(-50%) translateY(0)}
+.wrap{padding-bottom:calc(130px + env(safe-area-inset-bottom)) !important}
+.logo{display:flex;align-items:center;gap:10px;cursor:pointer;-webkit-tap-highlight-color:transparent;user-select:none}
+.logo .mark{width:52px;height:46px;flex:none}
+.logo .lt b{display:block;font-family:'DM Sans',sans-serif;font-size:.95rem;letter-spacing:.12em;color:#fff}
+.logo .lt b .o{color:#ff9614}.logo .lt b .b{color:#4d7bff}
+.logo .lt small{display:block;font-size:.66rem;color:#a9adb8;margin-top:3px;letter-spacing:.02em}
+.sec-title{font-family:'Fraunces',serif;font-size:1.35rem;margin:4px 2px 12px}
+.sec-title .one{color:var(--warm)}.sec-title .alv{color:var(--accent)}
+.nav{position:fixed;left:0;right:0;bottom:0;background:var(--ink);display:flex;justify-content:space-around;padding:6px 6px calc(6px + env(safe-area-inset-bottom));z-index:40}
+.nav button{flex:1;color:#9aa0ab;font-size:.7rem;display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 0;border-radius:12px;max-width:120px}
+.nav button .i{font-size:1.25rem;line-height:1}
+.nav button.on{color:#fff;background:#24252a}
+.toast{bottom:calc(84px + env(safe-area-inset-bottom)) !important}
+.view[hidden]{display:none !important}
+.hello{font-family:'Fraunces',serif;font-size:1.5rem;margin:2px 2px 2px}
+.hello-sub{color:var(--muted);font-size:.85rem;margin:0 2px 14px;text-transform:capitalize}
+.msg{background:var(--warm-soft);border:1px solid #ffd9b8}
+.msg h3{font-size:.85rem;color:#8a4100;margin-bottom:4px}
+.msg p{font-size:.92rem;line-height:1.45}
+.kv{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.kv h3{font-size:1rem}.kv small{color:var(--muted);font-size:.8rem}
+.big2{font-family:'Fraunces',serif;font-size:1.3rem;margin:6px 0 2px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:11px 16px;border-radius:12px;background:var(--accent);color:#fff;font-weight:700}
+.btn.sec{background:var(--bg);color:var(--ink);border:1px solid var(--line)}
+.btn.wide{width:100%;margin-top:10px}
+.badge{display:inline-block;font-size:.68rem;font-weight:700;padding:3px 8px;border-radius:20px;background:var(--accent-soft);color:var(--accent);margin-left:6px;vertical-align:middle}
+.badge.w{background:var(--warm-soft);color:var(--warm)}
+.banner{border-radius:14px;padding:12px 14px;font-size:.88rem;line-height:1.45;margin-bottom:12px}
+.banner.dl{background:var(--accent-soft);color:#173d8f}
+.banner.wod{background:var(--warm-soft);color:#8a4100}
+.chips2{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;margin-bottom:12px;scrollbar-width:none}
+.chips2::-webkit-scrollbar{display:none}
+.ex{margin-bottom:12px}
+.exh{display:flex;gap:12px;align-items:flex-start}
+.thumb{width:88px;height:59px;object-fit:cover;border-radius:10px;background:#f1f2f5;border:1px solid var(--line);flex:none;cursor:pointer}
+.exh .nm{font-weight:700;line-height:1.25}
+.exh .tg{font-size:.8rem;color:var(--muted);margin-top:3px}
+.note2{font-size:.82rem;background:var(--warm-soft);color:#8a4100;border-radius:10px;padding:7px 10px;margin-top:8px}
+.sug{font-size:.8rem;color:var(--muted);margin-top:8px;line-height:1.4}
+.sug.up{color:var(--accent);font-weight:700}
+.sethead,.setrow{display:grid;gap:6px;align-items:center}
+.sethead{font-size:.68rem;color:var(--muted);margin-top:10px;font-weight:700;text-transform:uppercase;letter-spacing:.04em}
+.setrow{margin-top:6px}
+.setrow .n{font-weight:700;color:var(--muted);text-align:center}
+.setrow input{width:100%;padding:10px 6px;border:1px solid var(--line);border-radius:10px;background:var(--bg);text-align:center;font-weight:700;font-size:1rem}
+.setrow .okb{height:42px;border-radius:10px;border:1px solid var(--line);background:var(--card);font-size:1.1rem}
+.setrow .okb.done{background:var(--accent);border-color:var(--accent);color:#fff}
+.timer{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(76px + env(safe-area-inset-bottom));background:var(--warm);color:#fff;border-radius:14px;padding:10px 16px;font-weight:700;display:none;gap:14px;align-items:center;z-index:45;box-shadow:0 6px 20px rgba(0,0,0,.2)}
+.timer.on{display:flex}
+.timer button{color:#fff;text-decoration:underline;font-weight:500}
+textarea.ta{width:100%;min-height:70px;padding:10px;border:1px solid var(--line);border-radius:12px;background:var(--bg);font:inherit;resize:vertical}
+.hist{font-size:.82rem;border-top:1px dashed var(--line);padding:8px 0}
+.hist b{font-size:.88rem}
+.libgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.libitem{background:var(--card);border:1px solid var(--line);border-radius:14px;overflow:hidden;text-align:left;padding:0}
+.libitem img{width:100%;aspect-ratio:3/2;object-fit:cover;background:#f1f2f5;display:block}
+.libitem div{padding:8px 9px;font-size:.8rem;font-weight:500;line-height:1.25}
+.ficha img{width:100%;border-radius:12px;border:1px solid var(--line);background:#f1f2f5;margin:6px 0 10px}
+.ficha h4{font-size:.8rem;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin:10px 0 4px}
+.ficha p{line-height:1.5}
+.disc{font-size:.76rem;color:var(--muted);background:var(--bg);border-radius:10px;padding:10px;margin-top:14px;line-height:1.45}
+.tbl{width:100%;border-collapse:collapse;font-size:.8rem}
+.tbl th,.tbl td{padding:7px 4px;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap}
+.tbl th:first-child,.tbl td:first-child{text-align:left}
+.tbl th{color:var(--muted);font-weight:700;font-size:.7rem;text-transform:uppercase}
+.tblwrap{overflow-x:auto}
+.dn{color:#1a8a4a;font-weight:700}.up2{color:var(--warm);font-weight:700}
+.coach .sheet{max-height:96vh}
+.cday{border:1px solid var(--line);border-radius:14px;padding:10px;margin-bottom:12px;background:var(--bg)}
+.cday .dh{display:flex;gap:8px;align-items:center}
+.cday .dh input{flex:1;padding:9px;border:1px solid var(--line);border-radius:10px;font-weight:700;background:var(--card)}
+.cex{border-top:1px dashed var(--line);padding:10px 0 4px}
+.cex .top{display:flex;gap:8px;align-items:center}
+.cex img{width:48px;height:32px;object-fit:cover;border-radius:6px;background:#eee;flex:none}
+.cex .top b{flex:1;font-size:.86rem;line-height:1.2}
+.cnum{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:8px}
+.cnum label{font-size:.64rem;color:var(--muted);display:block;margin-bottom:2px}
+.cnum input,.cex .on input{width:100%;padding:8px 6px;border:1px solid var(--line);border-radius:8px;background:var(--card);text-align:center}
+.cex .on input{text-align:left;margin-top:6px}
+.xbtn{width:30px;height:30px;border-radius:8px;color:var(--muted);font-size:1.05rem;background:var(--card);border:1px solid var(--line);flex:none}
+.chk{display:flex;align-items:center;gap:8px;font-size:.9rem;padding:6px 0}
+.chk input{width:20px;height:20px;accent-color:var(--accent)}
+.linkbox{word-break:break-all;font-size:.74rem;background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:10px;margin-top:10px;max-height:90px;overflow:auto}
+.anlist{font-size:.8rem;margin-top:6px}
+.anlist div{display:flex;justify-content:space-between;border-top:1px dashed var(--line);padding:6px 0}
+.pk{max-height:55vh;overflow:auto}
+.pkitem{display:flex;gap:10px;align-items:center;padding:8px 4px;border-bottom:1px solid var(--line);width:100%;text-align:left}
+.pkitem img{width:60px;height:40px;object-fit:cover;border-radius:8px;background:#eee;flex:none}
+.pkitem span{font-size:.88rem}
+.empty2{text-align:center;color:var(--muted);font-size:.9rem;padding:18px 8px;line-height:1.5}
+
+.toast{transform:translateX(-50%) translateY(220px)}
+.toast.show{transform:translateX(-50%) translateY(0)}
 </style>
 </head>
 <body>
 <div class="wrap">
   <header>
-    <div class="brand"><span class="one">1</span> plato <span class="alv">a la vez</span><small>por <b>1dz</b> · 1 día a la vez</small></div>
-    <button class="icon-btn" id="btnSettings" aria-label="Mi objetivo">
+    <div class="logo" id="logo" title="1dz · 1 día a la vez">
+      <svg class="mark" viewBox="0 0 64 56" aria-hidden="true"><text x="1" y="43" font-family="Fraunces, Georgia, serif" font-weight="700" font-size="50" fill="#2f5dff">D</text><text x="27" y="55" font-family="Fraunces, Georgia, serif" font-weight="700" font-size="42" fill="#ff9614">Z</text></svg>
+      <div class="lt"><b>1 <span class="o">D</span>ÍA A LA VE<span class="b">Z</span></b><small>Entrenamiento · Nutrición · Antropometría</small></div>
+    </div>
+    <button class="icon-btn" id="btnSettings" aria-label="Mi objetivo de calorías">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg>
     </button>
   </header>
+
+  <section class="view" id="v-hoy">
+    <div class="hello" id="hello">¡Hola!</div>
+    <div class="hello-sub" id="helloSub"></div>
+    <div id="hoyCards"></div>
+    <button class="report-btn" id="btnReport">📤 Enviar mi reporte a 1dz</button>
+    <div class="card cta">
+      <h3>¿Querés un plan a tu medida?</h3>
+      <p>Entrenamiento, asesoría nutricional y antropometría con 1dz.</p>
+      <div class="cta-btns">
+        <a class="wa" href="https://wa.me/5491127520419?text=Hola%201dz%2C%20vengo%20de%20la%20app%20y%20quiero%20info%20sobre%20los%20planes" target="_blank" rel="noopener">WhatsApp<small>11 2752-0419</small></a>
+        <a class="ig" href="https://instagram.com/1diaalavez9" target="_blank" rel="noopener">Instagram<small>@1diaalavez9</small></a>
+      </div>
+    </div>
+    <p class="footer-brand">Una herramienta de <b>1dz</b> · <span>1 día a la vez</span><br>Entrenamiento · Asesoría nutricional · Antropometría</p>
+  </section>
+
+  <section class="view" id="v-entreno" hidden>
+    <div class="seg" id="segEnt" style="margin-bottom:14px"><button data-v="rut" class="on">Mi rutina</button><button data-v="lib">Biblioteca</button></div>
+    <div id="entRut"></div>
+    <div id="entLib" hidden>
+      <div class="field" style="margin-bottom:8px"><input type="search" id="libQ" placeholder="Buscar ejercicio…" autocomplete="off"></div>
+      <div class="chips2" id="libChips"></div>
+      <div class="libgrid" id="libGrid"></div>
+      <p class="disc">Las imágenes son ilustraciones a modo de guía. La ejecución puede verse distinta en cada persona según su anatomía, movilidad y nivel. Seguí siempre las indicaciones de tu entrenadora.</p>
+    </div>
+  </section>
+
+  <section class="view" id="v-progreso" hidden>
+    <h2 class="sec-title">Mi progreso</h2>
+    <div id="progCards"></div>
+  </section>
+
+  <section class="view" id="v-comidas" hidden>
+  <h2 class="sec-title"><span class="one">1</span> plato <span class="alv">a la vez</span></h2>
 
   <div class="datenav">
     <button id="prevDay" aria-label="Día anterior">‹</button>
@@ -193,20 +324,95 @@ header{display:flex;align-items:center;justify-content:space-between;margin-bott
     <div id="weekChart"></div>
   </div>
 
-  <button class="report-btn" id="btnReport">📤 Enviar mi reporte a 1dz</button>
-
-  <div class="card cta">
-    <h3>¿Querés un plan a tu medida?</h3>
-    <p>Entrenamiento, asesoría nutricional y antropometría con 1dz.</p>
-    <div class="cta-btns">
-      <a class="wa" href="https://wa.me/5491127520419?text=Hola%201dz%2C%20vengo%20de%20la%20app%201%20plato%20a%20la%20vez%20y%20quiero%20info%20sobre%20las%20asesor%C3%ADas" target="_blank" rel="noopener">WhatsApp<small>11 2752-0419</small></a>
-      <a class="ig" href="https://instagram.com/1diaalavez9" target="_blank" rel="noopener">Instagram<small>@1diaalavez9</small></a>
-    </div>
-  </div>
-
   <p class="note">Los valores son aproximados y sirven como guía. Tus datos se guardan solo en este dispositivo y navegador. Si tenés alguna condición de salud, consultá con un profesional antes de cambiar tu alimentación.</p>
-  <p class="footer-brand">Una herramienta de <b>1dz</b> · <span>1 día a la vez</span><br>Entrenamiento · Asesoría nutricional · Antropometría</p>
+  </section>
 </div>
+<nav class="nav" id="nav">
+  <button data-v="hoy" class="on"><span class="i">🏠</span>Hoy</button>
+  <button data-v="entreno"><span class="i">🏋️</span>Entreno</button>
+  <button data-v="comidas"><span class="i">🍽️</span>Comidas</button>
+  <button data-v="progreso"><span class="i">📈</span>Progreso</button>
+</nav>
+<div class="timer" id="timer"><span>⏱ Descanso <b id="timerT">0:00</b></span><button id="timerSkip">Saltar</button></div>
+
+<div class="overlay" id="ovFicha"><div class="sheet ficha">
+  <div class="sheet-head"><div><h2 id="fNm"></h2><p class="lead" id="fGr"></p></div><button class="close" data-close="ovFicha">✕</button></div>
+  <img id="fImg" alt="">
+  <h4>Cómo hacerlo</h4><p id="fD"></p>
+  <h4>Músculos</h4><p id="fM"></p>
+  <p class="disc">Las imágenes son ilustraciones a modo de guía. La ejecución puede verse distinta en cada persona según su anatomía, movilidad y nivel. Seguí siempre las indicaciones de tu entrenadora.</p>
+</div></div>
+
+<div class="overlay" id="ovImport"><div class="sheet">
+  <div class="sheet-head"><div><h2>📩 Tu plan de 1dz</h2><p class="lead">Tu entrenadora te mandó un plan.</p></div><button class="close" data-close="ovImport">✕</button></div>
+  <div id="impBody"></div>
+  <button class="primary" id="impOk">Cargar mi plan</button>
+  <button class="ghost" data-close="ovImport">Ahora no</button>
+</div></div>
+
+<div class="overlay" id="ovPin"><div class="sheet">
+  <div class="sheet-head"><div><h2>🔒 Modo entrenadora</h2><p class="lead">Ingresá tu PIN.</p></div><button class="close" data-close="ovPin">✕</button></div>
+  <div class="field"><input type="password" inputmode="numeric" id="pinIn" maxlength="6" placeholder="PIN" autocomplete="off" style="text-align:center;font-size:1.4rem;letter-spacing:.4em"></div>
+  <button class="primary" id="pinOk">Entrar</button>
+</div></div>
+
+<div class="overlay coach" id="ovCoach"><div class="sheet">
+  <div class="sheet-head"><div><h2>👩‍🏫 Modo entrenadora</h2><p class="lead">Armá el plan de cada alumno y mandale su link.</p></div><button class="close" data-close="ovCoach">✕</button></div>
+  <div class="field"><label>Alumno guardado</label><select id="cSel"></select></div>
+  <div class="field"><label>Nombre del alumno</label><input id="cName" placeholder="Ej: Laura"></div>
+  <div class="field"><label>Mensaje para el alumno (aparece en Hoy)</label><input id="cMsg" placeholder="Ej: ¡Arrancamos el mesociclo! Prioridad: técnica"></div>
+  <div class="field"><label>Secciones que ve</label>
+    <label class="chk"><input type="checkbox" id="cModE" checked> Entreno</label>
+    <label class="chk"><input type="checkbox" id="cModC" checked> Comidas</label>
+    <label class="chk"><input type="checkbox" id="cModA"> Antropometría (seguimiento presencial)</label>
+  </div>
+  <div class="field"><label>Objetivo de calorías (opcional)</label><input type="number" id="cKcal" placeholder="Ej: 1900"></div>
+  <h3 style="margin:16px 0 8px">Mesociclo</h3>
+  <div class="grid2">
+    <div class="field"><label>Nombre</label><input id="cPName" placeholder="Mesociclo 1"></div>
+    <div class="field"><label>Empieza el</label><input type="date" id="cStart"></div>
+  </div>
+  <div class="grid3">
+    <div class="field"><label>Semanas</label><input type="number" id="cWeeks" value="8" min="1" max="16"></div>
+    <div class="field"><label>Descarga (sem.)</label><input id="cDl" value="4,8"></div>
+    <div class="field"><label>Tipo</label><select id="cDm"><option value="auto">Descarga</option><option value="wod">WOD presencial</option></select></div>
+  </div>
+  <div class="field"><label>Nota para semanas de descarga (opcional)</label><input id="cDn" placeholder="Ej: una serie menos, mismos pesos"></div>
+  <label class="chk"><input type="checkbox" id="cRir"> Registrar RIR/RPE (alumnos avanzados)</label>
+  <h3 style="margin:16px 0 8px">Días de entrenamiento</h3>
+  <div id="cDays"></div>
+  <button class="ghost" id="cAddDay">+ Agregar día</button>
+  <div id="cAnBox">
+    <h3 style="margin:16px 0 8px">Antropometría</h3>
+    <div class="grid3">
+      <div class="field"><label>Fecha</label><input type="date" id="aD"></div>
+      <div class="field"><label>Peso kg</label><input type="number" step="0.1" id="aPeso"></div>
+      <div class="field"><label>% grasa</label><input type="number" step="0.1" id="aGr"></div>
+      <div class="field"><label>Masa musc. kg</label><input type="number" step="0.1" id="aMm"></div>
+      <div class="field"><label>Masa adip. kg</label><input type="number" step="0.1" id="aMa"></div>
+      <div class="field"><label>Σ pliegues mm</label><input type="number" step="0.1" id="aSp"></div>
+      <div class="field"><label>Cintura cm</label><input type="number" step="0.1" id="aCi"></div>
+      <div class="field"><label>Cadera cm</label><input type="number" step="0.1" id="aCa"></div>
+      <div class="field"><label>Brazo cm</label><input type="number" step="0.1" id="aBr"></div>
+    </div>
+    <div class="grid2"><div class="field"><label>Muslo cm</label><input type="number" step="0.1" id="aMu"></div><div class="field"><label>Nota</label><input id="aNo" placeholder="Opcional"></div></div>
+    <button class="ghost" id="cAddAn">+ Guardar medición</button>
+    <div class="anlist" id="cAnList"></div>
+  </div>
+  <button class="primary" id="cSave">Guardar alumno</button>
+  <button class="primary" id="cLink" style="background:var(--warm)">🔗 Generar link para el alumno</button>
+  <div id="cOut"></div>
+  <button class="ghost" id="cDel" style="color:#c8364b">Borrar este alumno de mi lista</button>
+  <button class="ghost" id="cLock" style="color:var(--muted)">🔒 Bloquear modo entrenadora en este celular</button>
+</div></div>
+
+<div class="overlay" id="ovPick"><div class="sheet">
+  <div class="sheet-head"><div><h2>Elegir ejercicio</h2></div><button class="close" data-close="ovPick">✕</button></div>
+  <div class="field"><input type="search" id="pkQ" placeholder="Buscar…" autocomplete="off"></div>
+  <div class="chips2" id="pkChips"></div>
+  <div class="pk" id="pkList"></div>
+</div></div>
+
 
 <!-- Modal: objetivo -->
 <div class="overlay" id="ovSettings">
@@ -951,6 +1157,371 @@ $("btnSettings").onclick=()=>openSettings(false);
 render();
 if(firstRun)openSettings(true);
 if("serviceWorker" in navigator&&location.protocol.startsWith("http"))window.addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));
+
+/* ================= 1dz: Entreno, Hoy, Progreso, Modo entrenadora ================= */
+const EX = [{"id": "R1", "n": "Sentadilla con barra", "g": "rod", "img": "https://d8j0ntlcm91z4.cloudfront.net/user_3Kt9IdLpUqe0MuJbBSR2T8x8hmD/hf_20261120_034414_80b31e29-426f-440a-a724-d2834192e4d4.png", "d": "Barra sobre trapecios, rodillas siguiendo las puntas y talones apoyados. Bajá al menos a la paralela con la espalda neutra.", "m": "Cuádriceps y glúteos"}, {"id": "R2", "n": "Sentadilla en Smith", "g": "rod", "img": "https://d8j0ntlcm91z4.cloudfront.net/user_3Kt9IdLpUqe0MuJbBSR2T8x8hmD/hf_20261120_104946_1d095e4b-59dd-480a-af19-093ef06ba6de.png", "d": "Pies apenas adelante de la barra. Bajá controlado hasta la paralela con el torso erguido y los talones apoyados.", "m": "Cuádriceps y glúteos"}, {"id": "R3", "n": "Sentadilla hack", "g": "rod", "img": "https://d8j0ntlcm91z4.cloudfront.net/user_3Kt9IdLpUqe0MuJbBSR2T8x8hmD/hf_20261120_105236_855ccdb0-8a0e-47df-85c2-6ddcf1d8a4a7.png", "d": "Espalda y cadera pegadas al respaldo. Bajá hasta que los muslos queden paralelos a la plataforma sin despegar los talones.", "m": "Cuádriceps y glúteos"}, {"id": "R4", "n": "Sentadilla goblet", "g": "rod", "img": "https://d8j0ntlcm91z4.cloudfront.net/user_3Kt9IdLpUqe0MuJbBSR2T8x8hmD/hf_20261120_105432_49851233-c468-4d68-a49c-5fe15b628821.png", "d": "Mancuerna pegada al pecho, codos por dentro de las rodillas. Bajá profundo con el torso erguido.", "m": "Cuádriceps y glúteos"}, {"id": "R5", "n": "Sentadilla con talones elevados (pies juntos, KB)", "g": "rod", "img": "https://d8j0ntlcm91z4.cloudfront.net/user_3Kt9IdLpUqe0MuJbBSR2T8x8hmD/hf_20261120_105725_d8edf08c-1791-41c5-8f6e-77ad9b227afd.png", "d": "Talones sobre la cuña y pies juntos. Las rodillas avanzan por delante de los pies; torso bien vertical.", "m": "Cuádriceps y glúteos"}, {"id": "R6", "n": "Zancadas caminadas", "g": "rod", "img": "https://d8j0ntlcm91z4.cloudfront.net/user_3Kt9IdLpUqe0MuJbBSR2T8x8hmD/hf_20261120_105823_eee4c57e-aa10-4a30-8625-725974afeed4.png", "d": "Paso largo, rodilla de adelante sobre el tobillo y la de atrás casi al piso. Avanzá alternando piernas.", "m": "Cuádriceps y glúteos"}, {"id": "R7", "n": "Sentadilla split", "g": "rod", "img": "https://d8j0ntlcm91z4.cloudfront.net/user_3Kt9IdLpUqe0MuJbBSR2T8x8hmD/hf_20261120_105914_e88dee8f-8b3f-42e4-bb09-8884dffdd550.png", "d": "Pies fijos en posición de paso. Subí y bajá en vertical hasta que la rodilla de atrás casi toque el piso.", "m": "Cuádriceps y glúteos"}, {"id": "R8", "n": "Estocada delantera", "g": "rod", "img": "https://d8j0ntlcm91z4.cloudfront.net/user_3Kt9IdLpUqe0MuJbBSR2T8x8hmD/hf_20261120_110820_c3c045e9-2124-4791-bdbe-d5628d2760ed.png", "d": "Paso hacia adelante, bajá con ambas rodillas a 90° y empujá con el pie de adelante para volver al inicio.", "m": "Cuádriceps y glúteos"}, {"id": "R9", "n": "Estocada trasera", "g": "rod", "img": "https://d8j0ntlcm91z4.cloudfront.net/user_3Kt9IdLpUqe0MuJbBSR2T8x8hmD/hf_20261120_111157_0ce8b587-e500-4ec8-8ed1-17390405b980.png", "d": "Paso hacia atrás, bajá con ambas rodillas a 90° y volvé empujando con la pierna de adelante.", "m": "Cuádriceps y glúteos"}, {"id": "R10", "n": "Búlgara bilateral", "g": "rod", "img": "https://d8j0ntlcm91z4.cloudfront.net/user_3Kt9IdLpUqe0MuJbBSR2T8x8hmD/hf_20261120_111456_ef978c1a-b602-4b7b-813f-49698dff0b1b.png", "d": "Empeine del pie de atrás en el banco. Bajá hasta la paralela con el torso apenas inclinado, una mancuerna en cada mano.", "m": "Cuádriceps y glúteos"}, {"id": "R11", "n": "Búlgara unilateral (carga del lado del banco)", "g": "rod", "img": "https://d8j0ntlcm91z4.cloudfront.net/user_3Kt9IdLpUqe0MuJbBSR2T8x8hmD/hf_20261120_113428_e6a19d55-85d6-4b9e-9546-7c213d65c456.png", "d": "Una mancuerna en la mano del lado del pie que está en el banco. Cadera y hombros nivelados durante todo el recorrido.", "m": "Cuádriceps y glúteos"}, {"id": "R12", "n": "Sillón de cuádriceps", "g": "rod", "img": "https://d8j0ntlcm91z4.cloudfront.net/user_3Kt9IdLpUqe0MuJbBSR2T8x8hmD/hf_20261120_113651_3dee1c97-d602-41f7-97cc-8ca9070d0023.png", "d": "Rodilla alineada con el eje de la máquina. Extendé las piernas sin bloquear y bajá controlado.", "m": "Cuádriceps y glúteos"}, {"id": "R13", "n": "Subidas al cajón", "g": "rod", "img": "https://d8j0ntlcm91z4.cloudfront.net/user_3Kt9IdLpUqe0MuJbBSR2T8x8hmD/hf_20261120_113928_8bd03f60-a773-4135-92f5-b2bb0e642df2.png", "d": "Apoyá el pie entero en el cajón y subí empujando con esa pierna, sin impulsarte con la de abajo.", "m": "Cuádriceps y glúteos"}, {"id": "R14", "n": "Sentadilla sumo con barra", "g": "rod", "img": "https://d8j0ntlcm91z4.cloudfront.net/user_3Kt9IdLpUqe0MuJbBSR2T8x8hmD/hf_20261120_120617_9da7ea9c-3a4e-48e3-b3c7-7bf2a9269b2b.png", "d": "Postura ancha, puntas abiertas y rodillas hacia afuera siguiendo los pies. Bajá con el torso erguido.", "m": "Cuádriceps y glúteos"}, {"id": "C1", "n": "Peso muerto rumano con barra", "g": "cad", "img": "https://d8j0ntlcm91z4.cloudfront.net/user_3Kt9IdLpUqe0MuJbBSR2T8x8hmD/hf_20261120_121502_26c92a1f-b801-42b4-9624-c57d491a51e1.png", "d": "Cadera bien atrás y rodillas apenas flexionadas. Bajá la barra pegada a las piernas con el tronco casi paralelo al piso y la espalda plana.", "m": "Glúteos e isquiotibiales"}, {"id": "C2", "n": "Peso muerto rumano con kettlebell", "g": "cad", "img": "https://d8j0ntlcm91z4.cloudfront.net/user_3Kt9IdLpUqe0MuJbBSR2T8x8hmD/hf_20261120_122954_823430d6-7fe8-4798-a4c6-4c7e3ea0ca5f.png", "d": "Kettlebell con las dos manos. Cadera atrás, espalda plana y tronco casi paralelo al piso.", "m": "Glúteos e isquiotibiales"}, {"id": "R15", "n": "Sentadilla sumo con kettlebell", "g": "rod", "img": "https://d8j0ntlcm91z4.cloudfront.net/user_3Kt9IdLpUqe0MuJbBSR2T8x8hmD/hf_20261120_120835_18b301ec-f5dd-4b3e-9520-73778eff145c.png", "d": "Postura ancha, kettlebell colgando entre las piernas. Rodillas hacia afuera y espalda neutra.", "m": "Cuádriceps y glúteos"}, {"id": "R16", "n": "Sentadilla lateral", "g": "rod", "img": "https://d8j0ntlcm91z4.cloudfront.net/user_3Kt9IdLpUqe0MuJbBSR2T8x8hmD/hf_20261120_121026_84cdcb5d-23e5-4a93-8a1f-836b7a307b9c.png", "d": "Postura muy ancha. Llevá la cadera atrás sobre una pierna mientras la otra queda estirada; talones apoyados.", "m": "Cuádriceps y glúteos"}, {"id": "R17", "n": "Prensa 45°", "g": "rod", "img": "https://d8j0ntlcm91z4.cloudfront.net/user_3Kt9IdLpUqe0MuJbBSR2T8x8hmD/hf_20261120_121220_bb3d854c-312a-447a-b9a0-00928dcb86db.png", "d": "Espalda y cadera pegadas al respaldo. Bajá hasta 90° sin despegar la pelvis y empujá sin bloquear las rodillas.", "m": "Cuádriceps y glúteos"}, {"id": "C3", "n": "Peso muerto sumo", "g": "cad", "img": "https://d8j0ntlcm91z4.cloudfront.net/user_3Kt9IdLpUqe0MuJbBSR2T8x8hmD/hf_20261120_123051_3914ec7d-43b7-4b19-a07d-d0f36988d414.png", "d": "Postura muy ancha, manos por dentro de las rodillas. Empujá el piso y extendé cadera y rodillas a la vez.", "m": "Glúteos e isquiotibiales"}, {"id": "C4", "n": "Peso muerto convencional", "g": "cad", "img": "https://d8j0ntlcm91z4.cloudfront.net/user_3Kt9IdLpUqe0MuJbBSR2T8x8hmD/hf_20261120_123207_3c753419-5684-4bed-b4bf-d299e1198af9.png", "d": "Barra sobre el medio del pie, espalda plana. Empujá el piso y extendé la cadera sin echarte hacia atrás.", "m": "Glúteos e isquiotibiales"}, {"id": "C5", "n": "Hip thrust con barra", "g": "cad", "img": "https://d8j0ntlcm91z4.cloudfront.net/user_3Kt9IdLpUqe0MuJbBSR2T8x8hmD/hf_20261120_123541_67c1efc5-0809-4093-b5d1-8f77562e2a59.png", "d": "Escápulas en el banco y barra sobre la cadera. Subí hasta alinear tronco y muslos con el mentón adentro.", "m": "Glúteos e isquiotibiales"}, {"id": "C6", "n": "Hip thrust en máquina", "g": "cad", "img": "https://d8j0ntlcm91z4.cloudfront.net/user_3Kt9IdLpUqe0MuJbBSR2T8x8hmD/hf_20261120_123626_d1663d7b-3a3d-420c-be4c-ad3262e942cd.png", "d": "Escápulas en el respaldo y palanca sobre la cadera. Extendé la cadera sin arquear la zona lumbar.", "m": "Glúteos e isquiotibiales"}, {"id": "C7", "n": "Hip thrust unipodal", "g": "cad", "img": "https://d8j0ntlcm91z4.cloudfront.net/user_3Kt9IdLpUqe0MuJbBSR2T8x8hmD/hf_20261120_124129_985c24ad-659e-4abc-9124-6ee542c39ba0.png", "d": "Una pierna apoyada y la otra extendida, nunca más alta que la rodilla de apoyo. Cadera nivelada.", "m": "Glúteos e isquiotibiales"}, {"id": "C8", "n": "Elevación de cadera con kettlebell", "g": "cad", "img": "https://d8j0ntlcm91z4.cloudfront.net/user_3Kt9IdLpUqe0MuJbBSR2T8x8hmD/hf_20261120_124224_ddfef3f3-8a1f-442c-8b59-b6452db5f622.png", "d": "Acostado en el piso, kettlebell sobre la cadera. Subí hasta alinear hombros, cadera y rodillas.", "m": "Glúteos e isquiotibiales"}, {"id": "C9", "n": "Elevación de cadera con barra", "g": "cad", "img": "https://d8j0ntlcm91z4.cloudfront.net/user_3Kt9IdLpUqe0MuJbBSR2T8x8hmD/hf_20261120_130937_a21e1afe-0529-491f-8979-0d9e74418bbb.png", "d": "Acostado en el piso con la barra sobre la cadera. Subí apretando glúteos sin arquear la espalda.", "m": "Glúteos e isquiotibiales"}, {"id": "C10", "n": "Elevación de cadera unipodal", "g": "cad", "img": "https://d8j0ntlcm91z4.cloudfront.net/user_3Kt9IdLpUqe0MuJbBSR2T8x8hmD/hf_20261120_131823_28af0974-b89a-4c8d-b920-c885a63958aa.png", "d": "Una pierna apoyada y la otra extendida a la altura de la rodilla de apoyo. Subí con la cadera nivelada.", "m": "Glúteos e isquiotibiales"}, {"id": "C11", "n": "Patada de glúteos en polea", "g": "cad", "img": "https://d8j0ntlcm91z4.cloudfront.net/user_3Kt9IdLpUqe0MuJbBSR2T8x8hmD/hf_20261120_131909_2b969dfe-d59e-4143-bfcb-1023be5b5a2c.png", "d": "Tobillera en polea baja. Llevá la pierna hacia atrás extendiendo la cadera, sin abrir la pelvis ni arquear la espalda.", "m": "Glúteos e isquiotibiales"}, {"id": "C12", "n": "Sillón de isquiotibiales acostado", "g": "cad", "img": "https://d8j0ntlcm91z4.cloudfront.net/user_3Kt9IdLpUqe0MuJbBSR2T8x8hmD/hf_20261120_131956_3229c0e4-dd8e-4f82-a60a-7a4f51d2a1dd.png", "d": "Cadera pegada al banco. Llevá los talones hacia los glúteos y bajá controlado.", "m": "Glúteos e isquiotibiales"}, {"id": "C13", "n": "Hiperextensión 45° (glúteo)", "g": "cad", "img": "https://d8j0ntlcm91z4.cloudfront.net/user_3Kt9IdLpUqe0MuJbBSR2T8x8hmD/hf_20261120_132118_07b0d969-69f8-475a-826f-bff089aa295f.png", "d": "Espalda alta apenas redondeada y mentón adentro. El movimiento sale de la cadera; subí hasta alinear con las piernas.", "m": "Glúteos e isquiotibiales"}, {"id": "C14", "n": "Hiperextensión 45° (espalda baja)", "g": "cad", "img": "https://d8j0ntlcm91z4.cloudfront.net/user_3Kt9IdLpUqe0MuJbBSR2T8x8hmD/hf_20261120_132118_65bddd49-6e4d-43ca-ae45-51ca98cca46f.png", "d": "Espalda neutra todo el recorrido. Subí hasta alinear tronco y piernas, sin pasarte hacia atrás.", "m": "Glúteos e isquiotibiales"}, {"id": "E1", "n": "Press de banca con barra", "g": "emp", "img": "https://d8j0ntlcm91z4.cloudfront.net/user_3Kt9IdLpUqe0MuJbBSR2T8x8hmD/hf_20261120_132851_4efbb91b-9bc0-4a28-a4d0-ea2c9b3bcc0d.png", "d": "Escápulas juntas y pies firmes. Bajá la barra a la parte baja del pecho con los codos a 45–60°.", "m": "Pecho, hombros y tríceps"}, {"id": "E2", "n": "Press de banca con mancuernas", "g": "emp", "img": "https://d8j0ntlcm91z4.cloudfront.net/user_3Kt9IdLpUqe0MuJbBSR2T8x8hmD/hf_20261120_132946_610c6cd7-cec1-4478-872a-90e26adbf1e3.png", "d": "Escápulas juntas. Bajá las mancuernas a los costados del pecho con antebrazos verticales.", "m": "Pecho, hombros y tríceps"}, {"id": "E3", "n": "Press inclinado con barra", "g": "emp", "img": "https://d8j0ntlcm91z4.cloudfront.net/user_3Kt9IdLpUqe0MuJbBSR2T8x8hmD/hf_20261120_133035_99b22351-1278-4224-aa3d-bb58d7e5823b.png", "d": "Banco a 30–45°. Bajá la barra a la parte alta del pecho con los codos a 45–60°.", "m": "Pecho, hombros y tríceps"}, {"id": "E4", "n": "Press inclinado con mancuernas", "g": "emp", "img": "https://d8j0ntlcm91z4.cloudfront.net/user_3Kt9IdLpUqe0MuJbBSR2T8x8hmD/hf_20261120_133151_3e83eaa1-1b03-40a9-94af-2f43c88652e3.png", "d": "Banco a 30–45°. Mancuernas a los costados de la parte alta del pecho y subí sin chocarlas.", "m": "Pecho, hombros y tríceps"}, {"id": "E5", "n": "Press militar con barra", "g": "emp", "img": "https://d8j0ntlcm91z4.cloudfront.net/user_3Kt9IdLpUqe0MuJbBSR2T8x8hmD/hf_20261120_133247_de336ddf-4830-4624-8eee-f05ddbd10554.png", "d": "De pie, glúteos y abdomen firmes. Empujá la barra sobre la cabeza sin arquear la zona lumbar.", "m": "Pecho, hombros y tríceps"}, {"id": "E6", "n": "Press militar con mancuernas", "g": "emp", "img": "https://d8j0ntlcm91z4.cloudfront.net/user_3Kt9IdLpUqe0MuJbBSR2T8x8hmD/hf_20261120_133332_ea67d003-2d0b-48f8-84b4-e0b97b891df5.png", "d": "Mancuernas a la altura de los hombros, empujá arriba sin arquear. Variante alternada: un brazo por vez.", "m": "Pecho, hombros y tríceps"}, {"id": "E7", "n": "Push up", "g": "emp", "img": "https://d8j0ntlcm91z4.cloudfront.net/user_3Kt9IdLpUqe0MuJbBSR2T8x8hmD/hf_20261120_133421_27472cb8-6e04-4d40-917f-7508a22770e6.png", "d": "Cuerpo en línea recta de cabeza a talones. Bajá el pecho casi al piso con los codos a 45°.", "m": "Pecho, hombros y tríceps"}, {"id": "E8", "n": "Push up declinado", "g": "emp", "img": "https://d8j0ntlcm91z4.cloudfront.net/user_3Kt9IdLpUqe0MuJbBSR2T8x8hmD/hf_20261120_133507_20e033b6-b886-408d-ae62-1b486b3039a1.png", "d": "Pies en el banco y cuerpo recto. Bajá la parte alta del pecho casi al piso con los codos a 45°.", "m": "Pecho, hombros y tríceps"}, {"id": "E9", "n": "Extensión de tríceps en polea con soga", "g": "emp", "img": "https://d8j0ntlcm91z4.cloudfront.net/user_3Kt9IdLpUqe0MuJbBSR2T8x8hmD/hf_20261120_134241_c5981aa3-4da4-4efb-8daa-032697c1e1e1.png", "d": "Brazos pegados al cuerpo; solo se mueve el antebrazo. Abrí la soga al final.", "m": "Pecho, hombros y tríceps"}, {"id": "E10", "n": "Fondos en banco", "g": "emp", "img": "https://d8j0ntlcm91z4.cloudfront.net/user_3Kt9IdLpUqe0MuJbBSR2T8x8hmD/hf_20261120_135550_dc5e212a-6ebd-476e-9ae7-9685d1a53f18.png", "d": "Manos en el borde del banco, codos hacia atrás. Bajá hasta que el brazo quede paralelo al piso.", "m": "Pecho, hombros y tríceps"}, {"id": "E11", "n": "Press de pecho en máquina", "g": "emp", "img": "https://d8j0ntlcm91z4.cloudfront.net/user_3Kt9IdLpUqe0MuJbBSR2T8x8hmD/hf_20261120_135410_ce151e6e-dea9-41ca-a72c-cbea60b64f57.png", "d": "Espalda apoyada y manijas a la altura del pecho. Empujá sin bloquear los codos ni adelantar los hombros.", "m": "Pecho, hombros y tríceps"}, {"id": "T1", "n": "Dominadas", "g": "tra", "img": "https://d8j0ntlcm91z4.cloudfront.net/user_3Kt9IdLpUqe0MuJbBSR2T8x8hmD/hf_20261120_140045_8bb4f2ef-f9dd-4d09-aff9-33176817c6ab.png", "d": "Agarre prono. Tirá de los codos hacia las costillas hasta pasar el mentón, sin balanceo.", "m": "Espalda y bíceps"}, {"id": "T2", "n": "Dominadas negativas", "g": "tra", "img": "https://d8j0ntlcm91z4.cloudfront.net/user_3Kt9IdLpUqe0MuJbBSR2T8x8hmD/hf_20261120_140315_61743911-a8c5-4a45-9f5e-79512ef484dc.png", "d": "Arrancá arriba (subí con un cajón) y bajá lento y controlado hasta extender los brazos.", "m": "Espalda y bíceps"}, {"id": "T3a", "n": "Dominadas asistidas con banda", "g": "tra", "img": "https://d8j0ntlcm91z4.cloudfront.net/user_3Kt9IdLpUqe0MuJbBSR2T8x8hmD/hf_20261120_140436_b48f183f-0e9b-45d9-a0ff-882d0d40d4db.png", "d": "Pie o rodilla en la banda. Misma técnica que la dominada: codos hacia las costillas.", "m": "Espalda y bíceps"}, {"id": "T3b", "n": "Dominadas asistidas en máquina", "g": "tra", "img": "https://d8j0ntlcm91z4.cloudfront.net/user_3Kt9IdLpUqe0MuJbBSR2T8x8hmD/hf_20261120_140606_1abf3fb0-160f-4c36-8efa-c7e78b43f851.png", "d": "Rodillas en la plataforma. Tirá hasta que el mentón llegue a las manijas.", "m": "Espalda y bíceps"}, {"id": "T4", "n": "Jalón al pecho", "g": "tra", "img": "https://d8j0ntlcm91z4.cloudfront.net/user_3Kt9IdLpUqe0MuJbBSR2T8x8hmD/hf_20261120_140840_f0ace829-b392-4a87-89d2-a756993b7d64.png", "d": "Muslos trabados, torso apenas inclinado. Llevá la barra a la parte alta del pecho con codos hacia abajo.", "m": "Espalda y bíceps"}, {"id": "T5", "n": "Jalón a 1 brazo", "g": "tra", "img": "https://d8j0ntlcm91z4.cloudfront.net/user_3Kt9IdLpUqe0MuJbBSR2T8x8hmD/hf_20261120_140936_32ef47f9-eef1-42b9-b261-06fe5122ea0b.png", "d": "Un brazo por vez. Llevá el codo hacia las costillas sin girar el torso.", "m": "Espalda y bíceps"}, {"id": "T6a", "n": "Remo con barra prono", "g": "tra", "img": "https://d8j0ntlcm91z4.cloudfront.net/user_3Kt9IdLpUqe0MuJbBSR2T8x8hmD/hf_20261120_141128_51d1d779-0fd7-4f8d-aa90-c8074dba98e5.png", "d": "Torso inclinado y espalda plana. Llevá la barra a la parte baja del pecho, codos a 45°.", "m": "Espalda y bíceps"}, {"id": "T6b", "n": "Remo con barra supino", "g": "tra", "img": "https://d8j0ntlcm91z4.cloudfront.net/user_3Kt9IdLpUqe0MuJbBSR2T8x8hmD/hf_20261120_141223_58fe985e-753e-421c-b5e5-737ed1581b00.png", "d": "Palmas hacia adelante. Llevá la barra al ombligo con los codos pegados al cuerpo.", "m": "Espalda y bíceps"}, {"id": "T7", "n": "Remo en polea sentado", "g": "tra", "img": "https://d8j0ntlcm91z4.cloudfront.net/user_3Kt9IdLpUqe0MuJbBSR2T8x8hmD/hf_20261120_141311_b7dbf061-c1b5-43f6-ba55-38dd7fb3dc74.png", "d": "Torso erguido. Llevá la manija a la panza con los codos atrás, sin tirarte hacia atrás.", "m": "Espalda y bíceps"}, {"id": "T8", "n": "Remo en polea a 1 brazo", "g": "tra", "img": "https://d8j0ntlcm91z4.cloudfront.net/user_3Kt9IdLpUqe0MuJbBSR2T8x8hmD/hf_20261120_141458_fde985d7-3083-4f68-9466-bdfc65dfd408.png", "d": "Un brazo por vez, torso derecho y sin girar. Codo atrás pegado al cuerpo.", "m": "Espalda y bíceps"}, {"id": "T9", "n": "Remo en máquina a 2 brazos", "g": "tra", "img": "https://d8j0ntlcm91z4.cloudfront.net/user_3Kt9IdLpUqe0MuJbBSR2T8x8hmD/hf_20261120_141555_e181d2c3-b204-41ac-8eb8-490afb7cbcf5.png", "d": "Pecho apoyado. Llevá las manos al costado de las costillas juntando escápulas.", "m": "Espalda y bíceps"}, {"id": "T10", "n": "Remo en máquina a 1 brazo", "g": "tra", "img": "https://d8j0ntlcm91z4.cloudfront.net/user_3Kt9IdLpUqe0MuJbBSR2T8x8hmD/hf_20261120_141644_ae242820-b5cd-4506-af14-6df6c4632503.png", "d": "Pecho apoyado y un brazo por vez, sin rotar el torso.", "m": "Espalda y bíceps"}, {"id": "T11", "n": "Remo con mancuerna a 1 brazo", "g": "tra", "img": "https://d8j0ntlcm91z4.cloudfront.net/user_3Kt9IdLpUqe0MuJbBSR2T8x8hmD/hf_20261120_141811_06538019-b068-4416-b94c-677c1d6ae69d.png", "d": "Rodilla y mano en el banco, espalda plana. Llevá el codo hacia la cadera.", "m": "Espalda y bíceps"}, {"id": "T12", "n": "Remo australiano", "g": "tra", "img": "https://d8j0ntlcm91z4.cloudfront.net/user_3Kt9IdLpUqe0MuJbBSR2T8x8hmD/hf_20261120_141906_4221bdd9-1269-4438-af50-766140ca23f7.png", "d": "Cuerpo recto bajo la barra. Llevá el pecho a la barra juntando escápulas.", "m": "Espalda y bíceps"}, {"id": "T13", "n": "Remo en TRX", "g": "tra", "img": "https://d8j0ntlcm91z4.cloudfront.net/user_3Kt9IdLpUqe0MuJbBSR2T8x8hmD/hf_20261120_141954_842c9d99-44da-4f52-ba0e-9c087ce95818.png", "d": "Cuerpo recto inclinado hacia atrás. Llevá las manos al costado del pecho sin que caiga la cadera.", "m": "Espalda y bíceps"}, {"id": "T14a", "n": "Bíceps en polea con barra", "g": "tra", "img": "https://d8j0ntlcm91z4.cloudfront.net/user_3Kt9IdLpUqe0MuJbBSR2T8x8hmD/hf_20261120_142201_3bd6bb26-845f-4fae-b8d4-0a383e4d3b41.png", "d": "Codos fijos al costado del cuerpo. Subí la barra hasta el pecho sin balancearte.", "m": "Espalda y bíceps"}, {"id": "T14b", "n": "Bíceps en polea con soga", "g": "tra", "img": "https://d8j0ntlcm91z4.cloudfront.net/user_3Kt9IdLpUqe0MuJbBSR2T8x8hmD/hf_20261120_142201_7f471e85-4cc7-456e-b9d8-b91f30f43750.png", "d": "Agarre neutro con la soga y codos fijos. Subí hasta el pecho.", "m": "Espalda y bíceps"}, {"id": "T15", "n": "Bíceps con barra", "g": "tra", "img": "https://d8j0ntlcm91z4.cloudfront.net/user_3Kt9IdLpUqe0MuJbBSR2T8x8hmD/hf_20261120_142202_c83184d7-e175-46c7-98c3-646e6856a5c8.png", "d": "Codos pegados al cuerpo. Subí la barra sin balancear el torso y bajá controlado.", "m": "Espalda y bíceps"}, {"id": "H2", "n": "Vuelos frontales", "g": "hom", "img": "https://d8j0ntlcm91z4.cloudfront.net/user_3Kt9IdLpUqe0MuJbBSR2T8x8hmD/hf_20261120_142202_ecbc86ce-761b-4d8a-b51e-60f07feabe4f.png", "d": "Brazos al frente hasta la altura de los hombros, sin balancearte.", "m": "Hombros"}, {"id": "A1", "n": "Sillón de aductores", "g": "ais", "img": "https://d8j0ntlcm91z4.cloudfront.net/user_3Kt9IdLpUqe0MuJbBSR2T8x8hmD/hf_20261120_142201_f6259b76-000f-4ba7-8112-b7e2e2c9b743.png", "d": "Espalda apoyada. Cerrá las piernas contra las almohadillas y abrí controlado.", "m": "Músculo aislado"}, {"id": "A2", "n": "Sillón de abductores", "g": "ais", "img": "https://d8j0ntlcm91z4.cloudfront.net/user_3Kt9IdLpUqe0MuJbBSR2T8x8hmD/hf_20261120_142201_ff9f80a9-6033-4366-8fe4-967eaa82653f.png", "d": "Espalda apoyada. Abrí las piernas hacia afuera y volvé controlado.", "m": "Músculo aislado"}, {"id": "A3", "n": "Máquina de patada de glúteos", "g": "ais", "img": "https://d8j0ntlcm91z4.cloudfront.net/user_3Kt9IdLpUqe0MuJbBSR2T8x8hmD/hf_20261120_142201_8e533af6-30fb-4bd7-ae62-aeb73ca634f0.png", "d": "Pecho apoyado. Extendé la cadera hacia atrás sin arquear la zona lumbar.", "m": "Músculo aislado"}, {"id": "A4", "n": "Gemelos en escalón", "g": "ais", "img": "https://d8j0ntlcm91z4.cloudfront.net/user_3Kt9IdLpUqe0MuJbBSR2T8x8hmD/hf_20261120_142202_a841f8c4-ccc8-4abe-a5b3-e108fcba6fff.png", "d": "Talones fuera del escalón. Bajá para estirar y subí lo más alto posible.", "m": "Músculo aislado"}, {"id": "T16", "n": "Bíceps con mancuernas", "g": "tra", "img": "https://d8j0ntlcm91z4.cloudfront.net/user_3Kt9IdLpUqe0MuJbBSR2T8x8hmD/hf_20261120_162239_87b44549-d538-4d46-bb81-beb6a345110f.png", "d": "Codos fijos. Subí las mancuernas girando las palmas hacia los hombros. Variante alternada: un brazo por vez.", "m": "Espalda y bíceps"}, {"id": "T17", "n": "Vuelos posteriores", "g": "tra", "img": "https://d8j0ntlcm91z4.cloudfront.net/user_3Kt9IdLpUqe0MuJbBSR2T8x8hmD/hf_20261120_162239_53d3cdc9-b7f9-4b36-88b3-e542da6c6e92.png", "d": "Torso casi paralelo al piso. Abrí los brazos a los costados juntando escápulas.", "m": "Espalda y bíceps"}, {"id": "H1", "n": "Vuelos laterales", "g": "hom", "img": "https://d8j0ntlcm91z4.cloudfront.net/user_3Kt9IdLpUqe0MuJbBSR2T8x8hmD/hf_20261120_142249_e9fb211b-c6b8-4ffd-8fcd-d90f5ae7f913.png", "d": "Brazos a los costados hasta la altura de los hombros, codos apenas flexionados.", "m": "Hombros"}, {"id": "X1", "n": "Wall ball", "g": "hyx", "img": "https://d8j0ntlcm91z4.cloudfront.net/user_3Kt9IdLpUqe0MuJbBSR2T8x8hmD/hf_20261120_142249_be5f2b7c-de9d-491d-9666-6883050bfe93.png", "d": "Sentadilla profunda con la pelota al pecho y lanzá al objetivo extendiendo todo el cuerpo.", "m": "Cuerpo completo"}, {"id": "X2", "n": "Empuje de trineo", "g": "hyx", "img": "https://d8j0ntlcm91z4.cloudfront.net/user_3Kt9IdLpUqe0MuJbBSR2T8x8hmD/hf_20261120_142337_692cde4c-aa99-4e7e-8c03-aefdc09f9619.png", "d": "Cuerpo inclinado y brazos extendidos. Empujá con pasos cortos y potentes.", "m": "Cuerpo completo"}, {"id": "X3", "n": "Arrastre de trineo", "g": "hyx", "img": "https://d8j0ntlcm91z4.cloudfront.net/user_3Kt9IdLpUqe0MuJbBSR2T8x8hmD/hf_20261120_142338_c4ba9d11-105f-4832-8eb6-8960355b7315.png", "d": "Postura atlética, tirá de la soga mano sobre mano con la espalda plana.", "m": "Cuerpo completo"}, {"id": "X4", "n": "SkiErg", "g": "hyx", "img": "https://d8j0ntlcm91z4.cloudfront.net/user_3Kt9IdLpUqe0MuJbBSR2T8x8hmD/hf_20261120_142337_5dc30675-cac7-427e-a0fa-a0089e8da6dc.png", "d": "De brazos arriba, tirá hacia abajo con brazos rectos acompañando con la cadera.", "m": "Cuerpo completo"}, {"id": "X5", "n": "Remo en simulador", "g": "hyx", "img": "https://d8j0ntlcm91z4.cloudfront.net/user_3Kt9IdLpUqe0MuJbBSR2T8x8hmD/hf_20261120_142338_1808a330-7b3f-454d-a4db-66a1120fb023.png", "d": "Primero piernas, después tronco y al final brazos. Para volver, al revés.", "m": "Cuerpo completo"}, {"id": "X6", "n": "Farmer walk", "g": "hyx", "img": "https://d8j0ntlcm91z4.cloudfront.net/user_3Kt9IdLpUqe0MuJbBSR2T8x8hmD/hf_20261120_142414_84a7b12c-cd94-4378-9dbc-3ad583893881.png", "d": "Kettlebells a los costados, hombros atrás y abajo, pasos cortos sin inclinarte.", "m": "Cuerpo completo"}, {"id": "X7", "n": "Burpees", "g": "hyx", "img": "https://d8j0ntlcm91z4.cloudfront.net/user_3Kt9IdLpUqe0MuJbBSR2T8x8hmD/hf_20261120_142413_d14a8e63-9f39-4b57-a9a0-faa5df0c8120.png", "d": "Abajo, pecho al piso, arriba y salto. Cuerpo recto en la plancha.", "m": "Cuerpo completo"}, {"id": "X8", "n": "Slam ball", "g": "hyx", "img": "https://d8j0ntlcm91z4.cloudfront.net/user_3Kt9IdLpUqe0MuJbBSR2T8x8hmD/hf_20261120_142414_8e9ee4d7-16f4-4484-aaf4-784fceeb7b81.png", "d": "Pelota arriba con el cuerpo estirado y golpeala contra el piso con todo el cuerpo.", "m": "Cuerpo completo"}, {"id": "X9", "n": "Burpee con salto largo", "g": "hyx", "img": "https://d8j0ntlcm91z4.cloudfront.net/user_3Kt9IdLpUqe0MuJbBSR2T8x8hmD/hf_20261120_142456_0721901d-b8c1-4d79-9ca5-fe1d38bc2035.png", "d": "Burpee completo y salto largo hacia adelante, cayendo con rodillas flexionadas.", "m": "Cuerpo completo"}, {"id": "X10", "n": "Estocadas con sandbag", "g": "hyx", "img": "https://d8j0ntlcm91z4.cloudfront.net/user_3Kt9IdLpUqe0MuJbBSR2T8x8hmD/hf_20261120_142455_273a45c5-388d-4594-9e52-2f5f8018ac2d.png", "d": "Sandbag en los hombros, paso largo y rodilla de atrás casi al piso.", "m": "Cuerpo completo"}, {"id": "X11", "n": "Saltos al cajón", "g": "hyx", "img": "https://d8j0ntlcm91z4.cloudfront.net/user_3Kt9IdLpUqe0MuJbBSR2T8x8hmD/hf_20261120_142456_f500562c-e9b2-4cf4-a44f-d5b0ff68c744.png", "d": "Impulso con brazos y cadera; caé suave sobre el cajón con rodillas flexionadas.", "m": "Cuerpo completo"}, {"id": "K1", "n": "Bici fija", "g": "car", "img": "https://d8j0ntlcm91z4.cloudfront.net/user_3Kt9IdLpUqe0MuJbBSR2T8x8hmD/hf_20261120_142457_07af1a34-6769-442f-81c9-1ab525a9ca8e.png", "d": "Asiento a la altura correcta: rodilla apenas flexionada abajo. Pedaleo constante.", "m": "Resistencia cardiovascular"}, {"id": "K2", "n": "Cinta", "g": "car", "img": "https://d8j0ntlcm91z4.cloudfront.net/user_3Kt9IdLpUqe0MuJbBSR2T8x8hmD/hf_20261120_142533_aab2abf7-64c8-4e7e-bca3-deb24e6e7f1f.png", "d": "Postura erguida, pisada debajo de la cadera y brazos sueltos.", "m": "Resistencia cardiovascular"}, {"id": "K3", "n": "Escalador", "g": "car", "img": "https://d8j0ntlcm91z4.cloudfront.net/user_3Kt9IdLpUqe0MuJbBSR2T8x8hmD/hf_20261120_142532_224d67c8-ba71-4db3-bc11-61496eb476d9.png", "d": "Torso erguido, apoyá el pie entero y no te cuelgues de las barandas.", "m": "Resistencia cardiovascular"}, {"id": "C15", "n": "Swing con kettlebell", "g": "cad", "img": "https://d8j0ntlcm91z4.cloudfront.net/user_3Kt9IdLpUqe0MuJbBSR2T8x8hmD/hf_20261120_142533_56423f63-66aa-4df7-ac78-785e2fe137a8.png", "d": "Bisagra de cadera, no sentadilla. Proyectá la kettlebell con un golpe de cadera hasta el pecho.", "m": "Glúteos e isquiotibiales"}, {"id": "C16", "n": "Peso muerto rumano unilateral", "g": "cad", "img": "https://d8j0ntlcm91z4.cloudfront.net/user_3Kt9IdLpUqe0MuJbBSR2T8x8hmD/hf_20261120_162239_5959c87d-f65f-4e16-9ed3-df62d0724df8.png", "d": "Parado en una pierna, la otra va hacia atrás en línea con el tronco. Espalda plana y cadera nivelada.", "m": "Glúteos e isquiotibiales"}, {"id": "C17", "n": "Buenos días con barra", "g": "cad", "img": "https://d8j0ntlcm91z4.cloudfront.net/user_3Kt9IdLpUqe0MuJbBSR2T8x8hmD/hf_20261120_142619_af06a95b-183f-413e-8c8a-520bdfbce664.png", "d": "Barra en trapecios. Llevá la cadera atrás y bajá el tronco con la espalda plana.", "m": "Glúteos e isquiotibiales"}, {"id": "C18", "n": "Curl nórdico", "g": "cad", "img": "https://d8j0ntlcm91z4.cloudfront.net/user_3Kt9IdLpUqe0MuJbBSR2T8x8hmD/hf_20261120_142618_cfcac64f-776d-40d5-8ad4-645dbbfdbb48.png", "d": "Tobillos trabados. Bajá el cuerpo recto lo más lento posible y frená con las manos.", "m": "Glúteos e isquiotibiales"}, {"id": "C19", "n": "Curl femoral sentado", "g": "cad", "img": "https://d8j0ntlcm91z4.cloudfront.net/user_3Kt9IdLpUqe0MuJbBSR2T8x8hmD/hf_20261120_142619_955470f7-6be2-4b61-9ae6-3afa0672d190.png", "d": "Muslos trabados. Llevá los talones hacia abajo y atrás, bajá controlado.", "m": "Glúteos e isquiotibiales"}, {"id": "E12", "n": "Aperturas con mancuernas", "g": "emp", "img": "https://d8j0ntlcm91z4.cloudfront.net/user_3Kt9IdLpUqe0MuJbBSR2T8x8hmD/hf_20261120_142702_305d7bb9-a37a-4436-838f-7918f074a794.png", "d": "Codos apenas flexionados y fijos. Abrí en arco hasta sentir el estiramiento del pecho.", "m": "Pecho, hombros y tríceps"}, {"id": "E13", "n": "Cruce de poleas", "g": "emp", "img": "https://d8j0ntlcm91z4.cloudfront.net/user_3Kt9IdLpUqe0MuJbBSR2T8x8hmD/hf_20261120_142701_8dc83a06-1bdb-40c3-a64a-571072f3d91e.png", "d": "Brazos en arco desde arriba hasta juntar las manos adelante, codos apenas flexionados.", "m": "Pecho, hombros y tríceps"}, {"id": "E14", "n": "Pec deck", "g": "emp", "img": "https://d8j0ntlcm91z4.cloudfront.net/user_3Kt9IdLpUqe0MuJbBSR2T8x8hmD/hf_20261120_142700_8fa5785a-d7d5-4438-afaf-e651f404cbf7.png", "d": "Espalda apoyada. Juntá los brazos adelante del pecho y abrí controlado.", "m": "Pecho, hombros y tríceps"}, {"id": "H3", "n": "Press Arnold", "g": "hom", "img": "https://d8j0ntlcm91z4.cloudfront.net/user_3Kt9IdLpUqe0MuJbBSR2T8x8hmD/hf_20261120_142700_49f8c01c-dd91-4f81-8d46-97414fb6f3c0.png", "d": "Arrancá con las palmas hacia vos y girá mientras empujás arriba.", "m": "Hombros"}, {"id": "E15", "n": "Fondos en paralelas", "g": "emp", "img": "https://d8j0ntlcm91z4.cloudfront.net/user_3Kt9IdLpUqe0MuJbBSR2T8x8hmD/hf_20261120_142746_b0e4bf46-d72a-4df5-87b4-32660b03adc1.png", "d": "Hombros abajo y codos hacia atrás. Bajá hasta que el brazo quede paralelo al piso.", "m": "Pecho, hombros y tríceps"}, {"id": "E16", "n": "Press francés con barra Z", "g": "emp", "img": "https://d8j0ntlcm91z4.cloudfront.net/user_3Kt9IdLpUqe0MuJbBSR2T8x8hmD/hf_20261120_142747_ea772d59-7744-4782-adb5-9099b29362be.png", "d": "Codos apuntando al techo y fijos. Bajá la barra hacia la frente moviendo solo los codos.", "m": "Pecho, hombros y tríceps"}, {"id": "E17", "n": "Extensión de tríceps sobre la cabeza", "g": "emp", "img": "https://d8j0ntlcm91z4.cloudfront.net/user_3Kt9IdLpUqe0MuJbBSR2T8x8hmD/hf_20261120_142748_d15b9241-914d-4ed1-af1a-877291062205.png", "d": "Brazos verticales junto a la cabeza. Bajá la mancuerna detrás moviendo solo los codos.", "m": "Pecho, hombros y tríceps"}, {"id": "E18", "n": "Patada de tríceps", "g": "emp", "img": "https://d8j0ntlcm91z4.cloudfront.net/user_3Kt9IdLpUqe0MuJbBSR2T8x8hmD/hf_20261120_142747_e7813857-f9a2-4f3a-8cf2-670f6da7e5c7.png", "d": "Brazo pegado al cuerpo y paralelo al piso. Extendé el codo hacia atrás.", "m": "Pecho, hombros y tríceps"}, {"id": "T18", "n": "Face pull", "g": "tra", "img": "https://d8j0ntlcm91z4.cloudfront.net/user_3Kt9IdLpUqe0MuJbBSR2T8x8hmD/hf_20261120_142831_0c629643-4f92-4a71-b79a-04996e035dca.png", "d": "Polea a la altura de la cara. Tirá de la soga hacia la cara con codos altos.", "m": "Espalda y bíceps"}, {"id": "T19", "n": "Pullover en polea", "g": "tra", "img": "https://d8j0ntlcm91z4.cloudfront.net/user_3Kt9IdLpUqe0MuJbBSR2T8x8hmD/hf_20261120_142832_a900d7ee-539f-4f1f-84b0-7d7534b18cce.png", "d": "Brazos casi rectos. Llevá la barra desde arriba hasta los muslos con el torso fijo.", "m": "Espalda y bíceps"}, {"id": "T20", "n": "Encogimientos con mancuernas", "g": "tra", "img": "https://d8j0ntlcm91z4.cloudfront.net/user_3Kt9IdLpUqe0MuJbBSR2T8x8hmD/hf_20261120_142831_41125854-b2ad-49ba-8617-161cee693d50.png", "d": "Brazos rectos. Subí los hombros hacia las orejas sin rotarlos.", "m": "Espalda y bíceps"}, {"id": "T21", "n": "Curl martillo", "g": "tra", "img": "https://d8j0ntlcm91z4.cloudfront.net/user_3Kt9IdLpUqe0MuJbBSR2T8x8hmD/hf_20261120_142832_732889bb-e700-448f-8a21-be91152defd0.png", "d": "Palmas enfrentadas todo el recorrido. Codos fijos al costado.", "m": "Espalda y bíceps"}, {"id": "T22", "n": "Curl Scott (predicador)", "g": "tra", "img": "https://d8j0ntlcm91z4.cloudfront.net/user_3Kt9IdLpUqe0MuJbBSR2T8x8hmD/hf_20261120_142915_4eb997af-fa70-4a42-92bb-2330982198cd.png", "d": "Brazos apoyados en el atril. Subí sin despegar los codos y bajá controlado.", "m": "Espalda y bíceps"}, {"id": "T23", "n": "Curl inclinado con mancuernas", "g": "tra", "img": "https://d8j0ntlcm91z4.cloudfront.net/user_3Kt9IdLpUqe0MuJbBSR2T8x8hmD/hf_20261120_142914_e506e2fe-2f5a-4a57-93ba-f5ecdfe314cb.png", "d": "Espalda en el banco inclinado, brazos colgando atrás. Subí sin adelantar los codos.", "m": "Espalda y bíceps"}, {"id": "N1", "n": "Plancha", "g": "cor", "img": "https://d8j0ntlcm91z4.cloudfront.net/user_3Kt9IdLpUqe0MuJbBSR2T8x8hmD/hf_20261120_142915_669177dc-88c0-4f8b-ba14-9fb1ba8d6893.png", "d": "Codos bajo los hombros y cuerpo en línea recta. Versión fácil: con rodillas apoyadas.", "m": "Core"}, {"id": "N2", "n": "Plancha lateral", "g": "cor", "img": "https://d8j0ntlcm91z4.cloudfront.net/user_3Kt9IdLpUqe0MuJbBSR2T8x8hmD/hf_20261120_142914_59698157-ac05-4f42-a0ab-0fef15bd7456.png", "d": "Codo bajo el hombro y cadera arriba en línea recta. Versión fácil: con rodillas apoyadas.", "m": "Core"}, {"id": "N3", "n": "Dead bug", "g": "cor", "img": "https://d8j0ntlcm91z4.cloudfront.net/user_3Kt9IdLpUqe0MuJbBSR2T8x8hmD/hf_20261120_142954_4119279e-9f21-46be-8790-f9ce9b11ceb4.png", "d": "Zona lumbar pegada al piso. Bajá brazo y pierna contrarios sin arquear.", "m": "Core"}, {"id": "N4", "n": "Bird dog", "g": "cor", "img": "https://d8j0ntlcm91z4.cloudfront.net/user_3Kt9IdLpUqe0MuJbBSR2T8x8hmD/hf_20261120_142956_7d950eca-06ef-4f02-9eeb-94393f6b5d2e.png", "d": "En cuadrupedia, extendé brazo y pierna contrarios sin rotar la cadera.", "m": "Core"}, {"id": "N5", "n": "Crunch", "g": "cor", "img": "https://d8j0ntlcm91z4.cloudfront.net/user_3Kt9IdLpUqe0MuJbBSR2T8x8hmD/hf_20261120_142954_1941ce56-4ef4-43b6-87b7-e7c180c82a98.png", "d": "Subí solo los hombros contrayendo el abdomen, sin tirar del cuello.", "m": "Core"}, {"id": "N6", "n": "Rueda abdominal", "g": "cor", "img": "https://d8j0ntlcm91z4.cloudfront.net/user_3Kt9IdLpUqe0MuJbBSR2T8x8hmD/hf_20261120_142954_8a9a9d7e-b61c-4277-9ad2-04e913c19cf3.png", "d": "Rodá hacia adelante con el cuerpo en línea y sin hundir la zona lumbar.", "m": "Core"}, {"id": "N7", "n": "Elevación de piernas colgado", "g": "cor", "img": "https://d8j0ntlcm91z4.cloudfront.net/user_3Kt9IdLpUqe0MuJbBSR2T8x8hmD/hf_20261120_143043_823f5456-1d40-4fa0-bfcb-38120e1d2b5d.png", "d": "Colgado sin balanceo, subí las piernas al menos a 90°.", "m": "Core"}, {"id": "N8", "n": "Pallof press", "g": "cor", "img": "https://d8j0ntlcm91z4.cloudfront.net/user_3Kt9IdLpUqe0MuJbBSR2T8x8hmD/hf_20261120_143043_33502463-cf91-4f78-af1d-a3345724984c.png", "d": "De costado a la polea, empujá al frente sin dejar que el torso gire.", "m": "Core"}, {"id": "M1", "n": "Gato-camello", "g": "mov", "img": "https://d8j0ntlcm91z4.cloudfront.net/user_3Kt9IdLpUqe0MuJbBSR2T8x8hmD/hf_20261120_143042_0cb9f362-b8bb-4dfe-b04c-37e1f909c6a8.png", "d": "En cuadrupedia, redondeá y arqueá la columna lentamente con la respiración.", "m": "Movilidad"}, {"id": "M2", "n": "Rotación torácica en cuadrupedia", "g": "mov", "img": "https://d8j0ntlcm91z4.cloudfront.net/user_3Kt9IdLpUqe0MuJbBSR2T8x8hmD/hf_20261120_143042_3e947730-e539-4873-b471-16dcb770fa6a.png", "d": "Mano detrás de la cabeza, rotá abriendo el pecho al techo con la cadera quieta.", "m": "Movilidad"}, {"id": "M3", "n": "Estiramiento de flexor de cadera", "g": "mov", "img": "https://d8j0ntlcm91z4.cloudfront.net/user_3Kt9IdLpUqe0MuJbBSR2T8x8hmD/hf_20261120_143125_8dedd3f6-3f12-4d57-a5b2-691ea8ea3872.png", "d": "Retroversión de pelvis apretando el glúteo de atrás; llevá la cadera apenas adelante.", "m": "Movilidad"}, {"id": "M4", "n": "90/90 de cadera", "g": "mov", "img": "https://d8j0ntlcm91z4.cloudfront.net/user_3Kt9IdLpUqe0MuJbBSR2T8x8hmD/hf_20261120_143124_d1e6461d-39ad-4258-bbf8-6b04d3c4e401.png", "d": "Sentado con ambas rodillas a 90°, girá las piernas de un lado al otro con el torso erguido.", "m": "Movilidad"}, {"id": "M5", "n": "Movilidad de tobillo (rodilla a la pared)", "g": "mov", "img": "https://d8j0ntlcm91z4.cloudfront.net/user_3Kt9IdLpUqe0MuJbBSR2T8x8hmD/hf_20261120_143124_8cad538f-b5ed-4a6f-8e98-bab3feb339d1.png", "d": "Llevá la rodilla hacia la pared sin despegar el talón.", "m": "Movilidad"}, {"id": "M6", "n": "Dislocaciones de hombro con banda", "g": "mov", "img": "https://d8j0ntlcm91z4.cloudfront.net/user_3Kt9IdLpUqe0MuJbBSR2T8x8hmD/hf_20261120_143125_3836993f-fe05-4c1c-ade0-b883b877afb5.png", "d": "Agarre ancho y brazos rectos: pasá la banda por encima de la cabeza sin arquear.", "m": "Movilidad"}, {"id": "M7", "n": "World's greatest stretch", "g": "mov", "img": "https://d8j0ntlcm91z4.cloudfront.net/user_3Kt9IdLpUqe0MuJbBSR2T8x8hmD/hf_20261120_162239_8e1df3f2-939d-4046-8458-c4f5339206cc.png", "d": "Estocada larga, codo hacia el tobillo y después rotá abriendo el brazo al techo.", "m": "Movilidad"}, {"id": "M8", "n": "Sentadilla profunda con apertura", "g": "mov", "img": "https://d8j0ntlcm91z4.cloudfront.net/user_3Kt9IdLpUqe0MuJbBSR2T8x8hmD/hf_20261120_143202_8109dfa3-b386-42cc-bce8-200ce7a01916.png", "d": "Sostené la sentadilla profunda y usá los codos para abrir las rodillas.", "m": "Movilidad"}];
+const EXI = Object.fromEntries(EX.map(e=>[e.id,e]));
+const GR = [["rod","Rodilla"],["cad","Cadera"],["emp","Empuje"],["hom","Hombros"],["tra","Tracción"],["ais","Aislamiento"],["cor","Core"],["mov","Movilidad"],["hyx","Híbrido / HYROX"],["car","Cardio"]];
+const GRN = Object.fromEntries(GR);
+S.train = S.train || []; S.bw = S.bw || []; S.antro = S.antro || [];
+S.coach = S.coach || {students:{}}; S.mod = S.mod || {e:1,c:1,a:0}; S.draft = S.draft || null;
+save();
+const todayK = () => dk(new Date());
+const fmtN = n => (Math.round(n*10)/10).toLocaleString("es-AR");
+const dLabel = k => new Date(k+"T12:00").toLocaleDateString("es-AR",{weekday:"short",day:"numeric",month:"numeric"}).replace(".","");
+const imgTag = (e,cls) => `<img class="${cls}" src="${e.img}" alt="${esc(e.n)}" loading="lazy" data-ficha="${e.id}" onerror="this.style.visibility='hidden'">`;
+
+/* ---------- navegación ---------- */
+let VIEW = "hoy";
+function applyMods(){
+  document.querySelector('.nav [data-v="entreno"]').style.display = S.mod.e ? "" : "none";
+  document.querySelector('.nav [data-v="comidas"]').style.display = S.mod.c ? "" : "none";
+  $("btnSettings").style.display = S.mod.c ? "" : "none";
+}
+function show(v){
+  VIEW = v;
+  document.querySelectorAll(".view").forEach(x => x.hidden = x.id !== "v-"+v);
+  document.querySelectorAll(".nav button").forEach(b => b.classList.toggle("on", b.dataset.v === v));
+  if(v==="hoy") renderHoy(); if(v==="entreno") renderEnt(); if(v==="progreso") renderProg(); if(v==="comidas") render();
+  window.scrollTo(0,0);
+}
+$("nav").addEventListener("click", e => { const b = e.target.closest("button"); if(b) show(b.dataset.v); });
+document.addEventListener("click", e => { const f = e.target.closest("[data-ficha]"); if(f) openFicha(f.dataset.ficha); });
+
+/* ---------- ficha ---------- */
+function openFicha(id){
+  const e = EXI[id]; if(!e) return;
+  $("fNm").textContent = e.n; $("fGr").textContent = GRN[e.g] || "";
+  $("fImg").src = e.img; $("fImg").alt = e.n; $("fD").textContent = e.d; $("fM").textContent = e.m;
+  $("ovFicha").classList.add("open");
+}
+
+/* ---------- plan helpers ---------- */
+function planWeek(){
+  const p = S.plan; if(!p) return 0;
+  const s = new Date(p.start+"T12:00"), t = new Date(); t.setHours(12,0,0,0);
+  const w = Math.floor((t - s) / (7*864e5)) + 1;
+  return Math.max(0, Math.min(p.weeks, w));
+}
+const isDl = w => !!(S.plan && (S.plan.dl||[]).includes(w));
+function nextDay(){
+  const p = S.plan; if(!p || !p.days.length) return 0;
+  for(let i=S.train.length-1;i>=0;i--){ const t=S.train[i]; if(t.plan===p.name) return (t.di+1) % p.days.length; }
+  return 0;
+}
+function lastPerf(x){
+  for(let i=S.train.length-1;i>=0;i--){ const it = S.train[i].items.find(z=>z.x===x); if(it && it.sets.length) return {date:S.train[i].date, sets:it.sets}; }
+  return null;
+}
+function suggest(it, dl){
+  const lp = lastPerf(it.x);
+  if(!lp) return {kg:"", txt:`Primera vez: elegí un peso con el que llegues a ${it.r1}–${it.r2} repeticiones con buena técnica.`};
+  const prev = lp.sets.map(s => (s.kg?fmtN(s.kg)+"×":"")+s.r).join(" · ");
+  const mx = Math.max(0, ...lp.sets.map(s => +s.kg || 0));
+  if(dl) return {kg: mx||"", txt:`Última vez: ${prev}. Descarga: mismos pesos, una serie menos.`};
+  const top = lp.sets.length >= it.s && lp.sets.every(s => (+s.r||0) >= it.r2);
+  if(top && mx>0) return {kg: Math.round((mx+2.5)*10)/10, txt:`Última vez: ${prev}. ¡Llegaste al tope! Probá con ${fmtN(mx+2.5)} kg.`, up:1};
+  if(top) return {kg:"", txt:`Última vez: ${prev}. ¡Llegaste al tope! Hacelo más difícil (más carga o más lento).`, up:1};
+  return {kg: mx||"", txt:`Última vez: ${prev}. Mismo peso y sumá repeticiones hasta ${it.r2}.`};
+}
+
+/* ---------- ENTRENO ---------- */
+let entTab = "rut", selDay = null, wodAnyway = false, libG = "all";
+$("segEnt").addEventListener("click", e => { const b=e.target.closest("button"); if(!b) return; entTab=b.dataset.v;
+  document.querySelectorAll("#segEnt button").forEach(x=>x.classList.toggle("on",x===b)); renderEnt(); });
+function renderEnt(){
+  $("entRut").hidden = entTab!=="rut"; $("entLib").hidden = entTab!=="lib";
+  if(entTab==="lib") return renderLib();
+  const p = S.plan;
+  if(!p){ $("entRut").innerHTML = `<div class="card empty2">Todavía no tenés una rutina cargada.<br>Tu entrenadora te la manda por un link de WhatsApp: abrilo y se carga sola.<br><br><button class="btn sec" id="goLib">Ver la biblioteca de ejercicios</button></div>`;
+    $("goLib").onclick = () => document.querySelector('#segEnt [data-v="lib"]').click(); return; }
+  const w = planWeek();
+  if(selDay===null || selDay>=p.days.length) selDay = nextDay();
+  if(!S.draft || S.draft.di!==selDay || S.draft.date!==todayK()) S.draft = {di:selDay, date:todayK(), rows:{}};
+  const dl = isDl(w), d = p.days[selDay];
+  let h = `<div class="card"><div class="kv"><div><h3>${esc(p.name)}</h3><small>${w===0?"Empieza el "+dLabel(p.start):"Semana "+w+" de "+p.weeks}</small></div>${dl?'<span class="badge">DESCARGA</span>':""}</div></div>`;
+  if(dl && p.dm==="wod" && !wodAnyway){
+    $("entRut").innerHTML = h + `<div class="banner wod">💪 <b>Semana de WOD presencial con 1dz.</b><br>Esta semana entrenás en el gym con tu entrenadora.${p.dn?"<br>"+esc(p.dn):""}</div><button class="btn sec wide" id="wodAny">Igual quiero registrar mi rutina</button>`;
+    $("wodAny").onclick = () => { wodAnyway = true; renderEnt(); }; return;
+  }
+  if(dl) h += `<div class="banner dl">🔵 <b>Semana de descarga:</b> hacé una serie menos en cada ejercicio, con los pesos que ya alcanzaste.${p.dn?"<br>"+esc(p.dn):""}</div>`;
+  h += `<div class="chips2">${p.days.map((x,i)=>`<button class="chip${i===selDay?" on":""}" data-day="${i}">${esc(x.n)}</button>`).join("")}</div>`;
+  const cols = p.rir ? "28px 1fr 1fr 64px 44px" : "28px 1fr 1fr 44px";
+  d.it.forEach((it, xi) => {
+    const e = EXI[it.x] || {n:"Ejercicio",img:"",d:"",m:""};
+    const ns = dl ? Math.max(1, it.s-1) : it.s;
+    const sg = suggest(it, dl);
+    const rows = S.draft.rows[xi] || (S.draft.rows[xi] = Array.from({length:ns}, () => ({kg: sg.kg, r:"", rir:"", ok:0})));
+    while(rows.length < ns) rows.push({kg:sg.kg, r:"", rir:"", ok:0}); rows.length = ns;
+    h += `<div class="card ex"><div class="exh">${imgTag(e,"thumb")}<div><div class="nm">${esc(e.n)}</div><div class="tg">${ns} × ${it.r1}${it.r2!=it.r1?"–"+it.r2:""} reps${it.d?" · descanso "+it.d+" s":""}</div></div></div>`
+      + (it.o ? `<div class="note2">💬 ${esc(it.o)}</div>` : "")
+      + `<div class="sug${sg.up?" up":""}">${esc(sg.txt)}</div>`
+      + `<div class="sethead" style="grid-template-columns:${cols}"><span>#</span><span>kg</span><span>reps</span>${p.rir?"<span>RIR</span>":""}<span></span></div>`
+      + rows.map((r,si)=>`<div class="setrow" style="grid-template-columns:${cols}"><span class="n">${si+1}</span><input inputmode="decimal" data-k="kg" data-x="${xi}" data-s="${si}" value="${r.kg??""}" placeholder="–"><input inputmode="numeric" data-k="r" data-x="${xi}" data-s="${si}" value="${r.r??""}" placeholder="${it.r2}">${p.rir?`<input inputmode="numeric" data-k="rir" data-x="${xi}" data-s="${si}" value="${r.rir??""}" placeholder="–">`:""}<button class="okb${r.ok?" done":""}" data-ok="${xi}" data-s="${si}" data-rest="${it.d||0}">✓</button></div>`).join("")
+      + `</div>`;
+  });
+  h += `<div class="card"><div class="field" style="margin:0"><label>Comentario para tu entrenadora (opcional)</label><textarea class="ta" id="entCom" placeholder="Ej: me molestó el hombro en el press">${esc(S.draft.c||"")}</textarea></div><button class="primary" id="entSave">Terminar y guardar entrenamiento</button></div>`;
+  const mine = S.train.filter(t=>t.plan===p.name).slice(-6).reverse();
+  if(mine.length) h += `<div class="card"><h3 style="font-size:1rem;margin-bottom:6px">Últimos entrenamientos</h3>${mine.map(t=>`<div class="hist"><b>${dLabel(t.date)} · ${esc(t.dn)}</b>${t.dl?' <span class="badge">descarga</span>':""}<br>${t.items.map(i=>esc((EXI[i.x]||{}).n||"")+": "+i.sets.map(s=>(s.kg?fmtN(s.kg)+"×":"")+s.r).join(", ")).join("<br>")}</div>`).join("")}</div>`;
+  $("entRut").innerHTML = h;
+  save();
+}
+$("entRut").addEventListener("click", e => {
+  const c = e.target.closest("[data-day]"); if(c){ selDay = +c.dataset.day; S.draft=null; renderEnt(); return; }
+  const ok = e.target.closest("[data-ok]");
+  if(ok){ const r = S.draft.rows[+ok.dataset.ok][+ok.dataset.s]; r.ok = r.ok?0:1; ok.classList.toggle("done", !!r.ok); save();
+    if(r.ok && +ok.dataset.rest) startTimer(+ok.dataset.rest); return; }
+  if(e.target.id==="entSave") saveSession();
+});
+$("entRut").addEventListener("input", e => {
+  const t = e.target;
+  if(t.id==="entCom"){ S.draft.c = t.value; save(); return; }
+  if(t.dataset.k){ S.draft.rows[+t.dataset.x][+t.dataset.s][t.dataset.k] = t.value.replace(",","."); save(); }
+});
+function saveSession(){
+  const p = S.plan, d = p.days[S.draft.di], w = planWeek();
+  const items = d.it.map((it, xi) => ({x: it.x, sets: (S.draft.rows[xi]||[]).filter(r => String(r.r).trim()!=="").map(r => ({kg: r.kg===""?0:+r.kg||0, r: +r.r||0, rir: r.rir===""?undefined:+r.rir}))})).filter(i => i.sets.length);
+  if(!items.length){ toast("Cargá al menos las repeticiones de una serie"); return; }
+  S.train.push({date: todayK(), plan: p.name, w, dl: isDl(w)?1:0, di: S.draft.di, dn: d.n, items, c: S.draft.c||""});
+  S.draft = null; selDay = null; save(); stopTimer(); renderEnt();
+  toast("¡Entrenamiento guardado! 💪");
+}
+
+/* ---------- temporizador de descanso ---------- */
+let tmr = null, tLeft = 0;
+function startTimer(s){ stopTimer(); tLeft = s; $("timer").classList.add("on"); tick(); tmr = setInterval(tick, 1000); }
+function tick(){ $("timerT").textContent = Math.floor(tLeft/60)+":"+String(tLeft%60).padStart(2,"0");
+  if(tLeft<=0){ stopTimer(); toast("¡A la próxima serie!"); try{navigator.vibrate&&navigator.vibrate([200,100,200])}catch(e){} return; } tLeft--; }
+function stopTimer(){ clearInterval(tmr); tmr = null; $("timer").classList.remove("on"); }
+$("timerSkip").onclick = stopTimer;
+
+/* ---------- biblioteca ---------- */
+function libChips(el, cur, onPick){
+  el.innerHTML = [["all","Todos"],...GR].map(([id,n]) => `<button class="chip${id===cur?" on":""}" data-g="${id}">${n}</button>`).join("");
+  el.onclick = e => { const b = e.target.closest("[data-g]"); if(b) onPick(b.dataset.g); };
+}
+function filterEx(q, g){ const nq = norm(q.trim()); return EX.filter(e => (g==="all"||e.g===g) && (!nq || norm(e.n).includes(nq))); }
+function renderLib(){
+  libChips($("libChips"), libG, g => { libG = g; renderLib(); });
+  const list = filterEx($("libQ").value, libG);
+  $("libGrid").innerHTML = list.length ? list.map(e => `<button class="libitem" data-ficha="${e.id}"><img src="${e.img}" alt="" loading="lazy" onerror="this.style.visibility='hidden'"><div>${esc(e.n)}</div></button>`).join("") : `<div class="empty2" style="grid-column:1/-1">No hay ejercicios con ese nombre.</div>`;
+}
+$("libQ").addEventListener("input", renderLib);
+
+/* ---------- HOY ---------- */
+function renderHoy(){
+  const nm = (S.profile.name||"").trim();
+  $("hello").textContent = nm ? `¡Hola, ${nm}!` : "¡Hola!";
+  $("helloSub").textContent = new Date().toLocaleDateString("es-AR",{weekday:"long",day:"numeric",month:"long"});
+  let h = "";
+  if(S.coachMsg) h += `<div class="card msg"><h3>💬 Mensaje de tu entrenadora</h3><p>${esc(S.coachMsg)}</p></div>`;
+  if(S.mod.e){
+    const p = S.plan;
+    if(!p) h += `<div class="card"><div class="kv"><h3>🏋️ Entrenamiento</h3></div><p style="font-size:.88rem;color:var(--muted);margin-top:6px">Cuando tu entrenadora te mande tu rutina por link, la vas a ver acá.</p><button class="btn sec wide" data-go="entreno">Ver biblioteca de ejercicios</button></div>`;
+    else {
+      const w = planWeek(), dl = isDl(w), done = S.train.find(t => t.date===todayK() && t.plan===p.name);
+      const nd = p.days[nextDay()];
+      h += `<div class="card"><div class="kv"><h3>🏋️ Entrenamiento</h3><small>${w===0?"empieza "+dLabel(p.start):"semana "+w+" de "+p.weeks}${dl?' <span class="badge">descarga</span>':""}</small></div>`
+        + (done ? `<div class="big2">✅ ¡Hoy ya entrenaste!</div><p style="font-size:.85rem;color:var(--muted)">${esc(done.dn)} · ${done.items.length} ejercicios registrados</p>`
+                : (dl && p.dm==="wod" ? `<div class="big2">💪 Semana de WOD presencial</div>` : `<div class="big2">Te toca: ${esc(nd?nd.n:"")}</div><p style="font-size:.85rem;color:var(--muted)">${nd?nd.it.length:0} ejercicios</p>`))
+        + `<button class="btn wide" data-go="entreno">${done?"Ver mi rutina":"Empezar a entrenar"}</button></div>`;
+    }
+  }
+  if(S.mod.c){
+    let k=0; (S.log[todayK()]||[]).forEach(e => k += e.k*e.q); k = Math.round(k);
+    const g = S.profile.goal||2000, pct = Math.min(100, k/g*100);
+    h += `<div class="card"><div class="kv"><h3>🍽️ Comidas de hoy</h3><small>${k.toLocaleString("es-AR")} / ${g.toLocaleString("es-AR")} kcal</small></div><div class="bar" style="margin-top:10px;height:10px"><i style="width:${pct}%;background:${k>g?"var(--warm)":"var(--accent)"}"></i></div><button class="btn sec wide" data-go="comidas">Cargar comidas</button></div>`;
+  }
+  $("hoyCards").innerHTML = h;
+}
+$("hoyCards").addEventListener("click", e => { const b = e.target.closest("[data-go]"); if(b){ if(b.dataset.go==="entreno" && !S.plan){ entTab="lib"; document.querySelectorAll("#segEnt button").forEach(x=>x.classList.toggle("on",x.dataset.v==="lib")); } show(b.dataset.go); } });
+
+/* ---------- PROGRESO ---------- */
+const AF = [["peso","Peso","kg"],["gr","% grasa","%"],["mm","Masa muscular","kg"],["ma","Masa adiposa","kg"],["sp","Σ pliegues","mm"],["ci","Cintura","cm"],["ca","Cadera","cm"],["br","Brazo","cm"],["mu","Muslo","cm"]];
+function lineChart(pts, unit){
+  if(pts.length < 2) return "";
+  const W=320,H=120,p=24, xs=pts.map((_,i)=>i), ys=pts.map(x=>x.v), mn=Math.min(...ys), mx=Math.max(...ys), rg=(mx-mn)||1;
+  const X=i=>p+i*(W-2*p)/(pts.length-1), Y=v=>H-p-(v-mn)/rg*(H-2*p);
+  const d = pts.map((q,i)=>(i?"L":"M")+X(i).toFixed(1)+" "+Y(q.v).toFixed(1)).join(" ");
+  return `<svg viewBox="0 0 ${W} ${H}" width="100%" style="margin-top:8px"><path d="${d}" fill="none" stroke="var(--accent)" stroke-width="2.5"/>${pts.map((q,i)=>`<circle cx="${X(i)}" cy="${Y(q.v)}" r="3.5" fill="var(--accent)"/>`).join("")}<text x="${X(0)}" y="${H-4}" font-size="10" fill="var(--muted)">${dLabel(pts[0].d)}</text><text x="${X(pts.length-1)}" y="${H-4}" font-size="10" fill="var(--muted)" text-anchor="end">${dLabel(pts[pts.length-1].d)}</text><text x="${X(pts.length-1)}" y="${Y(pts[pts.length-1].v)-8}" font-size="11" font-weight="700" fill="var(--ink)" text-anchor="end">${fmtN(pts[pts.length-1].v)} ${unit}</text></svg>`;
+}
+function renderProg(){
+  let h = `<div class="card"><h3 style="font-size:1rem">⚖️ Peso corporal</h3><div class="grid2" style="margin-top:10px"><div class="field" style="margin:0"><input type="number" step="0.1" inputmode="decimal" id="bwIn" placeholder="Ej: 62,5 kg"></div><button class="btn" id="bwSave">Guardar</button></div>`;
+  const bw = [...S.bw].sort((a,b)=>a.d<b.d?-1:1);
+  h += bw.length ? lineChart(bw.slice(-12).map(x=>({d:x.d,v:x.kg})),"kg") + (bw.length===1?`<p style="font-size:.85rem;margin-top:8px">Último registro: <b>${fmtN(bw[0].kg)} kg</b> (${dLabel(bw[0].d)})</p>`:"") : `<p style="font-size:.85rem;color:var(--muted);margin-top:8px">Registrá tu peso una vez por semana, siempre en las mismas condiciones.</p>`;
+  h += `</div>`;
+  if(S.mod.a){
+    const an = [...S.antro].sort((a,b)=>a.d<b.d?-1:1);
+    if(!an.length) h += `<div class="card"><h3 style="font-size:1rem">📏 Antropometría</h3><p style="font-size:.85rem;color:var(--muted);margin-top:6px">Tus mediciones aparecen acá después de cada control presencial con 1dz.</p></div>`;
+    else {
+      const cols = AF.filter(([k]) => an.some(m => m[k]!=null && m[k]!==""));
+      const last = an[an.length-1], prev = an[an.length-2];
+      h += `<div class="card"><h3 style="font-size:1rem">📏 Antropometría</h3><p style="font-size:.8rem;color:var(--muted);margin:4px 0 8px">Última medición: ${dLabel(last.d)}${prev?" · comparada con "+dLabel(prev.d):""}</p><div class="tblwrap"><table class="tbl"><tr><th>Medida</th><th>Actual</th>${prev?"<th>Cambio</th>":""}</tr>`
+        + cols.map(([k,n,u]) => { const v=last[k]; if(v==null||v==="") return ""; const df = prev && prev[k]!=null && prev[k]!=="" ? v-prev[k] : null;
+            return `<tr><td>${n}</td><td><b>${fmtN(v)}</b> ${u}</td>${prev?`<td>${df===null?"–":`<span class="${df<0?"dn":df>0?"up2":""}">${df>0?"+":""}${fmtN(df)}</span>`}</td>`:""}</tr>`; }).join("")
+        + `</table></div>`;
+      if(an.length>1){ const g = an.filter(m=>m.gr!=null&&m.gr!==""); if(g.length>1) h += `<h4 style="font-size:.8rem;color:var(--muted);margin-top:12px">% grasa</h4>`+lineChart(g.map(m=>({d:m.d,v:+m.gr})),"%"); }
+      if(last.no) h += `<div class="note2">💬 ${esc(last.no)}</div>`;
+      h += `</div>`;
+    }
+  }
+  if(S.mod.e){
+    const rec = {}; S.train.forEach(t => t.items.forEach(i => i.sets.forEach(s => { if(!s.kg) return; const r = rec[i.x]; if(!r || s.kg>r.kg || (s.kg===r.kg && s.r>r.r)) rec[i.x] = {kg:s.kg, r:s.r, d:t.date}; })));
+    const ks = Object.keys(rec);
+    h += `<div class="card"><h3 style="font-size:1rem">🏆 Mis récords</h3>` + (ks.length ? `<div class="tblwrap" style="margin-top:8px"><table class="tbl"><tr><th>Ejercicio</th><th>Mejor</th><th>Fecha</th></tr>${ks.map(x=>`<tr><td style="white-space:normal">${esc((EXI[x]||{}).n||x)}</td><td><b>${fmtN(rec[x].kg)} kg</b> × ${rec[x].r}</td><td>${dLabel(rec[x].d)}</td></tr>`).join("")}</table></div>` : `<p style="font-size:.85rem;color:var(--muted);margin-top:6px">Tus mejores marcas aparecen acá cuando registres entrenamientos.</p>`);
+    const n28 = S.train.filter(t => (new Date() - new Date(t.date+"T12:00")) < 28*864e5).length;
+    h += `<p style="font-size:.85rem;margin-top:10px">Entrenamientos en las últimas 4 semanas: <b>${n28}</b></p></div>`;
+  }
+  $("progCards").innerHTML = h;
+  const b = $("bwSave"); if(b) b.onclick = () => { const v = parseFloat(String($("bwIn").value).replace(",",".")); if(!(v>20&&v<400)){ toast("Escribí un peso válido"); return; }
+    const k = todayK(); S.bw = S.bw.filter(x=>x.d!==k); S.bw.push({d:k, kg:v}); save(); renderProg(); toast("Peso guardado"); };
+}
+
+/* ---------- reporte combinado ---------- */
+const _foodReport = buildReport;
+buildReport = function(){
+  let t = S.mod.c ? _foodReport() : `📊 *Reporte 1dz*\n` + ((S.profile.name||"").trim() ? `👤 ${S.profile.name.trim()}\n` : "");
+  t = t.replace("*Reporte 1 plato a la vez*", "*Reporte 1dz*");
+  if(S.mod.e && S.plan){
+    const from = new Date(); from.setHours(0,0,0,0); from.setDate(from.getDate() - (repMode==="week"?6:0));
+    const ses = S.train.filter(x => new Date(x.date+"T12:00") >= from);
+    const w = planWeek();
+    t += `\n\n🏋️ *Entrenamiento* — ${S.plan.name}, semana ${w} de ${S.plan.weeks}${isDl(w)?" (descarga)":""}\n`;
+    t += ses.length ? ses.map(s => `• ${dLabel(s.date)} · ${s.dn}\n` + s.items.map(i => `   - ${(EXI[i.x]||{}).n||i.x}: ${i.sets.map(z => (z.kg?fmtN(z.kg)+"×":"")+z.r+(z.rir!=null&&z.rir!==""&&!isNaN(z.rir)?" (RIR "+z.rir+")":"")).join(", ")}`).join("\n") + (s.c ? `\n   💬 ${s.c}` : "")).join("\n") + `\nSesiones: ${ses.length}` : "Sin entrenamientos registrados en este período.";
+  }
+  const bw = [...S.bw].sort((a,b)=>a.d<b.d?-1:1);
+  if(bw.length){ const l = bw[bw.length-1], p = bw[bw.length-2]; t += `\n\n⚖️ Peso: ${fmtN(l.kg)} kg (${dLabel(l.d)})${p?" · antes "+fmtN(p.kg)+" kg":""}`; }
+  return t;
+};
+
+/* ---------- link: codificar / importar ---------- */
+const enc = o => btoa(unescape(encodeURIComponent(JSON.stringify(o)))).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,"");
+const dec = s => JSON.parse(decodeURIComponent(escape(atob(s.replace(/-/g,"+").replace(/_/g,"/")))));
+let PENDING = null;
+function checkHash(){
+  const m = location.hash.match(/^#p=(.+)$/); if(!m) return false;
+  try{ PENDING = dec(m[1]); }catch(e){ toast("El link del plan no es válido"); return false; }
+  const P = PENDING, p = P.p;
+  $("impBody").innerHTML = `<div class="card" style="background:var(--bg)"><p><b>${esc(P.n||"Alumno/a")}</b></p>`
+    + (p ? `<p style="margin-top:6px">🏋️ ${esc(p.name)} · ${p.days.length} días · ${p.weeks} semanas · empieza ${dLabel(p.start)}</p>` : "")
+    + (P.k ? `<p style="margin-top:6px">🍽️ Objetivo: ${P.k} kcal/día</p>` : "")
+    + (P.an && P.an.length ? `<p style="margin-top:6px">📏 ${P.an.length} medición(es) de antropometría</p>` : "")
+    + `<p style="margin-top:8px;font-size:.8rem;color:var(--muted)">Tus comidas y entrenamientos anteriores se conservan.</p></div>`;
+  $("ovSettings").classList.remove("open");
+  $("ovImport").classList.add("open");
+  return true;
+}
+$("impOk").onclick = () => {
+  const P = PENDING; if(!P) return;
+  if(P.n) S.profile.name = P.n;
+  S.mod = {e: P.mod ? +P.mod.e : 1, c: P.mod ? +P.mod.c : 1, a: P.mod ? +P.mod.a : 0};
+  if(P.k > 0){ S.profile.goal = +P.k; S.profile.manual = +P.k; }
+  if(P.p){ if(!S.plan || S.plan.name !== P.p.name) { S.draft = null; } S.plan = P.p; }
+  S.coachMsg = P.msg || "";
+  (P.an || []).forEach(m => { S.antro = S.antro.filter(x => x.d !== m.d); S.antro.push(m); });
+  save(); PENDING = null;
+  history.replaceState(null, "", location.pathname);
+  $("ovImport").classList.remove("open"); applyMods(); selDay = null; show("hoy"); toast("¡Plan cargado! 💪");
+};
+window.addEventListener("hashchange", () => { if(!checkHash() && location.hash==="#entrenadora") openCoach(); });
+
+/* ---------- MODO ENTRENADORA ---------- */
+let CS = null, pickCb = null, pkG = "all";
+const blankStudent = () => ({n:"", msg:"", mod:{e:1,c:1,a:0}, k:"", p:{name:"Mesociclo 1", start:todayK(), weeks:8, dl:[4,8], dm:"auto", dn:"", rir:0, days:[{n:"Día A", it:[]}]}, an:[]});
+let taps = 0, tapT = null;
+$("logo").addEventListener("click", () => { taps++; clearTimeout(tapT); tapT = setTimeout(() => taps = 0, 1500); if(taps >= 5){ taps = 0; openCoach(); } });
+const PIN_H = "3af2124a3c4030936b3566a7a026953d24455d8c585d08e0db7c8b984fdfd3c7";
+async function pinHash(v){ const b = await crypto.subtle.digest("SHA-256", new TextEncoder().encode("1dz-pin:"+v)); return [...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,"0")).join(""); }
+function openCoach(){ if(!S.coachOk){ $("pinIn").value=""; $("ovPin").classList.add("open"); setTimeout(()=>$("pinIn").focus(),100); return; } if(!CS) CS = blankStudent(); fillCoach(); $("ovCoach").classList.add("open"); }
+async function tryPin(){ let ok=false; try{ ok = (await pinHash($("pinIn").value.trim())) === PIN_H; }catch(e){}
+  if(!ok){ toast("PIN incorrecto"); $("pinIn").value=""; return; }
+  S.coachOk = 1; save(); $("ovPin").classList.remove("open"); openCoach(); }
+$("pinOk").onclick = tryPin;
+$("pinIn").addEventListener("keydown", e => { if(e.key==="Enter") tryPin(); });
+$("cLock").onclick = () => { S.coachOk = 0; save(); $("ovCoach").classList.remove("open"); toast("Modo entrenadora bloqueado"); };
+function fillCoach(){
+  const names = Object.keys(S.coach.students).sort();
+  $("cSel").innerHTML = `<option value="">— Nuevo alumno —</option>` + names.map(n => `<option${n===CS.n?" selected":""}>${esc(n)}</option>`).join("");
+  $("cName").value = CS.n; $("cMsg").value = CS.msg; $("cKcal").value = CS.k || "";
+  $("cModE").checked = !!CS.mod.e; $("cModC").checked = !!CS.mod.c; $("cModA").checked = !!CS.mod.a;
+  const p = CS.p; $("cPName").value = p.name; $("cStart").value = p.start; $("cWeeks").value = p.weeks;
+  $("cDl").value = (p.dl||[]).join(","); $("cDm").value = p.dm; $("cDn").value = p.dn||""; $("cRir").checked = !!p.rir;
+  $("aD").value = todayK();
+  renderCDays(); renderCAn(); $("cOut").innerHTML = "";
+  $("cAnBox").style.display = CS.mod.a ? "" : "none";
+}
+function readCoach(){
+  CS.n = $("cName").value.trim(); CS.msg = $("cMsg").value.trim(); CS.k = +$("cKcal").value || "";
+  CS.mod = {e: $("cModE").checked?1:0, c: $("cModC").checked?1:0, a: $("cModA").checked?1:0};
+  const p = CS.p; p.name = $("cPName").value.trim() || "Mesociclo"; p.start = $("cStart").value || todayK();
+  p.weeks = Math.max(1, Math.min(16, +$("cWeeks").value || 8));
+  p.dl = $("cDl").value.split(/[,; ]+/).map(Number).filter(n => n>0 && n<=p.weeks);
+  p.dm = $("cDm").value; p.dn = $("cDn").value.trim(); p.rir = $("cRir").checked ? 1 : 0;
+}
+function renderCDays(){
+  $("cDays").innerHTML = CS.p.days.map((d, di) => `<div class="cday"><div class="dh"><input value="${esc(d.n)}" data-dn="${di}"><button class="xbtn" data-deld="${di}" aria-label="Borrar día">🗑</button></div>`
+    + d.it.map((it, xi) => { const e = EXI[it.x] || {n:it.x, img:""};
+      return `<div class="cex"><div class="top"><img src="${e.img}" alt="" onerror="this.style.visibility='hidden'"><b>${esc(e.n)}</b><button class="xbtn" data-up="${di}:${xi}" aria-label="Subir">↑</button><button class="xbtn" data-delx="${di}:${xi}" aria-label="Quitar">✕</button></div>`
+      + `<div class="cnum"><div><label>Series</label><input type="number" data-f="s" data-i="${di}:${xi}" value="${it.s}"></div><div><label>Reps mín</label><input type="number" data-f="r1" data-i="${di}:${xi}" value="${it.r1}"></div><div><label>Reps máx</label><input type="number" data-f="r2" data-i="${di}:${xi}" value="${it.r2}"></div><div><label>Desc. s</label><input type="number" data-f="d" data-i="${di}:${xi}" value="${it.d}"></div></div>`
+      + `<div class="on"><input data-f="o" data-i="${di}:${xi}" value="${esc(it.o||"")}" placeholder="Observación para el alumno (opcional)"></div></div>`; }).join("")
+    + `<button class="ghost" data-addx="${di}">+ Agregar ejercicio</button></div>`).join("");
+}
+$("cDays").addEventListener("input", e => {
+  const t = e.target;
+  if(t.dataset.dn !== undefined){ CS.p.days[+t.dataset.dn].n = t.value; return; }
+  if(t.dataset.f){ const [di, xi] = t.dataset.i.split(":").map(Number); const it = CS.p.days[di].it[xi];
+    it[t.dataset.f] = t.dataset.f==="o" ? t.value : (+t.value || 0); }
+});
+$("cDays").addEventListener("click", e => {
+  const b = e.target.closest("button"); if(!b) return;
+  if(b.dataset.addx !== undefined){ const di = +b.dataset.addx; openPick(id => { CS.p.days[di].it.push({x:id, s:3, r1:8, r2:12, d:90, o:""}); renderCDays(); }); }
+  if(b.dataset.delx){ const [di, xi] = b.dataset.delx.split(":").map(Number); CS.p.days[di].it.splice(xi,1); renderCDays(); }
+  if(b.dataset.up){ const [di, xi] = b.dataset.up.split(":").map(Number); if(xi>0){ const a = CS.p.days[di].it; [a[xi-1], a[xi]] = [a[xi], a[xi-1]]; renderCDays(); } }
+  if(b.dataset.deld !== undefined){ CS.p.days.splice(+b.dataset.deld, 1); renderCDays(); }
+});
+$("cAddDay").onclick = () => { const L = "ABCDEFGH"; CS.p.days.push({n:"Día "+(L[CS.p.days.length]||CS.p.days.length+1), it:[]}); renderCDays(); };
+$("cModA").onchange = () => { $("cAnBox").style.display = $("cModA").checked ? "" : "none"; };
+$("cSel").onchange = () => { readCoach(); const n = $("cSel").value; CS = n ? JSON.parse(JSON.stringify(S.coach.students[n])) : blankStudent(); fillCoach(); };
+function renderCAn(){
+  const an = [...CS.an].sort((a,b) => a.d<b.d?1:-1);
+  $("cAnList").innerHTML = an.length ? an.map(m => `<div><span>${dLabel(m.d)} · ${AF.filter(([k])=>m[k]!=null&&m[k]!=="").map(([k,n,u])=>n+" "+fmtN(m[k])+u).slice(0,3).join(", ")}${AF.filter(([k])=>m[k]!=null&&m[k]!=="").length>3?"…":""}</span><button class="xbtn" data-dela="${m.d}">✕</button></div>`).join("") : `<p style="color:var(--muted)">Sin mediciones cargadas.</p>`;
+}
+$("cAnList").addEventListener("click", e => { const b = e.target.closest("[data-dela]"); if(b){ CS.an = CS.an.filter(m => m.d !== b.dataset.dela); renderCAn(); } });
+$("cAddAn").onclick = () => {
+  const m = {d: $("aD").value || todayK()}; let any = false;
+  [["peso","aPeso"],["gr","aGr"],["mm","aMm"],["ma","aMa"],["sp","aSp"],["ci","aCi"],["ca","aCa"],["br","aBr"],["mu","aMu"]].forEach(([k,id]) => { const v = parseFloat(String($(id).value).replace(",",".")); if(!isNaN(v)){ m[k] = v; any = true; } $(id).value = ""; });
+  if($("aNo").value.trim()){ m.no = $("aNo").value.trim(); $("aNo").value = ""; }
+  if(!any){ toast("Cargá al menos un dato"); return; }
+  CS.an = CS.an.filter(x => x.d !== m.d); CS.an.push(m); renderCAn(); toast("Medición agregada");
+};
+$("cSave").onclick = () => { readCoach(); if(!CS.n){ toast("Poné el nombre del alumno"); return; }
+  S.coach.students[CS.n] = JSON.parse(JSON.stringify(CS)); save(); fillCoach(); toast("Alumno guardado"); };
+$("cDel").onclick = () => { readCoach(); if(CS.n && S.coach.students[CS.n]){ delete S.coach.students[CS.n]; save(); CS = blankStudent(); fillCoach(); toast("Alumno borrado de tu lista"); } };
+$("cLink").onclick = () => {
+  readCoach();
+  if(!CS.n){ toast("Poné el nombre del alumno"); return; }
+  if(CS.mod.e && !CS.p.days.some(d => d.it.length)){ toast("Agregá al menos un ejercicio"); return; }
+  S.coach.students[CS.n] = JSON.parse(JSON.stringify(CS)); save();
+  const pay = {v:1, n:CS.n, msg:CS.msg, mod:CS.mod, k:CS.k||0, p: CS.mod.e ? CS.p : null, an: CS.mod.a ? CS.an : []};
+  const url = location.origin + location.pathname + "#p=" + enc(pay);
+  const txt = `Hola ${CS.n}! 💪 Te mando tu plan de 1dz. Abrilo desde el celular y tocá "Cargar mi plan":\n${url}`;
+  $("cOut").innerHTML = `<div class="linkbox" id="cUrl">${esc(url)}</div><div class="grid2" style="margin-top:8px"><button class="btn sec" id="cCopy">Copiar link</button><a class="btn" style="text-decoration:none;background:#1a8a4a" href="https://wa.me/?text=${encodeURIComponent(txt)}" target="_blank" rel="noopener">Enviar por WhatsApp</a></div>`;
+  $("cCopy").onclick = async () => { try{ await navigator.clipboard.writeText(url); toast("Link copiado"); }catch(e){ toast("No se pudo copiar"); } };
+};
+function openPick(cb){ pickCb = cb; $("pkQ").value = ""; pkG = "all"; renderPick2(); $("ovPick").classList.add("open"); }
+function renderPick2(){
+  libChips($("pkChips"), pkG, g => { pkG = g; renderPick2(); });
+  $("pkList").innerHTML = filterEx($("pkQ").value, pkG).map(e => `<button class="pkitem" data-pk="${e.id}"><img src="${e.img}" alt="" loading="lazy" onerror="this.style.visibility='hidden'"><span>${esc(e.n)}</span></button>`).join("");
+}
+$("pkQ").addEventListener("input", renderPick2);
+$("pkList").addEventListener("click", e => { const b = e.target.closest("[data-pk]"); if(b && pickCb){ pickCb(b.dataset.pk); $("ovPick").classList.remove("open"); toast("Ejercicio agregado"); } });
+
+/* ---------- arranque ---------- */
+applyMods();
+if(!checkHash() && location.hash === "#entrenadora") openCoach();
+show("hoy");
+if(firstRun && !PENDING){ /* bienvenida normal */ }
+
 </script>
 </body>
 </html>

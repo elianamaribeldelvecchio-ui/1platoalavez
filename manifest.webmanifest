@@ -1,7 +1,7 @@
 {
-  "name": "1 plato a la vez — 1dz",
-  "short_name": "1 plato",
-  "description": "Contador de calorías de 1dz · 1 día a la vez",
+  "name": "1dz — 1 día a la vez",
+  "short_name": "1dz",
+  "description": "Entrenamiento, nutrición y antropometría",
   "lang": "es-AR",
   "start_url": "./",
   "scope": "./",
