@@ -1195,13 +1195,23 @@ function applyMods(){
   document.querySelector('.nav [data-v="comidas"]').style.display = S.mod.c ? "" : "none";
   $("btnSettings").style.display = S.mod.c ? "" : "none";
 }
-function show(v){
+function show(v, fromPop){
+  if(!fromPop && v !== VIEW){ try{ history.pushState({v}, ""); }catch(e){} }
   VIEW = v;
   document.querySelectorAll(".view").forEach(x => x.hidden = x.id !== "v-"+v);
   document.querySelectorAll(".nav button").forEach(b => b.classList.toggle("on", b.dataset.v === v));
   if(v==="hoy") renderHoy(); if(v==="entreno") renderEnt(); if(v==="progreso") renderProg(); if(v==="comidas") render();
   window.scrollTo(0,0);
 }
+try{ history.replaceState({v:"hoy"}, ""); }catch(e){}
+new MutationObserver(ms => ms.forEach(m => { const o = m.target; if(o.classList.contains("open") && !(m.oldValue||"").includes("open")){ try{ history.pushState({v:VIEW, ov:1}, ""); }catch(x){} } }))
+  .observe(document.body, {subtree:true, attributes:true, attributeFilter:["class"], attributeOldValue:true});
+window.addEventListener("popstate", e => {
+  const ov = [...document.querySelectorAll(".overlay.open")];
+  if(ov.length){ ov.forEach(o => o.classList.remove("open")); try{ history.pushState({v:VIEW}, ""); }catch(x){} return; }
+  if(VIEW==="entreno" && entTab==="lib"){ document.querySelector('#segEnt [data-v="rut"]').click(); try{ history.pushState({v:VIEW}, ""); }catch(x){} return; }
+  show((e.state && e.state.v) || "hoy", true);
+});
 $("nav").addEventListener("click", e => { const b = e.target.closest("button"); if(b) show(b.dataset.v); });
 document.addEventListener("click", e => { const f = e.target.closest("[data-ficha]"); if(f) openFicha(f.dataset.ficha); });
 
@@ -1259,8 +1269,15 @@ function renderEnt(){
   if(!p){ $("entRut").innerHTML = `<div class="card empty2">Todavía no tenés una rutina cargada.<br>Tu entrenadora te la manda por un link de WhatsApp: abrilo y se carga sola.<br><br><button class="btn sec" id="goLib">Ver la biblioteca de ejercicios</button></div>`;
     $("goLib").onclick = () => document.querySelector('#segEnt [data-v="lib"]').click(); return; }
   const w = planWeek();
+  if((selDay===null || selDay>=p.days.length) && S.draft && S.draft.date===todayK() && S.draft.di < p.days.length) selDay = S.draft.di;
   if(selDay===null || selDay>=p.days.length) selDay = nextDay();
-  if(!S.draft || S.draft.di!==selDay || S.draft.date!==todayK()) S.draft = {di:selDay, date:todayK(), rows:{}};
+  S.drafts = S.drafts || {};
+  if(!S.draft || S.draft.di!==selDay || S.draft.date!==todayK()){
+    if(S.draft && S.draft.date===todayK()) S.drafts[S.draft.di] = S.draft;
+    const kept = S.drafts[selDay];
+    S.draft = kept && kept.date===todayK() ? kept : {di:selDay, date:todayK(), rows:{}};
+  }
+  S.draft.skip = S.draft.skip || {};
   const dl = isDl(w), d = p.days[selDay];
   let h = `<div class="card"><div class="kv"><div><h3>${esc(p.name)}</h3><small>${w===0?"Empieza el "+dLabel(p.start):"Semana "+w+" de "+p.weeks}</small></div>${dl?'<span class="badge">DESCARGA</span>':""}</div></div>`;
   if(dl && p.dm==="wod" && !wodAnyway){
@@ -1285,7 +1302,8 @@ function renderEnt(){
     const sg = suggest(it, dl);
     const rows = S.draft.rows[xi] || (S.draft.rows[xi] = Array.from({length:ns}, () => ({kg: sg.kg, r:"", rir:"", ok:0})));
     while(rows.length < ns) rows.push({kg:sg.kg, r:"", rir:"", ok:0}); rows.length = ns;
-    h += `<div class="card ex"><div class="exh">${imgTag(e,"thumb")}<div><div class="nm">${esc(e.n)}</div><div class="tg">${ns} × ${it.r1}${it.r2!=it.r1?"–"+it.r2:""} reps${it.d?" · descanso "+it.d+" s":""}</div></div></div>`
+    if(S.draft.skip[xi]){ h += `<div class="card ex" style="opacity:.75"><div class="exh">${imgTag(e,"thumb")}<div style="flex:1"><div class="nm">${esc(e.n)}</div><div class="tg">⏭️ Salteado hoy</div></div><button class="btn sec" data-skip="${xi}" style="padding:8px 12px">↩️ Retomar</button></div></div>`; return; }
+    h += `<div class="card ex"><div class="exh">${imgTag(e,"thumb")}<div style="flex:1"><div class="nm">${esc(e.n)}</div><div class="tg">${ns} × ${it.r1}${it.r2!=it.r1?"–"+it.r2:""} reps${it.d?" · descanso "+it.d+" s":""}</div></div><button class="ghost" data-skip="${xi}" style="width:auto;margin:0;padding:6px 10px;font-size:.78rem">Saltear</button></div>`
       + (it.o ? `<div class="note2">💬 ${esc(it.o)}</div>` : "")
       + `<div class="sug${sg.up?" up":""}">${esc(sg.txt)}</div>`
       + `<div class="sethead" style="grid-template-columns:${cols}"><span>#</span><span>kg</span><span>reps</span>${p.rir?"<span>RIR</span>":""}<span></span></div>`
@@ -1299,9 +1317,11 @@ function renderEnt(){
   save();
 }
 $("entRut").addEventListener("click", e => {
-  const c = e.target.closest("[data-day]"); if(c){ selDay = +c.dataset.day; S.draft=null; renderEnt(); return; }
+  const c = e.target.closest("[data-day]"); if(c){ selDay = +c.dataset.day; renderEnt(); return; }
+  const sk = e.target.closest("[data-skip]"); if(sk){ const xi = +sk.dataset.skip; if(S.draft.skip[xi]) delete S.draft.skip[xi]; else S.draft.skip[xi] = 1; save(); renderEnt(); return; }
   const ok = e.target.closest("[data-ok]");
-  if(ok){ const r = S.draft.rows[+ok.dataset.ok][+ok.dataset.s]; r.ok = r.ok?0:1; ok.classList.toggle("done", !!r.ok); save();
+  if(ok){ const r = S.draft.rows[+ok.dataset.ok][+ok.dataset.s]; r.ok = r.ok?0:1;
+    if(r.ok && String(r.r??"").trim()===""){ const inp = ok.parentElement.querySelector('[data-k="r"]'); if(inp && inp.placeholder){ r.r = inp.placeholder; inp.value = r.r; } } ok.classList.toggle("done", !!r.ok); save();
     if(r.ok && +ok.dataset.rest) startTimer(+ok.dataset.rest); return; }
   if(e.target.id==="entSave") saveSession();
 });
@@ -1315,14 +1335,14 @@ $("entRut").addEventListener("input", e => {
 });
 function saveSession(){
   const p = S.plan, d = p.days[S.draft.di], w = planWeek();
-  const items = d.it.map((it, xi) => ({x: it.x, sets: (S.draft.rows[xi]||[]).filter(r => String(r.r).trim()!=="").map(r => ({kg: r.kg===""?0:+r.kg||0, r: +r.r||0, rir: r.rir===""?undefined:+r.rir}))})).filter(i => i.sets.length);
+  const items = d.it.map((it, xi) => ({x: it.x, sets: S.draft.skip && S.draft.skip[xi] ? [] : (S.draft.rows[xi]||[]).filter(r => String(r.r).trim()!=="").map(r => ({kg: r.kg===""?0:+r.kg||0, r: +r.r||0, rir: r.rir===""?undefined:+r.rir}))})).filter(i => i.sets.length);
   let run;
   if(isRun(d)){ const r = S.draft.run || {}; run = {km: parseFloat(String(r.km||"").replace(",",".")) || 0, sec: (+r.m||0)*60 + (+r.s||0), rpe: +r.rpe || 0, fc: +r.fc || 0};
     if(!run.km && !run.sec){ toast("Cargá la distancia o el tiempo"); return; } }
   else if(!items.length){ toast("Cargá al menos las repeticiones de una serie"); return; }
   const rec = {date: todayK(), plan: p.name, w, dl: isDl(w)?1:0, di: S.draft.di, dn: d.n, items, c: S.draft.c||""}; if(run) rec.run = run;
   S.train.push(rec);
-  S.draft = null; selDay = null; save(); stopTimer(); renderEnt();
+  if(S.drafts) delete S.drafts[S.draft.di]; S.draft = null; selDay = null; save(); stopTimer(); renderEnt();
   toast(run ? "¡Run guardado! 🏃" : "¡Entrenamiento guardado! 💪");
 }
 
