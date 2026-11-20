@@ -1273,7 +1273,7 @@ function renderEnt(){
   if(selDay===null || selDay>=p.days.length) selDay = nextDay();
   S.drafts = S.drafts || {};
   if(!S.draft || S.draft.di!==selDay || S.draft.date!==todayK()){
-    if(S.draft && S.draft.date===todayK()) S.drafts[S.draft.di] = S.draft;
+    if(S.draft && S.draft.date===todayK() && S.draft.edit==null) S.drafts[S.draft.di] = S.draft;
     const kept = S.drafts[selDay];
     S.draft = kept && kept.date===todayK() ? kept : {di:selDay, date:todayK(), rows:{}};
   }
@@ -1284,8 +1284,9 @@ function renderEnt(){
     $("entRut").innerHTML = h + `<div class="banner wod">💪 <b>Semana de WOD presencial con 1dz.</b><br>Esta semana entrenás en el gym con tu entrenadora.${p.dn?"<br>"+esc(p.dn):""}</div><button class="btn sec wide" id="wodAny">Igual quiero registrar mi rutina</button>`;
     $("wodAny").onclick = () => { wodAnyway = true; renderEnt(); }; return;
   }
+  if(S.draft.edit != null && S.train[S.draft.edit]) h += `<div class="banner dl">✏️ <b>Editando el entrenamiento del ${dLabel(S.train[S.draft.edit].date)}.</b> Corregí lo que necesites y tocá "Guardar cambios".<br><button class="ghost" id="edCancel" style="width:auto;padding:4px 0">Cancelar edición</button></div>`;
   if(dl) h += `<div class="banner dl">🔵 <b>Semana de descarga:</b> ${isRun(d)?"en el run bajá el volumen y hacelo a ritmo cómodo.":"hacé una serie menos en cada ejercicio, con los pesos que ya alcanzaste."}${p.dn?"<br>"+esc(p.dn):""}</div>`;
-  h += `<div class="chips2">${p.days.map((x,i)=>`<button class="chip${i===selDay?" on":""}" data-day="${i}">${esc(x.n)}</button>`).join("")}</div>`;
+  if(S.draft.edit==null) h += `<div class="chips2">${p.days.map((x,i)=>`<button class="chip${i===selDay?" on":""}" data-day="${i}">${esc(x.n)}</button>`).join("")}</div>`;
   if(isRun(d)){
     const r = S.draft.run || (S.draft.run = {km:"", m:"", s:"", rpe:"", fc:""});
     const km = parseFloat(String(r.km).replace(",",".")) || 0, sec = (+r.m||0)*60 + (+r.s||0);
@@ -1310,9 +1311,9 @@ function renderEnt(){
       + rows.map((r,si)=>`<div class="setrow" style="grid-template-columns:${cols}"><span class="n">${si+1}</span><input inputmode="decimal" data-k="kg" data-x="${xi}" data-s="${si}" value="${r.kg??""}" placeholder="–"><input inputmode="numeric" data-k="r" data-x="${xi}" data-s="${si}" value="${r.r??""}" placeholder="${it.r2}">${p.rir?`<input inputmode="numeric" data-k="rir" data-x="${xi}" data-s="${si}" value="${r.rir??""}" placeholder="–">`:""}<button class="okb${r.ok?" done":""}" data-ok="${xi}" data-s="${si}" data-rest="${it.d||0}">✓</button></div>`).join("")
       + `</div>`;
   });
-  h += `<div class="card"><div class="field" style="margin:0"><label>Comentario para tu entrenadora (opcional)</label><textarea class="ta" id="entCom" placeholder="${isRun(d)?"Ej: cómo te sentiste, terreno, calor, molestias":"Ej: me molestó el hombro en el press"}">${esc(S.draft.c||"")}</textarea></div><button class="primary" id="entSave">Terminar y guardar entrenamiento</button></div>`;
-  const mine = S.train.filter(t=>t.plan===p.name).slice(-6).reverse();
-  if(mine.length) h += `<div class="card"><h3 style="font-size:1rem;margin-bottom:6px">Últimos entrenamientos</h3>${mine.map(t=>`<div class="hist"><b>${dLabel(t.date)} · ${esc(t.dn)}</b>${t.dl?' <span class="badge">descarga</span>':""}<br>${t.run?"🏃 "+esc(runTxt(t.run))+(t.c?"<br>💬 "+esc(t.c):""):""}${t.items.map(i=>esc((EXI[i.x]||{}).n||"")+": "+i.sets.map(s=>(s.kg?fmtN(s.kg)+"×":"")+s.r).join(", ")).join("<br>")}</div>`).join("")}</div>`;
+  h += `<div class="card"><div class="field" style="margin:0"><label>Comentario para tu entrenadora (opcional)</label><textarea class="ta" id="entCom" placeholder="${isRun(d)?"Ej: cómo te sentiste, terreno, calor, molestias":"Ej: me molestó el hombro en el press"}">${esc(S.draft.c||"")}</textarea></div><button class="primary" id="entSave">${S.draft.edit!=null?"Guardar cambios":"Terminar y guardar entrenamiento"}</button></div>`;
+  const mine = S.train.map((t,i)=>({...t, _i:i})).filter(t=>t.plan===p.name).slice(-6).reverse();
+  if(mine.length) h += `<div class="card"><h3 style="font-size:1rem;margin-bottom:6px">Últimos entrenamientos</h3>${mine.map(t=>`<div class="hist"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><span><b>${dLabel(t.date)} · ${esc(t.dn)}</b>${t.dl?' <span class="badge">descarga</span>':""}</span><button class="ghost" data-edit="${t._i}" style="width:auto;margin:0;padding:4px 10px;font-size:.78rem">✏️ Editar</button></div>${t.run?"🏃 "+esc(runTxt(t.run))+(t.c?"<br>💬 "+esc(t.c):""):""}${t.items.map(i=>esc((EXI[i.x]||{}).n||"")+": "+i.sets.map(s=>(s.kg?fmtN(s.kg)+"×":"")+s.r).join(", ")).join("<br>")}</div>`).join("")}</div>`;
   $("entRut").innerHTML = h;
   save();
 }
@@ -1324,6 +1325,8 @@ $("entRut").addEventListener("click", e => {
     if(r.ok && String(r.r??"").trim()===""){ const inp = ok.parentElement.querySelector('[data-k="r"]'); if(inp && inp.placeholder){ r.r = inp.placeholder; inp.value = r.r; } } ok.classList.toggle("done", !!r.ok); save();
     if(r.ok && +ok.dataset.rest) startTimer(+ok.dataset.rest); return; }
   if(e.target.id==="entSave") saveSession();
+  if(e.target.id==="edCancel"){ S.draft = null; selDay = null; save(); renderEnt(); window.scrollTo(0,0); return; }
+  const ed = e.target.closest("[data-edit]"); if(ed){ startEdit(+ed.dataset.edit); return; }
 });
 $("entRut").addEventListener("input", e => {
   const t = e.target;
@@ -1333,17 +1336,33 @@ $("entRut").addEventListener("input", e => {
     if($("runPace")) $("runPace").innerHTML = km&&sec ? "Ritmo promedio: <b>"+pace({km,sec})+"</b>" : "El ritmo se calcula solo cuando cargás distancia y tiempo."; return; }
   if(t.dataset.k){ S.draft.rows[+t.dataset.x][+t.dataset.s][t.dataset.k] = t.value.replace(",","."); save(); }
 });
+function startEdit(i){
+  const t = S.train[i], p = S.plan; if(!t || !p) return;
+  const di = t.di < p.days.length ? t.di : 0, d = p.days[di];
+  if(S.draft && S.draft.edit == null && S.draft.date===todayK()){ S.drafts = S.drafts || {}; S.drafts[S.draft.di] = S.draft; }
+  const rows = {};
+  d.it.forEach((it, xi) => { const m = t.items.find(z => z.x === it.x); if(m) rows[xi] = m.sets.map(z => ({kg: z.kg||"", r: z.r, rir: z.rir ?? "", ok: 1})); });
+  S.draft = {di, date: todayK(), rows, c: t.c||"", skip:{}, edit: i};
+  if(t.run) S.draft.run = {km: t.run.km||"", m: Math.floor((t.run.sec||0)/60)||"", s: (t.run.sec||0)%60||"", rpe: t.run.rpe||"", fc: t.run.fc||""};
+  selDay = di; save(); renderEnt(); window.scrollTo(0,0);
+}
 function saveSession(){
   const p = S.plan, d = p.days[S.draft.di], w = planWeek();
-  const items = d.it.map((it, xi) => ({x: it.x, sets: S.draft.skip && S.draft.skip[xi] ? [] : (S.draft.rows[xi]||[]).filter(r => String(r.r).trim()!=="").map(r => ({kg: r.kg===""?0:+r.kg||0, r: +r.r||0, rir: r.rir===""?undefined:+r.rir}))})).filter(i => i.sets.length);
+  const filled = r => String(r.r??"").trim()!=="" || r.ok;
+  const all = d.it.map((it, xi) => ({x: it.x, sets: S.draft.skip && S.draft.skip[xi] ? [] : (S.draft.rows[xi]||[]).filter(filled).map(r => ({kg: r.kg===""?0:+r.kg||0, r: String(r.r??"").trim()!=="" ? (+r.r||0) : (+it.r2||0), rir: r.rir===""||r.rir==null?undefined:+r.rir}))}));
+  const items = all.filter(i => i.sets.length);
+  const empty = d.it.filter((it, xi) => !(S.draft.skip && S.draft.skip[xi]) && !all[xi].sets.length).length;
+  if(!isRun(d) && items.length && empty && !confirm(`Hay ${empty} ejercicio(s) sin series cargadas. Si los hiciste, completá las repeticiones o tocá ✓ en cada serie.\n\n¿Guardar igual así?`)) return;
   let run;
   if(isRun(d)){ const r = S.draft.run || {}; run = {km: parseFloat(String(r.km||"").replace(",",".")) || 0, sec: (+r.m||0)*60 + (+r.s||0), rpe: +r.rpe || 0, fc: +r.fc || 0};
     if(!run.km && !run.sec){ toast("Cargá la distancia o el tiempo"); return; } }
   else if(!items.length){ toast("Cargá al menos las repeticiones de una serie"); return; }
-  const rec = {date: todayK(), plan: p.name, w, dl: isDl(w)?1:0, di: S.draft.di, dn: d.n, items, c: S.draft.c||""}; if(run) rec.run = run;
-  S.train.push(rec);
+  const ed = S.draft.edit != null ? S.train[S.draft.edit] : null;
+  const rec = ed ? {...ed, di: S.draft.di, dn: d.n, items, c: S.draft.c||""} : {date: todayK(), plan: p.name, w, dl: isDl(w)?1:0, di: S.draft.di, dn: d.n, items, c: S.draft.c||""};
+  delete rec.run; if(run) rec.run = run;
+  if(ed) S.train[S.draft.edit] = rec; else S.train.push(rec);
   if(S.drafts) delete S.drafts[S.draft.di]; S.draft = null; selDay = null; save(); stopTimer(); renderEnt();
-  toast(run ? "¡Run guardado! 🏃" : "¡Entrenamiento guardado! 💪");
+  toast(ed ? "Cambios guardados ✓" : run ? "¡Run guardado! 🏃" : "¡Entrenamiento guardado! 💪");
 }
 
 /* ---------- temporizador de descanso ---------- */
