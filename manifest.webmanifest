@@ -1,0 +1,16 @@
+{
+  "name": "1 plato a la vez — 1dz",
+  "short_name": "1 plato",
+  "description": "Contador de calorías de 1dz · 1 día a la vez",
+  "lang": "es-AR",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#f3f4f7",
+  "theme_color": "#0e0e10",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}
