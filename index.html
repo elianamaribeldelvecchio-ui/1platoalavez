@@ -2272,6 +2272,7 @@ function renderHoy(){
   $("hello").textContent = nm ? `¡Hola, ${nm}!` : "¡Hola!";
   $("helloSub").textContent = new Date().toLocaleDateString("es-AR",{weekday:"long",day:"numeric",month:"long"});
   let h = "";
+  if(typeof ME !== "undefined" && !ME) h += `<div style="background:#fff3cd;border-radius:14px;padding:11px 14px;margin-bottom:12px;font-size:.85rem;color:#7a4f00;display:flex;align-items:flex-start;gap:10px"><span style="font-size:1.2rem">⚠️</span><div><b>Guardá tus datos en la nube.</b> Sin cuenta, si actualizás o reinstalás la app perdés todo lo que registraste. <button class="ghost" id="hoyGoAuth" style="color:#b8590a;padding:0;width:auto;font-weight:700;font-size:.85rem">Crear cuenta gratis →</button></div></div>`;
   if(S.coachMsg) h += `<div class="card msg"><h3>💬 Mensaje de tu entrenadora</h3><p>${esc(S.coachMsg)}</p></div>`;
   h += nextAnCard();
   if(typeof MYCOACH!=="undefined" && MYCOACH && ME){ const un = UNREAD[MYCOACH.id]||0; h += `<div class="card"><div class="kv"><h3>💬 Chat con ${esc(MYCOACH.name)}</h3>${un?`<span class="badge" style="background:#ffe7cc;color:#b8590a">${un} nuevo${un>1?"s":""}</span>`:""}</div><button class="btn wide" id="hoyChat">Abrir chat</button></div>`; }
@@ -2777,7 +2778,11 @@ function renderCloudStatus(){ const el = $("cloudSt"); if(el) el.textContent = C
 function renderCloud(){
   const el = $("cloudCard"); if(!el) return;
   if(!ME){
-    el.innerHTML = `<h3 style="font-size:1rem">☁️ Mi cuenta</h3><p style="font-size:.85rem;color:var(--muted);margin:4px 0 10px">Creá tu cuenta gratis para guardar tus datos en la nube y usar la app en varios celulares. Si entrenás con 1dz, tu entrenadora puede ver tu progreso y chatear con vos.</p>${CLOUD_ERR?`<p style="font-size:.8rem;color:#b8590a">${esc(CLOUD_ERR)}</p>`:""}<button class="btn wide" id="goAuth"${sb?"":" disabled"}>Crear cuenta / Ingresar</button>`;
+    el.innerHTML = `<h3 style="font-size:1rem">☁️ Mi cuenta</h3>`
+      + `<div style="background:#fff3cd;border-radius:12px;padding:10px 12px;margin:8px 0 10px;font-size:.85rem;color:#7a4f00">⚠️ <b>Sin cuenta, tus datos se pueden perder.</b> Si actualizás o reinstalás la app, todo lo que registraste desaparece. Creá tu cuenta gratis para guardarlos en la nube.</div>`
+      + `<p style="font-size:.82rem;color:var(--muted);margin:0 0 10px">También podés usar la app en varios celulares y, si entrenás con 1dz, tu entrenadora puede ver tu progreso y chatear con vos.</p>`
+      + `${CLOUD_ERR?`<p style="font-size:.8rem;color:#b8590a">${esc(CLOUD_ERR)}</p>`:""}`
+      + `<button class="btn wide" id="goAuth"${sb?"":" disabled"}>Crear cuenta / Ingresar</button>`;
   } else {
     const un = MYCOACH ? (UNREAD[MYCOACH.id]||0) : 0;
     el.innerHTML = `<h3 style="font-size:1rem">☁️ Mi cuenta</h3><p style="font-size:.85rem;margin-top:4px">${esc(ME.email||"")}</p><p style="font-size:.78rem;color:var(--muted)" id="cloudSt"></p>`
@@ -2790,7 +2795,7 @@ function renderCloud(){
 }
 document.addEventListener("click", async e => {
   const t = e.target; if(!t || !t.id) return;
-  if(t.id === "goAuth"){ openAuth("up"); }
+  if(t.id === "goAuth" || t.id === "hoyGoAuth"){ openAuth("up"); show("progreso"); }
   if(t.id === "logout"){ if(!confirm("¿Cerrar sesión? Tus datos quedan guardados en la nube y también en este celular.")) return; await pushNow(); await sb.auth.signOut(); ME = null; MYCOACH = null; AMCOACH = null; stopMsgSub(); renderCloud(); toast("Sesión cerrada"); }
   if(t.id === "linkMe"){ const c = ($("codeIn").value||"").trim(); if(!c) return toast("Escribí el código");
     const { data, error } = await sb.rpc("link_with_code", {p_code:c});
