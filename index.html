@@ -2157,9 +2157,9 @@ function renderCloud(){
   } else {
     const un = MYCOACH ? (UNREAD[MYCOACH.id]||0) : 0;
     el.innerHTML = `<h3 style="font-size:1rem">☁️ Mi cuenta</h3><p style="font-size:.85rem;margin-top:4px">${esc(ME.email||"")}</p><p style="font-size:.78rem;color:var(--muted)" id="cloudSt"></p>`
-      + (AMCOACH ? `<p style="font-size:.85rem;margin-top:8px">👩‍🏫 Cuenta de entrenadora · tu código: <b>${esc(AMCOACH.code)}</b></p>` : "")
+      + (AMCOACH ? `<p style="font-size:.85rem;margin-top:8px">👩‍🏫 <b>Cuenta de entrenadora.</b> Generá un código único para cada alumno desde el modo entrenadora.</p>` : "")
       + (MYCOACH ? `<div style="margin-top:10px;font-size:.88rem">Tu entrenadora: <b>${esc(MYCOACH.name)}</b></div><div class="grid2" style="margin-top:8px"><button class="btn" id="goChatMe">💬 Chat${un?` (${un})`:""}</button><button class="btn sec" id="unlinkMe">Desvincular</button></div>`
-        : (!AMCOACH ? `<div style="margin-top:10px;font-size:.85rem">¿Entrenás con 1dz? Poné el código de tu entrenadora:</div><div class="grid2" style="margin-top:6px"><input id="codeIn" placeholder="Ej: 1DZ" style="padding:11px;border:1px solid var(--line);border-radius:12px;text-transform:uppercase"><button class="btn" id="linkMe">Vincular</button></div>` : ""))
+        : (!AMCOACH ? `<div style="margin-top:10px;font-size:.85rem">¿Entrenás con 1dz? Escribí el código que te dio tu entrenadora:</div><div class="grid2" style="margin-top:6px"><input id="codeIn" placeholder="Ej: 1DZ-7K4QM" style="padding:11px;border:1px solid var(--line);border-radius:12px;text-transform:uppercase"><button class="btn" id="linkMe">Vincular</button></div>` : ""))
       + `<button class="ghost" id="logout" style="color:var(--muted);margin-top:10px">Cerrar sesión</button>`;
     renderCloudStatus();
   }
@@ -2170,7 +2170,7 @@ document.addEventListener("click", async e => {
   if(t.id === "logout"){ if(!confirm("¿Cerrar sesión? Tus datos quedan guardados en la nube y también en este celular.")) return; await pushNow(); await sb.auth.signOut(); ME = null; MYCOACH = null; AMCOACH = null; stopMsgSub(); renderCloud(); toast("Sesión cerrada"); }
   if(t.id === "linkMe"){ const c = ($("codeIn").value||"").trim(); if(!c) return toast("Escribí el código");
     const { data, error } = await sb.rpc("link_with_code", {p_code:c});
-    if(error){ toast(/bad_code/.test(error.message) ? "Ese código no existe" : /self/.test(error.message) ? "Ese es tu propio código" : "No se pudo vincular"); return; }
+    if(error){ toast(/bad_code/.test(error.message) ? "Ese código no existe. Revisalo con tu entrenadora." : /used_code/.test(error.message) ? "Ese código ya fue usado. Pedile uno nuevo a tu entrenadora." : /self/.test(error.message) ? "Ese código lo generaste vos" : "No se pudo vincular"); return; }
     await loadRoles(); startMsgSub(); await pushNow(); await pullPlan(); renderCloud(); toast("¡Listo! Te vinculaste con " + data + " 💪"); }
   if(t.id === "unlinkMe"){ if(!confirm("¿Desvincularte? Tu entrenadora ya no va a ver tu progreso ni podrá chatear con vos.")) return;
     await sb.from("links").delete().eq("coach_id", MYCOACH.id).eq("student_id", ME.id); MYCOACH = null; startMsgSub(); renderCloud(); toast("Te desvinculaste"); }
@@ -2247,14 +2247,31 @@ async function renderCoachCloud(){
   if(!AMCOACH){ el.innerHTML = `<p style="font-size:.85rem;color:var(--muted)">Tu cuenta (${esc(ME.email)}) todavía no está habilitada como entrenadora. Se habilita una sola vez desde Supabase.</p>`; return; }
   el.innerHTML = `<p style="font-size:.85rem;color:var(--muted)">Cargando alumnos…</p>`;
   try{ await loadCloudStudents(); }catch(e){ el.innerHTML = `<p style="color:#c8364b">No se pudo cargar la lista.</p>`; return; }
-  el.innerHTML = `<p style="font-size:.85rem">Tu código para que se vinculen: <b style="font-size:1rem">${esc(AMCOACH.code)}</b></p>`
+  let inv = []; try{ const r = await sb.from("invites").select("code,label,created_at,used_by").eq("coach_id", ME.id).is("used_by", null).order("created_at", {ascending:false}); inv = r.data || []; }catch(e){}
+  el.innerHTML = `<div class="grid2"><input id="invName" placeholder="Nombre del alumno" style="padding:10px;border:1px solid var(--line);border-radius:12px"><button class="btn" id="invNew">🔑 Generar código</button></div><div id="invOut"></div>`
+    + (inv.length ? `<p style="font-size:.78rem;color:var(--muted);margin-top:8px">Códigos sin usar:</p>` + inv.map(i => `<div style="display:flex;justify-content:space-between;align-items:center;font-size:.85rem;padding:4px 0"><span><b style="font-family:monospace">${esc(i.code)}</b>${i.label?" · "+esc(i.label):""}</span><button class="xbtn" data-invdel="${esc(i.code)}" aria-label="Borrar código">✕</button></div>`).join("") : "")
+    + `<p style="font-size:.78rem;color:var(--muted);margin:10px 0 2px">Cada código sirve para <b>un solo alumno</b> y una sola vez.</p>`
     + (cloudStus.length ? cloudStus.map(s => { const last = s.data && s.data.last ? s.data.last : (s.updated_at ? Date.parse(s.updated_at) : 0), dd = last ? (Date.now()-last)/864e5 : 99, un = UNREAD[s.user_id]||0;
         return `<div class="hist"><div style="display:flex;justify-content:space-between;align-items:center;gap:6px"><span><b>${esc(s.name||"Alumno")}</b><br><small style="color:${dd>3?"#b8590a":"var(--muted)"}">${last?(dd>3?"⚠️ ":"")+"Última actividad: "+ago(last):"Sin actividad todavía"}</small></span><span style="display:flex;gap:6px"><button class="btn sec" data-stu="${s.user_id}" style="padding:7px 10px">Ver</button><button class="btn" data-chs="${s.user_id}" style="padding:7px 10px">💬${un?" "+un:""}</button></span></div></div>`; }).join("")
-      : `<p style="font-size:.85rem;color:var(--muted);margin-top:6px">Todavía no hay alumnos vinculados. Pasales tu código: en la app van a <b>Progreso → Mi cuenta</b>, crean su cuenta y lo escriben.</p>`)
+      : `<p style="font-size:.85rem;color:var(--muted);margin-top:6px">Todavía no hay alumnos vinculados. Generá un código y mandáselo: en la app van a <b>Progreso → Mi cuenta</b>, crean su cuenta y lo escriben.</p>`)
     + `<div style="margin-top:12px;font-size:.85rem">☁️ <b>Enviar el plan de arriba a un alumno de la nube</b></div><div class="grid2" style="margin-top:6px"><select id="cSendTo" style="padding:10px;border:1px solid var(--line);border-radius:12px">${cloudStus.map(s=>`<option value="${s.user_id}">${esc(s.name||"Alumno")}</option>`).join("")}</select><button class="btn" id="cSendCloud"${cloudStus.length?"":" disabled"}>Enviar plan</button></div>`;
   el.querySelectorAll("[data-stu]").forEach(b => b.onclick = () => openStu(b.dataset.stu));
   el.querySelectorAll("[data-chs]").forEach(b => b.onclick = () => { const s = cloudStus.find(x => x.user_id === b.dataset.chs); openChat(ME.id, b.dataset.chs, "💬 " + ((s&&s.name)||"Alumno")); });
   const sc = $("cSendCloud"); if(sc) sc.onclick = sendPlanCloud;
+  $("invNew").onclick = newInvite;
+  el.querySelectorAll("[data-invdel]").forEach(b => b.onclick = async () => { if(!confirm("¿Borrar este código? Ya no se va a poder usar.")) return; await sb.from("invites").delete().eq("code", b.dataset.invdel).eq("coach_id", ME.id); renderCoachCloud(); });
+}
+function rndCode(){ const A = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789", b = new Uint8Array(5); crypto.getRandomValues(b); return "1DZ-" + [...b].map(x => A[x % A.length]).join(""); }
+async function newInvite(){
+  const label = ($("invName").value||"").trim();
+  let code, error;
+  for(let t = 0; t < 4; t++){ code = rndCode(); ({ error } = await sb.from("invites").insert({code, coach_id:ME.id, label: label || null})); if(!error) break; }
+  if(error){ toast("No se pudo generar el código"); return; }
+  const link = location.origin + location.pathname;
+  const txt = `Hola${label?" "+label:""}! 💪 Para conectarte con 1dz:\n1) Abrí la app: ${link}\n2) Andá a Progreso → ☁️ Mi cuenta y creá tu cuenta\n3) Escribí este código: ${code}\n(Es personal y sirve una sola vez)`;
+  await renderCoachCloud();
+  $("invOut").innerHTML = `<div class="linkbox" style="margin-top:8px;font-size:1.1rem;text-align:center;font-family:monospace"><b>${esc(code)}</b></div><div class="grid2" style="margin-top:6px"><button class="btn sec" id="invCopy">Copiar código</button><a class="btn" style="text-decoration:none;background:#1a8a4a" href="https://wa.me/?text=${encodeURIComponent(txt)}" target="_blank" rel="noopener">Enviar por WhatsApp</a></div>`;
+  $("invCopy").onclick = async () => { try{ await navigator.clipboard.writeText(code); toast("Código copiado"); }catch(e){ toast(code); } };
 }
 async function sendPlanCloud(){
   readCoach();
