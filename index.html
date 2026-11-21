@@ -230,6 +230,13 @@ textarea.ta{width:100%;min-height:70px;padding:10px;border:1px solid var(--line)
 .qchips.per button.on{background:#d6336c;border-color:#d6336c}
 .switch{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:8px 0;font-size:.9rem}
 .switch input{width:20px;height:20px}
+#ovStu,#ovAuth{z-index:60}#ovChat{z-index:70}
+.chatlist{height:55vh;overflow:auto;display:flex;flex-direction:column;gap:8px;padding:6px 2px;background:var(--bg);border-radius:14px}
+.bub{max-width:80%;align-self:flex-start;background:var(--card);border:1px solid var(--line);border-radius:14px 14px 14px 4px;padding:8px 11px;font-size:.92rem;margin:0 6px}
+.bub.me{align-self:flex-end;background:var(--accent);color:#fff;border-color:var(--accent);border-radius:14px 14px 4px 14px}
+.bub small{display:block;font-size:.66rem;opacity:.7;margin-top:3px;text-align:right}
+.chatbar{display:flex;gap:8px;margin-top:10px;align-items:flex-end}
+.chatbar textarea{flex:1;padding:11px;border:1px solid var(--line);border-radius:14px;font:inherit;resize:none;max-height:120px}
 details.hisf summary,details.hisw summary{cursor:pointer;list-style:none}
 details.hisf summary::-webkit-details-marker,details.hisw summary::-webkit-details-marker{display:none}
 details.hisf>summary::after{content:"▾";float:right;color:var(--muted)}
@@ -324,10 +331,11 @@ details.hisw>summary{font-weight:700;font-size:.9rem}
   </section>
   <section class="view" id="v-progreso" hidden>
     <h2 class="sec-title">Mi progreso</h2>
+    <div class="card" id="cloudCard"></div>
     <div id="progCards"></div>
     <div class="card">
       <h3 style="font-size:1rem">💾 Copia de seguridad de mis datos</h3>
-      <p style="font-size:.82rem;color:var(--muted);margin:4px 0 10px">Tus comidas, entrenamientos y mediciones se guardan solo en este celular. Exportalos para pasarlos a otro dispositivo o por si cambiás de teléfono.</p>
+      <p style="font-size:.82rem;color:var(--muted);margin:4px 0 10px">Descargá un archivo con todos tus datos, como copia extra. Si tenés cuenta, además se guardan solos en la nube.</p>
       <button class="btn wide" id="bkAllOut">Exportar mis datos</button>
       <label class="btn sec wide" style="cursor:pointer">Importar datos desde archivo<input type="file" id="bkAllIn" accept=".json,application/json,text/plain" hidden></label>
     </div>
@@ -379,6 +387,19 @@ details.hisw>summary{font-weight:700;font-size:.9rem}
 </nav>
 <div class="timer" id="timer"><span>⏱ Descanso <b id="timerT">0:00</b></span><button id="timerSkip">Saltar</button></div>
 
+<div class="overlay" id="ovAuth"><div class="sheet">
+  <div class="sheet-head"><div><h2>☁️ Mi cuenta 1dz</h2><p class="lead">Tus datos en todos tus dispositivos.</p></div><button class="close" data-close="ovAuth">✕</button></div>
+  <div id="authBody"></div>
+</div></div>
+<div class="overlay" id="ovChat"><div class="sheet chat">
+  <div class="sheet-head"><div><h2 id="chatTitle">💬 Chat</h2></div><button class="close" data-close="ovChat">✕</button></div>
+  <div id="chatList" class="chatlist"></div>
+  <div class="chatbar"><textarea id="chatIn" rows="1" placeholder="Escribí un mensaje…" maxlength="2000"></textarea><button class="btn" id="chatSend">Enviar</button></div>
+</div></div>
+<div class="overlay coach" id="ovStu"><div class="sheet">
+  <div class="sheet-head"><div><h2 id="stuTitle">Alumno</h2><p class="lead">Lo que comparte en la app</p></div><button class="close" data-close="ovStu">✕</button></div>
+  <div id="stuBody"></div>
+</div></div>
 <div class="overlay" id="ovFicha"><div class="sheet ficha">
   <div class="sheet-head"><div><h2 id="fNm"></h2><p class="lead" id="fGr"></p></div><button class="close" data-close="ovFicha">✕</button></div>
   <img id="fImg" alt="">
@@ -403,6 +424,7 @@ details.hisw>summary{font-weight:700;font-size:.9rem}
 
 <div class="overlay coach" id="ovCoach"><div class="sheet">
   <div class="sheet-head"><div><h2 id="cTitle">👩‍🏫 Modo entrenadora</h2><p class="lead" id="cLead">Armá el plan de cada alumno y mandale su link.</p></div><button class="close" data-close="ovCoach">✕</button></div>
+  <div class="card conly" style="background:var(--bg);margin-bottom:14px"><h3 style="font-size:1rem">☁️ Alumnos en la nube</h3><div id="cCloud" style="margin-top:6px"></div></div>
   <div class="conly field"><label>Alumno guardado</label><select id="cSel"></select></div>
   <div class="conly field"><label>Nombre del alumno</label><input id="cName" placeholder="Ej: Laura"></div>
   <div class="conly field"><label>Mensaje para el alumno (aparece en Hoy)</label><input id="cMsg" placeholder="Ej: ¡Arrancamos el mesociclo! Prioridad: técnica"></div>
@@ -1641,6 +1663,7 @@ function renderHoy(){
   let h = "";
   if(S.coachMsg) h += `<div class="card msg"><h3>💬 Mensaje de tu entrenadora</h3><p>${esc(S.coachMsg)}</p></div>`;
   h += nextAnCard();
+  if(typeof MYCOACH!=="undefined" && MYCOACH && ME){ const un = UNREAD[MYCOACH.id]||0; h += `<div class="card"><div class="kv"><h3>💬 Chat con ${esc(MYCOACH.name)}</h3>${un?`<span class="badge" style="background:#ffe7cc;color:#b8590a">${un} nuevo${un>1?"s":""}</span>`:""}</div><button class="btn wide" id="hoyChat">Abrir chat</button></div>`; }
   if(S.mod.e){
     const p = S.plan;
     if(!p) h += `<div class="card"><div class="kv"><h3>🏋️ Entrenamiento</h3></div><p style="font-size:.88rem;color:var(--muted);margin-top:6px">Todavía no tenés rutina. Armala vos o, si entrenás con 1dz, abrí el link que te manda tu entrenadora.</p><button class="btn wide" id="hoySelf">✏️ Armar mi rutina</button></div>`;
@@ -1797,7 +1820,7 @@ let taps = 0, tapT = null;
 $("logo").addEventListener("click", () => { taps++; clearTimeout(tapT); tapT = setTimeout(() => taps = 0, 1500); if(taps >= 5){ taps = 0; openCoach(); } });
 const PIN_H = "3af2124a3c4030936b3566a7a026953d24455d8c585d08e0db7c8b984fdfd3c7";
 async function pinHash(v){ const b = await crypto.subtle.digest("SHA-256", new TextEncoder().encode("1dz-pin:"+v)); return [...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,"0")).join(""); }
-function openCoach(){ $("ovCoach").classList.remove("self"); $("cTitle").textContent="👩‍🏫 Modo entrenadora"; $("cLead").textContent="Armá el plan de cada alumno y mandale su link."; if(CS && CS._self) CS = null; if(!S.coachOk){ $("pinIn").value=""; $("ovPin").classList.add("open"); setTimeout(()=>$("pinIn").focus(),100); return; } if(!CS) CS = blankStudent(); fillCoach(); $("ovCoach").classList.add("open"); }
+function openCoach(){ $("ovCoach").classList.remove("self"); $("cTitle").textContent="👩‍🏫 Modo entrenadora"; $("cLead").textContent="Armá el plan de cada alumno y mandale su link."; if(CS && CS._self) CS = null; if(!S.coachOk){ $("pinIn").value=""; $("ovPin").classList.add("open"); setTimeout(()=>$("pinIn").focus(),100); return; } if(!CS) CS = blankStudent(); fillCoach(); $("ovCoach").classList.add("open"); if(typeof renderCoachCloud==="function") renderCoachCloud(); }
 async function tryPin(){ let ok=false; try{ ok = (await pinHash($("pinIn").value.trim())) === PIN_H; }catch(e){}
   if(!ok){ toast("PIN incorrecto"); $("pinIn").value=""; return; }
   S.coachOk = 1; save(); $("ovPin").classList.remove("open"); openCoach(); }
@@ -1944,10 +1967,338 @@ $("bkAllIn").onchange = async e => { try{ const o = await readFile(e.target); if
   S.train=S.train||[]; S.bw=S.bw||[]; S.antro=S.antro||[]; S.water=S.water||{}; S.sleep=S.sleep||{}; S.mood=S.mood||{}; S.per=S.per||{on:0,share:0,list:[],sy:{}}; S.coach=S.coach||{students:{}}; S.mod=S.mod||{e:1,c:1,a:0}; S.log=S.log||{}; S.custom=S.custom||[];
   save(); applyMods(); show("hoy"); toast("Datos importados ✓");
   }catch(err){ toast("Ese archivo no es un respaldo de datos de 1dz"); } e.target.value = ""; };
+/* =====================================================
+   NUBE · Etapa 2 (cuentas, sincronización, panel, chat)
+   ===================================================== */
+const SB_URL = "https://oxkwzzxlgddizvamclaa.supabase.co";
+const SB_KEY = "sb_publishable_XRu2zEnvCHGGn7ZVtctAKg_cKpOAQoU";
+let sb = null, ME = null, MYCOACH = null, AMCOACH = null, CLOUD_ERR = "";
+let pushT = null, lastPush = 0, pushing = false, chatCtx = null, msgSub = null, UNREAD = {};
+let cloudStus = [];
+
+/* --- guardar: además de este celular, a la nube --- */
+const _saveLocal = save;
+save = function(){ S._ts = Date.now(); _saveLocal(); schedulePush(); };
+function schedulePush(){ if(!ME) return; clearTimeout(pushT); pushT = setTimeout(pushNow, 2500); }
+
+function loadSB(){
+  return new Promise(res => {
+    if(window.supabase && window.supabase.createClient) return res(true);
+    const s = document.createElement("script");
+    s.src = "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2";
+    s.onload = () => res(!!(window.supabase && window.supabase.createClient));
+    s.onerror = () => res(false);
+    document.head.appendChild(s);
+  });
+}
+async function cloudInit(){
+  const ok = await loadSB();
+  if(!ok){ CLOUD_ERR = "Sin conexión: la nube no está disponible ahora. La app sigue funcionando y se sincroniza cuando vuelvas a tener internet."; renderCloud(); return; }
+  sb = window.supabase.createClient(SB_URL, SB_KEY, {auth:{persistSession:true, autoRefreshToken:true, detectSessionInUrl:true, storageKey:"1dz-auth"}});
+  sb.auth.onAuthStateChange(async (ev, session) => {
+    if(ev === "PASSWORD_RECOVERY"){ setTimeout(askNewPassword, 300); }
+    const u = session ? session.user : null;
+    if(u && (!ME || ME.id !== u.id)){ ME = u; await afterLogin(false); }
+    else if(!u && ME){ ME = null; MYCOACH = null; AMCOACH = null; stopMsgSub(); renderCloud(); }
+  });
+  const { data } = await sb.auth.getSession();
+  if(data && data.session && !ME){ ME = data.session.user; await afterLogin(false); }
+  renderCloud();
+}
+async function afterLogin(isNew){
+  CLOUD_ERR = "";
+  try{
+    await pullNow(true);
+    await loadRoles();
+    await pullPlan();
+    startMsgSub();
+    await refreshUnread();
+  }catch(e){ CLOUD_ERR = "No se pudo conectar con la nube. Probá de nuevo en un rato."; }
+  renderCloud(); if(VIEW==="hoy") renderHoy();
+}
+const hasData = o => !!(o && ((o.train||[]).length || Object.keys(o.log||{}).length || o.plan || (o.bw||[]).length));
+function normS(){
+  S.profile=S.profile||{goal:2000}; S.train=S.train||[]; S.bw=S.bw||[]; S.antro=S.antro||[]; S.water=S.water||{}; S.sleep=S.sleep||{}; S.mood=S.mood||{};
+  S.per=S.per||{on:0,share:0,list:[],sy:{}}; S.coach=S.coach||{students:{}}; S.mod=S.mod||{e:1,c:1,a:0}; S.log=S.log||{}; S.custom=S.custom||[];
+}
+function applyRemote(d){
+  const keep = {coachOk:S.coachOk};
+  Object.keys(S).forEach(k => delete S[k]); Object.assign(S, d, keep); normS();
+  S._uid = ME.id; _saveLocal(); applyMods(); selDay = null; show(VIEW);
+}
+async function pullNow(first){
+  if(!sb || !ME) return;
+  const { data, error } = await sb.from("user_data").select("data,updated_at").eq("user_id", ME.id).maybeSingle();
+  if(error) throw error;
+  if(!data){ S._uid = ME.id; _saveLocal(); await pushNow(); return; }
+  const rts = Date.parse(data.updated_at) || 0, lts = S._ts || 0;
+  if(first && S._uid !== ME.id && hasData(S) && hasData(data.data)){
+    const useCloud = confirm("Encontramos datos guardados en tu cuenta y también hay datos en este celular.\n\nAceptar: usar los de tu cuenta (recomendado si ya usabas la app en otro celular).\nCancelar: reemplazar los de tu cuenta por los de este celular.");
+    if(useCloud) applyRemote(data.data); else { S._uid = ME.id; await pushNow(); }
+    return;
+  }
+  if(first && S._uid !== ME.id && !hasData(S)){ applyRemote(data.data); return; }
+  if(rts > lts + 1500) applyRemote(data.data);
+  else if(lts > rts + 1500){ S._uid = ME.id; await pushNow(); }
+}
+function sharedSummary(){
+  const D30 = lastDays(30), D3 = lastDays(3), sum = L => L.reduce((a,e)=>{a.k+=e.k*e.q;a.p+=e.p*e.q;a.c+=e.c*e.q;a.g+=e.g*e.q;return a},{k:0,p:0,c:0,g:0});
+  const P = S.profile || {};
+  const o = {
+    name: P.name || "", mod: S.mod, goal: P.goal || 2000, mp: P.mp||"", mc: P.mc||"", mg: P.mg||"", wg: P.wg||2000,
+    plan: S.plan ? {name:S.plan.name, start:S.plan.start, weeks:S.plan.weeks, own:S.plan.own?1:0, days:S.plan.days.length} : null,
+    week: S.plan ? planWeek() : 0,
+    train: S.train.filter(t => t.date >= D30[0]),
+    food: D30.map(k => { const L = S.log[k]||[]; if(!L.length) return null; const t = sum(L); return {d:k, k:Math.round(t.k), p:Math.round(t.p), c:Math.round(t.c), g:Math.round(t.g), n:L.length}; }).filter(Boolean),
+    foodLog: D3.map(k => ({d:k, items:(S.log[k]||[]).map(e => ({m:e.m, n:e.n, a:e.amt || ((e.q!==1?r1(e.q)+" × ":"")+e.por), k:Math.round(e.k*e.q), up:e.up?1:0}))})).filter(x => x.items.length),
+    water: D30.map(k => [k, S.water[k]||0]).filter(x => x[1]), sleep: D30.map(k => [k, S.sleep[k]||null]).filter(x => x[1] && x[1].h),
+    mood: D30.map(k => [k, S.mood[k]||null]).filter(x => x[1]),
+    bw: (S.bw||[]).slice(-12), antro: S.antro||[], nextAn: S.nextAn||null, last: S._ts || Date.now()
+  };
+  if(S.per && S.per.on && S.per.share){
+    const x = !S.per.horm && S.per.list.length ? phaseAt(todayK()) : null;
+    o.per = {horm:S.per.horm?1:0, list:S.per.list.slice(-6), sy:D30.map(k=>[k,S.per.sy[k]||null]).filter(z=>z[1]), phase: x && !x.late ? {ph:x.ph, day:x.day} : null};
+  }
+  return o;
+}
+async function pushNow(){
+  if(!sb || !ME || pushing) return; pushing = true;
+  try{
+    const c = JSON.parse(JSON.stringify(S)); delete c.coachOk;
+    const ts = new Date(S._ts || Date.now()).toISOString();
+    const r1_ = await sb.from("user_data").upsert({user_id:ME.id, data:c, updated_at:ts});
+    if(r1_.error) throw r1_.error;
+    await sb.from("shared_data").upsert({user_id:ME.id, name:(S.profile&&S.profile.name)||ME.email, data:sharedSummary(), updated_at:new Date().toISOString()});
+    lastPush = Date.now(); CLOUD_ERR = "";
+  }catch(e){ CLOUD_ERR = "No se pudo guardar en la nube (¿sin internet?). Se reintenta solo."; clearTimeout(pushT); pushT = setTimeout(pushNow, 20000); }
+  pushing = false; renderCloudStatus();
+}
+async function loadRoles(){
+  MYCOACH = null; AMCOACH = null;
+  const co = await sb.from("coaches").select("user_id,name,code").eq("user_id", ME.id).maybeSingle();
+  if(co.data) AMCOACH = co.data;
+  const li = await sb.from("links").select("coach_id").eq("student_id", ME.id).limit(1);
+  if(li.data && li.data.length){ const c = await sb.from("coaches").select("user_id,name").eq("user_id", li.data[0].coach_id).maybeSingle(); MYCOACH = {id:li.data[0].coach_id, name:(c.data&&c.data.name)||"tu entrenadora"}; }
+}
+function applyPayload(P){
+  if(P.n && !(S.profile.name||"").trim()) S.profile.name = P.n;
+  S.mod = {e: P.mod ? +P.mod.e : 1, c: P.mod ? +P.mod.c : 1, a: P.mod ? +P.mod.a : 0};
+  if(P.k > 0){ S.profile.goal = +P.k; S.profile.manual = +P.k; }
+  if("mp" in P){ S.profile.mp = +P.mp || ""; S.profile.mc = +P.mc || ""; S.profile.mg = +P.mg || ""; }
+  if(P.p){ if(!S.plan || S.plan.name !== P.p.name){ S.draft = null; S.drafts = {}; } S.plan = P.p; }
+  S.coachMsg = P.msg || "";
+  if("nx" in P) S.nextAn = P.nx ? {d:P.nx, t:P.nxt||""} : null;
+  (P.an || []).forEach(m => { S.antro = S.antro.filter(x => x.d !== m.d); S.antro.push(m); });
+}
+async function pullPlan(){
+  if(!sb || !ME || !MYCOACH) return;
+  const { data } = await sb.from("plans").select("payload,updated_at").eq("student_id", ME.id).maybeSingle();
+  if(!data) return;
+  const ts = Date.parse(data.updated_at) || 0;
+  if(ts > (S._planTs || 0)){ applyPayload(data.payload); S._planTs = ts; save(); applyMods(); selDay = null; if(VIEW!=="comidas") show(VIEW); toast("Tu entrenadora actualizó tu plan 💪"); }
+}
+
+/* --- mensajes / chat --- */
+function stopMsgSub(){ if(msgSub && sb){ try{ sb.removeChannel(msgSub); }catch(e){} } msgSub = null; }
+function startMsgSub(){
+  stopMsgSub(); if(!sb || !ME || (!MYCOACH && !AMCOACH)) return;
+  msgSub = sb.channel("msgs-" + ME.id);
+  if(AMCOACH) msgSub.on("postgres_changes", {event:"INSERT", schema:"public", table:"messages", filter:"coach_id=eq." + ME.id}, onMsg);
+  if(MYCOACH) msgSub.on("postgres_changes", {event:"INSERT", schema:"public", table:"messages", filter:"student_id=eq." + ME.id}, onMsg);
+  msgSub.subscribe();
+}
+function onMsg(p){
+  const m = p.new; if(!m) return;
+  const open = chatCtx && chatCtx.coach === m.coach_id && chatCtx.student === m.student_id && $("ovChat").classList.contains("open");
+  if(open){ if(!chatCtx.msgs.some(x => x.id === m.id)){ chatCtx.msgs.push(m); renderChat(); } if(m.sender !== ME.id) markRead(); }
+  else if(m.sender !== ME.id){ const k = m.sender; UNREAD[k] = (UNREAD[k]||0) + 1; toast("💬 Mensaje nuevo"); renderCloud(); if(VIEW==="hoy") renderHoy(); }
+}
+async function refreshUnread(){
+  UNREAD = {}; if(!sb || !ME) return;
+  const { data } = await sb.from("messages").select("sender").neq("sender", ME.id).is("read_at", null).limit(500);
+  (data||[]).forEach(m => UNREAD[m.sender] = (UNREAD[m.sender]||0) + 1);
+}
+async function openChat(coach, student, title){
+  chatCtx = {coach, student, title, msgs:[]};
+  $("chatTitle").textContent = title; $("chatList").innerHTML = `<p style="text-align:center;color:var(--muted);font-size:.85rem">Cargando…</p>`;
+  $("ovChat").classList.add("open");
+  const { data, error } = await sb.from("messages").select("*").eq("coach_id", coach).eq("student_id", student).order("created_at", {ascending:true}).limit(300);
+  if(error){ $("chatList").innerHTML = `<p style="color:#c8364b">No se pudieron cargar los mensajes.</p>`; return; }
+  chatCtx.msgs = data || []; renderChat(); markRead();
+}
+function renderChat(){
+  const L = chatCtx.msgs;
+  $("chatList").innerHTML = L.length ? L.map(m => { const mine = m.sender === ME.id, d = new Date(m.created_at);
+    return `<div class="bub ${mine?"me":""}"><div>${esc(m.body).replace(/\n/g,"<br>")}</div><small>${d.toLocaleDateString("es-AR",{day:"numeric",month:"numeric"})} ${d.toLocaleTimeString("es-AR",{hour:"2-digit",minute:"2-digit"})}${mine && m.read_at ? " ✓✓" : ""}</small></div>`; }).join("")
+    : `<p style="text-align:center;color:var(--muted);font-size:.85rem;margin-top:20px">Todavía no hay mensajes. ¡Escribí el primero!</p>`;
+  const el = $("chatList"); el.scrollTop = el.scrollHeight;
+}
+async function markRead(){
+  if(!chatCtx) return; const other = chatCtx.coach === ME.id ? chatCtx.student : chatCtx.coach;
+  await sb.from("messages").update({read_at:new Date().toISOString()}).eq("coach_id", chatCtx.coach).eq("student_id", chatCtx.student).neq("sender", ME.id).is("read_at", null);
+  delete UNREAD[other]; renderCloud(); if(VIEW==="hoy") renderHoy();
+}
+async function sendChat(){
+  const t = $("chatIn").value.trim(); if(!t || !chatCtx) return;
+  $("chatIn").value = ""; $("chatSend").disabled = true;
+  const { data, error } = await sb.from("messages").insert({coach_id:chatCtx.coach, student_id:chatCtx.student, sender:ME.id, body:t.slice(0,2000)}).select().single();
+  $("chatSend").disabled = false;
+  if(error){ $("chatIn").value = t; toast("No se pudo enviar. Revisá tu conexión."); return; }
+  if(!chatCtx.msgs.some(x => x.id === data.id)) chatCtx.msgs.push(data); renderChat();
+}
+
+/* --- pantallas: cuenta --- */
+const ago = ts => { const s = Math.round((Date.now() - ts)/1000); if(s < 60) return "hace un momento"; if(s < 3600) return "hace " + Math.round(s/60) + " min"; if(s < 86400) return "hace " + Math.round(s/3600) + " h"; const d = Math.round(s/86400); return d === 1 ? "ayer" : "hace " + d + " días"; };
+function renderCloudStatus(){ const el = $("cloudSt"); if(el) el.textContent = CLOUD_ERR ? "⚠️ " + CLOUD_ERR : (lastPush ? "✓ Guardado en la nube " + ago(lastPush) : "✓ Conectada a la nube"); }
+function renderCloud(){
+  const el = $("cloudCard"); if(!el) return;
+  if(!ME){
+    el.innerHTML = `<h3 style="font-size:1rem">☁️ Mi cuenta</h3><p style="font-size:.85rem;color:var(--muted);margin:4px 0 10px">Creá tu cuenta gratis para guardar tus datos en la nube y usar la app en varios celulares. Si entrenás con 1dz, tu entrenadora puede ver tu progreso y chatear con vos.</p>${CLOUD_ERR?`<p style="font-size:.8rem;color:#b8590a">${esc(CLOUD_ERR)}</p>`:""}<button class="btn wide" id="goAuth"${sb?"":" disabled"}>Crear cuenta / Ingresar</button>`;
+  } else {
+    const un = MYCOACH ? (UNREAD[MYCOACH.id]||0) : 0;
+    el.innerHTML = `<h3 style="font-size:1rem">☁️ Mi cuenta</h3><p style="font-size:.85rem;margin-top:4px">${esc(ME.email||"")}</p><p style="font-size:.78rem;color:var(--muted)" id="cloudSt"></p>`
+      + (AMCOACH ? `<p style="font-size:.85rem;margin-top:8px">👩‍🏫 Cuenta de entrenadora · tu código: <b>${esc(AMCOACH.code)}</b></p>` : "")
+      + (MYCOACH ? `<div style="margin-top:10px;font-size:.88rem">Tu entrenadora: <b>${esc(MYCOACH.name)}</b></div><div class="grid2" style="margin-top:8px"><button class="btn" id="goChatMe">💬 Chat${un?` (${un})`:""}</button><button class="btn sec" id="unlinkMe">Desvincular</button></div>`
+        : (!AMCOACH ? `<div style="margin-top:10px;font-size:.85rem">¿Entrenás con 1dz? Poné el código de tu entrenadora:</div><div class="grid2" style="margin-top:6px"><input id="codeIn" placeholder="Ej: 1DZ" style="padding:11px;border:1px solid var(--line);border-radius:12px;text-transform:uppercase"><button class="btn" id="linkMe">Vincular</button></div>` : ""))
+      + `<button class="ghost" id="logout" style="color:var(--muted);margin-top:10px">Cerrar sesión</button>`;
+    renderCloudStatus();
+  }
+}
+document.addEventListener("click", async e => {
+  const t = e.target; if(!t || !t.id) return;
+  if(t.id === "goAuth"){ openAuth("up"); }
+  if(t.id === "logout"){ if(!confirm("¿Cerrar sesión? Tus datos quedan guardados en la nube y también en este celular.")) return; await pushNow(); await sb.auth.signOut(); ME = null; MYCOACH = null; AMCOACH = null; stopMsgSub(); renderCloud(); toast("Sesión cerrada"); }
+  if(t.id === "linkMe"){ const c = ($("codeIn").value||"").trim(); if(!c) return toast("Escribí el código");
+    const { data, error } = await sb.rpc("link_with_code", {p_code:c});
+    if(error){ toast(/bad_code/.test(error.message) ? "Ese código no existe" : /self/.test(error.message) ? "Ese es tu propio código" : "No se pudo vincular"); return; }
+    await loadRoles(); startMsgSub(); await pushNow(); await pullPlan(); renderCloud(); toast("¡Listo! Te vinculaste con " + data + " 💪"); }
+  if(t.id === "unlinkMe"){ if(!confirm("¿Desvincularte? Tu entrenadora ya no va a ver tu progreso ni podrá chatear con vos.")) return;
+    await sb.from("links").delete().eq("coach_id", MYCOACH.id).eq("student_id", ME.id); MYCOACH = null; startMsgSub(); renderCloud(); toast("Te desvinculaste"); }
+  if(t.id === "goChatMe" || t.id === "hoyChat"){ if(MYCOACH) openChat(MYCOACH.id, ME.id, "💬 " + MYCOACH.name); }
+  if(t.id === "chatSend") sendChat();
+});
+
+/* --- registro / ingreso --- */
+let authMode = "up";
+function openAuth(m){ authMode = m; renderAuth(); $("ovAuth").classList.add("open"); }
+function renderAuth(){
+  const up = authMode === "up";
+  $("authBody").innerHTML = `<div class="seg" style="margin-bottom:12px"><button data-am="up" class="${up?"on":""}">Crear cuenta</button><button data-am="in" class="${up?"":"on"}">Ya tengo cuenta</button></div>`
+    + (up ? `<div class="field"><label>Tu nombre</label><input id="auName" placeholder="Ej: Laura" value="${esc((S.profile&&S.profile.name)||"")}"></div>` : "")
+    + `<div class="field"><label>Mail</label><input id="auMail" type="email" autocomplete="email" placeholder="tu@mail.com"></div>`
+    + `<div class="field"><label>Contraseña${up?" (mínimo 6 caracteres)":""}</label><input id="auPass" type="password" autocomplete="${up?"new-password":"current-password"}"></div>`
+    + (up ? `<label class="chk" style="font-size:.8rem;align-items:flex-start"><input type="checkbox" id="auOk"> <span>Acepto que mis datos (comidas, entrenamientos, hábitos y mediciones) se guarden en la nube para usarlos en varios dispositivos y que, si me vinculo con una entrenadora, ella pueda ver mi progreso. El registro de período solo se comparte si yo lo activo. Puedo desvincularme cuando quiera.</span></label>` : "")
+    + `<button class="primary" id="auGo">${up?"Crear mi cuenta":"Ingresar"}</button>`
+    + (up ? "" : `<button class="ghost" id="auForgot">Olvidé mi contraseña</button>`)
+    + `<p id="auMsg" style="font-size:.85rem;margin-top:10px"></p>`;
+  $("authBody").querySelectorAll("[data-am]").forEach(b => b.onclick = () => { authMode = b.dataset.am; renderAuth(); });
+  $("auGo").onclick = doAuth;
+  if($("auForgot")) $("auForgot").onclick = async () => { const em = $("auMail").value.trim(); if(!em) return authMsg("Escribí tu mail arriba y tocá de nuevo.");
+    const { error } = await sb.auth.resetPasswordForEmail(em, {redirectTo: location.origin + location.pathname});
+    authMsg(error ? "No se pudo enviar el mail. Probá en un rato." : "Te mandamos un mail para crear una contraseña nueva. Revisá también spam.", !error); };
+}
+function authMsg(t, ok){ const el = $("auMsg"); el.textContent = t; el.style.color = ok ? "#1a8a4a" : "#c8364b"; }
+function authErr(m){ m = String(m||"");
+  if(/Invalid login/i.test(m)) return "Mail o contraseña incorrectos.";
+  if(/already registered|already exists/i.test(m)) return "Ese mail ya tiene una cuenta: tocá «Ya tengo cuenta».";
+  if(/Password should|at least/i.test(m)) return "La contraseña tiene que tener al menos 6 caracteres.";
+  if(/Email not confirmed/i.test(m)) return "Tenés que confirmar tu mail: revisá tu correo (y spam).";
+  if(/rate|too many/i.test(m)) return "Demasiados intentos. Esperá unos minutos.";
+  if(/invalid.*email|valid email/i.test(m)) return "Revisá el mail, parece que no es válido.";
+  return "No se pudo completar. Revisá tu conexión e intentá de nuevo."; }
+async function doAuth(){
+  const em = $("auMail").value.trim(), pw = $("auPass").value;
+  if(!em || !pw) return authMsg("Completá mail y contraseña.");
+  $("auGo").disabled = true;
+  if(authMode === "up"){
+    if(!$("auOk").checked){ $("auGo").disabled = false; return authMsg("Para crear la cuenta tenés que aceptar el uso de tus datos."); }
+    const nm = $("auName").value.trim(); if(nm){ S.profile.name = nm; _saveLocal(); }
+    const { data, error } = await sb.auth.signUp({email:em, password:pw, options:{data:{name:nm}}});
+    $("auGo").disabled = false;
+    if(error) return authMsg(authErr(error.message));
+    if(!data.session) return authMsg("¡Cuenta creada! Te mandamos un mail para confirmarla. Después volvé y tocá «Ya tengo cuenta».", true);
+    $("ovAuth").classList.remove("open"); toast("¡Cuenta creada! ☁️");
+  } else {
+    const { error } = await sb.auth.signInWithPassword({email:em, password:pw});
+    $("auGo").disabled = false;
+    if(error) return authMsg(authErr(error.message));
+    $("ovAuth").classList.remove("open"); toast("¡Hola de nuevo! ☁️");
+  }
+}
+async function askNewPassword(){
+  const p = prompt("Escribí tu contraseña nueva (mínimo 6 caracteres):"); if(!p) return;
+  const { error } = await sb.auth.updateUser({password:p});
+  toast(error ? "No se pudo cambiar la contraseña" : "Contraseña actualizada ✓");
+}
+
+/* --- panel de la entrenadora --- */
+async function loadCloudStudents(){
+  cloudStus = []; if(!AMCOACH) return;
+  const li = await sb.from("links").select("student_id,created_at").eq("coach_id", ME.id);
+  const ids = (li.data||[]).map(x => x.student_id); if(!ids.length) return;
+  const sd = await sb.from("shared_data").select("user_id,name,data,updated_at").in("user_id", ids);
+  const map = {}; (sd.data||[]).forEach(r => map[r.user_id] = r);
+  cloudStus = ids.map(id => map[id] || {user_id:id, name:"(sin datos todavía)", data:{}, updated_at:null})
+    .sort((a,b) => (a.name||"").localeCompare(b.name||""));
+}
+async function renderCoachCloud(){
+  const el = $("cCloud"); if(!el) return;
+  if(!ME){ el.innerHTML = `<p style="font-size:.85rem;color:var(--muted)">Para ver a tus alumnos en la nube, iniciá sesión con tu cuenta en <b>Progreso → ☁️ Mi cuenta</b>.</p>`; return; }
+  if(!AMCOACH){ el.innerHTML = `<p style="font-size:.85rem;color:var(--muted)">Tu cuenta (${esc(ME.email)}) todavía no está habilitada como entrenadora. Se habilita una sola vez desde Supabase.</p>`; return; }
+  el.innerHTML = `<p style="font-size:.85rem;color:var(--muted)">Cargando alumnos…</p>`;
+  try{ await loadCloudStudents(); }catch(e){ el.innerHTML = `<p style="color:#c8364b">No se pudo cargar la lista.</p>`; return; }
+  el.innerHTML = `<p style="font-size:.85rem">Tu código para que se vinculen: <b style="font-size:1rem">${esc(AMCOACH.code)}</b></p>`
+    + (cloudStus.length ? cloudStus.map(s => { const last = s.data && s.data.last ? s.data.last : (s.updated_at ? Date.parse(s.updated_at) : 0), dd = last ? (Date.now()-last)/864e5 : 99, un = UNREAD[s.user_id]||0;
+        return `<div class="hist"><div style="display:flex;justify-content:space-between;align-items:center;gap:6px"><span><b>${esc(s.name||"Alumno")}</b><br><small style="color:${dd>3?"#b8590a":"var(--muted)"}">${last?(dd>3?"⚠️ ":"")+"Última actividad: "+ago(last):"Sin actividad todavía"}</small></span><span style="display:flex;gap:6px"><button class="btn sec" data-stu="${s.user_id}" style="padding:7px 10px">Ver</button><button class="btn" data-chs="${s.user_id}" style="padding:7px 10px">💬${un?" "+un:""}</button></span></div></div>`; }).join("")
+      : `<p style="font-size:.85rem;color:var(--muted);margin-top:6px">Todavía no hay alumnos vinculados. Pasales tu código: en la app van a <b>Progreso → Mi cuenta</b>, crean su cuenta y lo escriben.</p>`)
+    + `<div style="margin-top:12px;font-size:.85rem">☁️ <b>Enviar el plan de arriba a un alumno de la nube</b></div><div class="grid2" style="margin-top:6px"><select id="cSendTo" style="padding:10px;border:1px solid var(--line);border-radius:12px">${cloudStus.map(s=>`<option value="${s.user_id}">${esc(s.name||"Alumno")}</option>`).join("")}</select><button class="btn" id="cSendCloud"${cloudStus.length?"":" disabled"}>Enviar plan</button></div>`;
+  el.querySelectorAll("[data-stu]").forEach(b => b.onclick = () => openStu(b.dataset.stu));
+  el.querySelectorAll("[data-chs]").forEach(b => b.onclick = () => { const s = cloudStus.find(x => x.user_id === b.dataset.chs); openChat(ME.id, b.dataset.chs, "💬 " + ((s&&s.name)||"Alumno")); });
+  const sc = $("cSendCloud"); if(sc) sc.onclick = sendPlanCloud;
+}
+async function sendPlanCloud(){
+  readCoach();
+  if(CS.mod.e && !CS.p.days.some(d => d.it.length || isRun(d))){ toast("Agregá al menos un ejercicio"); return; }
+  const sid = $("cSendTo").value, s = cloudStus.find(x => x.user_id === sid);
+  if(!confirm(`¿Enviar este plan a ${s ? s.name : "este alumno"}? Reemplaza el plan que tenga ahora.`)) return;
+  if(CS.n) { S.coach.students[CS.n] = JSON.parse(JSON.stringify(CS)); save(); }
+  const pay = {v:1, n:CS.n || (s&&s.name) || "", msg:CS.msg, mod:CS.mod, k:CS.k||0, mp:CS.mp||0, mc:CS.mc||0, mg:CS.mg||0, p: CS.mod.e ? CS.p : null, an: CS.mod.a ? CS.an : [], nx: CS.mod.a ? (CS.nx||"") : "", nxt: CS.mod.a ? (CS.nxt||"") : ""};
+  const { error } = await sb.from("plans").upsert({student_id:sid, coach_id:ME.id, payload:pay, updated_at:new Date().toISOString()});
+  toast(error ? "No se pudo enviar el plan" : "Plan enviado ✓ Le llega la próxima vez que abra la app");
+}
+function openStu(id){
+  const s = cloudStus.find(x => x.user_id === id); if(!s) return;
+  const d = s.data || {}, D7 = lastDays(7), EI = ["","😫","😐","🙂","💪"], AI = ["","😢","😐","🙂","😄"];
+  let h = `<p style="font-size:.85rem;color:var(--muted)">${d.last ? "Última actividad: " + ago(d.last) : "Sin actividad todavía"}</p>`;
+  if(d.plan) h += `<div class="card" style="background:var(--bg)"><b>🏋️ ${esc(d.plan.name)}</b> · semana ${d.week||0} de ${d.plan.weeks}${d.plan.own?" · <small>(rutina armada por el alumno)</small>":""}</div>`;
+  const tr = (d.train||[]).slice().sort((a,b)=>a.date<b.date?1:-1);
+  h += `<h4 style="margin-top:12px">Entrenamientos (30 días): ${tr.length}</h4>` + (tr.length ? tr.slice(0,8).map(t => `<div class="hist"><b>${dLabel(t.date)} · ${esc(t.dn)}</b>${t.dl?' <span class="badge">descarga</span>':""}<br>${t.run?"🏃 "+esc(runTxt(t.run)):t.items.map(i=>esc((EXI[i.x]||{}).n||i.x)+": "+i.sets.map(z=>(z.kg?fmtN(z.kg)+"×":"")+z.r+(z.rir!=null&&z.rir!==""&&!isNaN(z.rir)?" (RIR "+z.rir+")":"")).join(", ")).join("<br>")}${t.c?"<br>💬 "+esc(t.c):""}</div>`).join("") : `<p style="font-size:.85rem;color:var(--muted)">Sin entrenamientos registrados.</p>`);
+  const fd = {}; (d.food||[]).forEach(f => fd[f.d] = f);
+  h += `<h4 style="margin-top:12px">Comidas · objetivo ${(d.goal||2000).toLocaleString("es-AR")} kcal</h4><div style="display:flex;gap:4px;margin-top:6px">${D7.map(k => { const f = fd[k]; return `<div style="flex:1;text-align:center;font-size:.72rem"><div style="font-weight:700;color:${f?(f.k>(d.goal||2000)*1.1?"#b8590a":"var(--ink)"):"var(--muted)"}">${f?f.k:"–"}</div><small style="color:var(--muted)">${new Date(k+"T12:00").toLocaleDateString("es-AR",{weekday:"short"}).slice(0,2)}</small></div>`; }).join("")}</div>`;
+  (d.foodLog||[]).slice(-1).forEach(x => { h += `<p style="font-size:.78rem;color:var(--muted);margin-top:6px">Detalle del ${dLabel(x.d)}:</p>` + x.items.map(i => `<div style="font-size:.8rem">• ${esc(i.n)} <span style="color:var(--muted)">(${esc(i.a)})</span> · ${i.k} kcal${i.up?' <span class="up-dot">UP</span>':""}</div>`).join(""); });
+  const wm = Object.fromEntries(d.water||[]), sm = Object.fromEntries(d.sleep||[]), mm = Object.fromEntries(d.mood||[]);
+  h += `<h4 style="margin-top:12px">Hábitos (7 días)</h4><div style="display:flex;gap:4px;margin-top:6px">${D7.map(k => `<div style="flex:1;text-align:center;font-size:.72rem;line-height:1.5"><div>💧${wm[k]?fmtN(Math.round(wm[k]/100)/10):"–"}</div><div>😴${sm[k]?fmtN(sm[k].h):"–"}</div><div>${EI[(mm[k]||{}).e||0]||"·"}${AI[(mm[k]||{}).a||0]||"·"}</div><small style="color:var(--muted)">${new Date(k+"T12:00").toLocaleDateString("es-AR",{weekday:"short"}).slice(0,2)}</small></div>`).join("")}</div>`;
+  if(d.per){ const ph = d.per.phase; h += `<h4 style="margin-top:12px">Ciclo (compartido)</h4><p style="font-size:.85rem">${d.per.horm?"Usa anticonceptivos hormonales.":ph?`${PH[ph.ph].ic} Fase ${PH[ph.ph].n.toLowerCase()} (día ${ph.day})`:"Sin fase calculada."}${(d.per.list||[]).length?"<br>Último período: "+dLabel(d.per.list[d.per.list.length-1].s):""}</p>`; }
+  const bw = (d.bw||[]).slice().sort((a,b)=>a.d<b.d?-1:1);
+  if(bw.length) h += `<h4 style="margin-top:12px">Peso</h4><p style="font-size:.85rem">${bw.slice(-4).map(x=>dLabel(x.d)+": <b>"+fmtN(x.kg)+" kg</b>").join(" · ")}</p>`;
+  if((d.antro||[]).length){ const a = d.antro.slice().sort((x,y)=>x.d<y.d?1:-1)[0]; h += `<h4 style="margin-top:12px">Última antropometría (${dLabel(a.d)})</h4><p style="font-size:.85rem">${AF.filter(([k])=>a[k]!=null&&a[k]!=="").map(([k,n,u])=>n+": <b>"+fmtN(a[k])+u+"</b>").join(" · ")}</p>`; }
+  h += `<div class="grid2" style="margin-top:14px"><button class="btn" id="stuChat">💬 Chat</button><button class="btn sec" id="stuUnlink" style="color:#c8364b">Desvincular</button></div>`;
+  $("stuTitle").textContent = s.name || "Alumno"; $("stuBody").innerHTML = h; $("ovStu").classList.add("open");
+  $("stuChat").onclick = () => openChat(ME.id, id, "💬 " + (s.name||"Alumno"));
+  $("stuUnlink").onclick = async () => { if(!confirm(`¿Desvincular a ${s.name}? Ya no vas a ver su progreso.`)) return; await sb.from("links").delete().eq("coach_id", ME.id).eq("student_id", id); $("ovStu").classList.remove("open"); renderCoachCloud(); toast("Alumno desvinculado"); };
+}
+
+/* --- refrescar al volver a la app --- */
+document.addEventListener("visibilitychange", async () => {
+  if(document.visibilityState !== "visible" || !sb || !ME) return;
+  try{ await pullNow(false); await pullPlan(); await refreshUnread(); renderCloud(); if(VIEW==="hoy") renderHoy(); }catch(e){}
+});
+
 /* ---------- arranque ---------- */
 applyMods();
 if(!checkHash() && location.hash === "#entrenadora") openCoach();
 show("hoy");
+cloudInit();
 if(firstRun && !PENDING){ /* bienvenida normal */ }
 
 </script>
