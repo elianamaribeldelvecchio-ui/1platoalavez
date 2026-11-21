@@ -1285,6 +1285,21 @@ function updPreview(){
     manualBox.style.display = "";
   }
 }
+function recalcMacrosFromProt(){
+  // Si el usuario editó proteínas, redistribuir el resto (carbs y grasas)
+  const goal = calcGoal() || +$("inManual").value || 0;
+  if(!goal) return;
+  const prot = +$("inMP").value || 0;
+  if(!prot) return;
+  const remaining = goal - prot * 4;
+  if(remaining < 0){ $("macManualHint").textContent = "⚠️ Las proteínas superan el total de calorías."; return; }
+  const carbs = Math.round((remaining * 0.57) / 4);
+  const fats  = Math.round((remaining * 0.43) / 9);
+  $("inMC").value = carbs;
+  $("inMG").value = fats;
+  const total = prot*4 + carbs*4 + fats*9;
+  $("macManualHint").textContent = `Carbs y grasas actualizados · Total: ${total} kcal`;
+}
 $("btnEditMacros").onclick = () => {
   const mac = (() => {
     const w = +$("inW").value;
@@ -1296,6 +1311,8 @@ $("btnEditMacros").onclick = () => {
   if(mac && !$("inMG").value){ $("inMG").value = mac.g; }
   $("macroManualBox").style.display = "";
   $("macManualHint").textContent = "Editá los valores que quieras. Se guardan los que ponés acá.";
+  // Cuando cambia proteínas, recalcular carbs y grasas automáticamente
+  $("inMP").addEventListener("change", recalcMacrosFromProt);
   $("inMP").focus();
 };
 function openSettings(welcome){
