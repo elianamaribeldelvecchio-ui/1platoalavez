@@ -315,7 +315,7 @@ details.hisw>summary{font-weight:700;font-size:.9rem}
   <section class="view" id="v-entreno" hidden>
     <h2 class="sec-title">Entreno</h2>
     <p style="font-size:.82rem;color:var(--accent);margin:-8px 2px 12px;font-family:'Fraunces',serif"><span style="color:var(--warm)">1</span> entreno a la vez</p>
-    <div class="seg" id="segEnt" style="margin-bottom:14px"><button data-v="rut" class="on">Mi rutina</button><button data-v="run">🏃 Run</button><button data-v="dep" id="tabDep" style="display:none">⚽ Deporte</button><button data-v="his">Historial</button><button data-v="lib">Biblioteca</button></div>
+    <div class="seg" id="segEnt" style="margin-bottom:14px"><button data-v="rut" class="on">💪 Fuerza</button><button data-v="run">🏃 Run</button><button data-v="dep" id="tabDep" style="display:none">⚽ Deporte</button><button data-v="his">Historial</button><button data-v="lib">Biblioteca</button></div>
     <div id="entRut"></div>
     <div id="entRun" hidden></div>
     <div id="entDep" hidden></div>
@@ -1779,7 +1779,8 @@ function renderEnt(){
   if(entTab==="run") return renderRunFree();
   if(entTab==="dep") return renderDep();
   const p = S.plan;
-  if(!p){ $("entRut").innerHTML = `<div class="card empty2"><b style="font-size:1.05rem">Todavía no tenés una rutina</b><br><br>Armala vos con los ejercicios de la biblioteca y registrá cada entrenamiento.<br><br><button class="btn wide" id="goSelf">✏️ Armar mi rutina</button><button class="btn sec wide" id="goLib" style="margin-top:8px">Ver la biblioteca de ejercicios</button><p style="font-size:.8rem;color:var(--muted);margin-top:12px">¿Entrenás con 1dz? Tu entrenadora te manda tu plan por link de WhatsApp: abrilo y se carga solo.</p></div>` + ctaCard();
+  const ctaNegroPlan = `<div class="card cta" style="margin-top:8px"><h3>¿Querés un plan a tu medida?</h3><p>Entrenamiento, nutrición y acompañamiento personalizado con 1dz.</p><div class="cta-btns"><a class="wa" href="https://wa.me/5491127520419?text=Hola%201dz%2C%20vengo%20de%20la%20app%20y%20quiero%20info%20sobre%20los%20planes" target="_blank" rel="noopener">WhatsApp<small>11 2752-0419</small></a><a class="ig" href="https://instagram.com/1diaalavez9" target="_blank" rel="noopener">Instagram<small>@1diaalavez9</small></a></div></div>`;
+  if(!p){ $("entRut").innerHTML = `<div class="card empty2"><b style="font-size:1.05rem">Todavía no tenés una rutina</b><br><br>Armala vos con los ejercicios de la biblioteca y registrá cada entrenamiento.<br><br><button class="btn wide" id="goSelf">✏️ Armar mi rutina</button><button class="btn sec wide" id="goLib" style="margin-top:8px">Ver la biblioteca de ejercicios</button><p style="font-size:.8rem;color:var(--muted);margin-top:12px">¿Entrenás con 1dz? Tu entrenadora te manda tu plan por link de WhatsApp: abrilo y se carga solo.</p></div>` + ctaCard() + ctaNegroPlan;
     $("goLib").onclick = () => document.querySelector('#segEnt [data-v="lib"]').click(); $("goSelf").onclick = openSelf; return; }
   const w = planWeek();
   if((selDay===null || selDay>=p.days.length) && S.draft && S.draft.date===todayK() && S.draft.di < p.days.length) selDay = S.draft.di;
@@ -1831,6 +1832,7 @@ function renderEnt(){
   if(p.own) h += `<button class="btn sec wide" id="goSelf2">✏️ Editar mi rutina</button>` + ctaCard();
   if(!p.own) h += `<div class="card" style="border:2px dashed var(--line)"><p style="font-size:.88rem;color:var(--muted);margin-bottom:10px">¿Hoy adaptaste los ejercicios? Podés registrar lo que hiciste realmente sin tocar el plan de tu entrenadora.</p><button class="btn sec wide" id="altVarBtn">🔄 Registrar variante de hoy</button></div>`;
   if(S.train.length) h += `<button class="btn sec wide" id="goHis">📂 Ver historial completo (${S.train.length})</button>`;
+  if(p.own) h += `<div class="card cta" style="margin-top:8px"><h3>¿Querés un plan a tu medida?</h3><p>Entrenamiento, nutrición y acompañamiento personalizado con 1dz.</p><div class="cta-btns"><a class="wa" href="https://wa.me/5491127520419?text=Hola%201dz%2C%20vengo%20de%20la%20app%20y%20quiero%20info%20sobre%20los%20planes" target="_blank" rel="noopener">WhatsApp<small>11 2752-0419</small></a><a class="ig" href="https://instagram.com/1diaalavez9" target="_blank" rel="noopener">Instagram<small>@1diaalavez9</small></a></div></div>`;
   $("entRut").innerHTML = h;
   save();
 }
@@ -2294,17 +2296,9 @@ function renderHoy(){
     h += `<div class="card"><div class="kv"><h3>🍽️ Comidas de hoy</h3><small>${k.toLocaleString("es-AR")} / ${g.toLocaleString("es-AR")} kcal</small></div><div class="bar" style="margin-top:10px;height:10px"><i style="width:${pct}%;background:${k>g?"var(--warm)":"var(--accent)"}"></i></div><button class="btn sec wide" data-go="comidas">Cargar comidas</button></div>`;
   }
   $("hoyCards").innerHTML = h;
-  // Banner inferior: naranja solo para socios (plan de coach), negro siempre para todos
+  // Banner inferior: solo para socios con plan de coach (acompañamiento)
   const hasCoachPlan = S.plan && !S.plan.own;
-  const ctaNegro = `<div class="card cta">
-      <h3>¿Querés un plan a tu medida?</h3>
-      <p>Entrenamiento, nutrición y acompañamiento personalizado con 1dz.</p>
-      <div class="cta-btns">
-        <a class="wa" href="https://wa.me/5491127520419?text=Hola%201dz%2C%20vengo%20de%20la%20app%20y%20quiero%20info%20sobre%20los%20planes" target="_blank" rel="noopener">WhatsApp<small>11 2752-0419</small></a>
-        <a class="ig" href="https://instagram.com/1diaalavez9" target="_blank" rel="noopener">Instagram<small>@1diaalavez9</small></a>
-      </div>
-    </div>`;
-  $("ctaArea").innerHTML = (hasCoachPlan ? ctaCard() : "") + ctaNegro;
+  $("ctaArea").innerHTML = hasCoachPlan ? ctaCard() : "";
 }
 $("hoyCards").addEventListener("click", e => { if(wellClick(e)) return; const b = e.target.closest("[data-go]"); if(b){ if(b.dataset.go==="entreno" && !S.plan){ entTab="lib"; document.querySelectorAll("#segEnt button").forEach(x=>x.classList.toggle("on",x.dataset.v==="lib")); } show(b.dataset.go); } });
 
