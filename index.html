@@ -1510,35 +1510,71 @@ function openAltVar(){
   $("altVarTxt").focus();
 }
 // --- Run libre ---
-let runFree = {mode:"km", km:"", lapM:"", lapN:"", m:"", s:"", rpe:"", fc:"", c:""};
+// runFree.segs = [{tipo:"caminar"|"trote"|"pique", m: número}]
+let runFree = {mode:"km", km:"", lapM:"", lapN:"", m:"", s:"", rpe:"", fc:"", c:"", segs:[], circN:""};
+const RUN_TIPOS = {caminar:"🚶 Caminar", trote:"🏃 Trote", pique:"⚡ Pique"};
+
 function calcRunKm(r){
   if(r.mode==="lap"){
     const lm = parseFloat(String(r.lapM).replace(",",".")) || 0;
     const ln = parseInt(r.lapN) || 0;
     return lm && ln ? Math.round(lm * ln) / 1000 : 0;
   }
+  if(r.mode==="circ"){
+    const n = parseInt(r.circN) || 0;
+    const totalM = (r.segs||[]).reduce((acc,s) => acc + (parseFloat(String(s.m).replace(",",".")) || 0), 0);
+    return totalM && n ? Math.round(totalM * n) / 1000 : 0;
+  }
   return parseFloat(String(r.km).replace(",",".")) || 0;
 }
+
+function circKmPreview(r){
+  const n = parseInt(r.circN) || 0;
+  const segs = r.segs || [];
+  const totalM = segs.reduce((acc,s) => acc + (parseFloat(String(s.m).replace(",",".")) || 0), 0);
+  if(!totalM) return "";
+  const perVuelta = fmtN(totalM/1000)+" km/vuelta";
+  if(!n) return "Por vuelta: "+perVuelta;
+  return "Total: "+fmtN(totalM*n/1000)+" km ("+perVuelta+" × "+n+")";
+}
+
+function renderCircSegs(r){
+  const segs = r.segs || [];
+  if(!segs.length) return `<p style="font-size:.82rem;color:var(--muted);text-align:center;padding:8px 0">Agregá los segmentos del circuito</p>`;
+  return segs.map((s,i) => `
+    <div style="display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid var(--line)">
+      <select class="circ-tipo" data-i="${i}" style="flex:1;border-radius:8px;border:1px solid var(--line);padding:6px 4px;background:var(--card);font-size:.85rem">
+        ${Object.entries(RUN_TIPOS).map(([v,l])=>`<option value="${v}"${s.tipo===v?" selected":""}>${l}</option>`).join("")}
+      </select>
+      <input class="circ-m" data-i="${i}" inputmode="decimal" value="${esc(String(s.m))}" placeholder="metros" style="width:80px;border-radius:8px;border:1px solid var(--line);padding:6px 8px;font-size:.85rem;text-align:right">
+      <span style="font-size:.8rem;color:var(--muted)">m</span>
+      <button class="xbtn circ-del" data-i="${i}" aria-label="Eliminar">✕</button>
+    </div>`).join("");
+}
+
 function renderRunFree(){
   const r = runFree;
   const km = calcRunKm(r), sec = (+r.m||0)*60 + (+r.s||0);
   const lapKm = r.mode==="lap" && km > 0 ? fmtN(km) : "";
+  const circPrev = r.mode==="circ" ? circKmPreview(r) : "";
+
   let h = `<div class="card">
     <h3>🏃 Registrar salida a correr</h3>
     <p style="font-size:.85rem;color:var(--muted);margin-top:4px">Registrá cualquier salida, independientemente de tu rutina.</p>
 
     <!-- Toggle modo distancia -->
-    <div style="display:flex;gap:8px;margin-top:14px;margin-bottom:12px">
-      <button class="btn${r.mode==="km"?" on":""}" id="rfModeKm" style="flex:1;font-size:.85rem">📏 Distancia directa</button>
-      <button class="btn${r.mode==="lap"?" on":""}" id="rfModeLap" style="flex:1;font-size:.85rem">🔄 Por vueltas</button>
+    <div style="display:flex;gap:6px;margin-top:14px;margin-bottom:12px;flex-wrap:wrap">
+      <button class="btn${r.mode==="km"?" on":""}" id="rfModeKm" style="flex:1;min-width:90px;font-size:.82rem">📏 Fondo</button>
+      <button class="btn${r.mode==="lap"?" on":""}" id="rfModeLap" style="flex:1;min-width:90px;font-size:.82rem">🔄 Vueltas</button>
+      <button class="btn${r.mode==="circ"?" on":""}" id="rfModeCirc" style="flex:1;min-width:90px;font-size:.82rem">⚡ Pasadas</button>
     </div>
 
-    <!-- Modo km directo -->
+    <!-- Modo km directo (fondo) -->
     <div id="rfBlockKm" style="display:${r.mode==="km"?"":"none"}">
       <div class="field"><label>Distancia km</label><input inputmode="decimal" id="rfKm" value="${esc(r.km)}" placeholder="Ej: 5,2"></div>
     </div>
 
-    <!-- Modo vueltas -->
+    <!-- Modo vueltas simples -->
     <div id="rfBlockLap" style="display:${r.mode==="lap"?"":"none"}">
       <div class="grid2">
         <div class="field"><label>Largo de la vuelta (m)</label><input inputmode="decimal" id="rfLapM" value="${esc(r.lapM)}" placeholder="Ej: 400"></div>
@@ -1547,7 +1583,21 @@ function renderRunFree(){
       <div id="rfLapResult" style="font-size:.88rem;color:var(--p);font-weight:600;margin-top:4px;min-height:1.4em">${lapKm?"Total: "+lapKm+" km":""}</div>
     </div>
 
-    <!-- Tiempo -->
+    <!-- Modo circuito / pasadas -->
+    <div id="rfBlockCirc" style="display:${r.mode==="circ"?"":"none"}">
+      <p style="font-size:.82rem;color:var(--muted);margin-bottom:8px">Cargá los segmentos de una vuelta. Luego indicá cuántas vueltas hicieron.</p>
+      <div id="rfCircSegs">${renderCircSegs(r)}</div>
+      <div style="display:flex;gap:8px;margin-top:10px">
+        <button class="btn sec" id="rfAddSeg" style="font-size:.83rem">+ Agregar segmento</button>
+      </div>
+      <div class="field" style="margin-top:12px">
+        <label>Cantidad de vueltas ejecutadas</label>
+        <input inputmode="numeric" id="rfCircN" value="${esc(r.circN)}" placeholder="Ej: 6">
+      </div>
+      <div id="rfCircResult" style="font-size:.9rem;color:var(--p);font-weight:600;margin-top:4px;min-height:1.4em">${circPrev}</div>
+    </div>
+
+    <!-- Tiempo total -->
     <div class="grid2" style="margin-top:12px">
       <div class="field"><label>Minutos</label><input inputmode="numeric" id="rfM" value="${esc(r.m)}" placeholder="32"></div>
       <div class="field"><label>Segundos</label><input inputmode="numeric" id="rfS" value="${esc(r.s)}" placeholder="15"></div>
@@ -1562,40 +1612,74 @@ function renderRunFree(){
     <p style="font-size:.78rem;color:var(--muted);margin-top:4px">RPE: 1 = muy suave, 10 = máximo esfuerzo.</p>
     <button class="primary" id="rfSave">Guardar run</button>
   </div>`;
-  // Últimos runs registrados (libres o del plan)
+
+  // Últimas salidas
   const runs = S.train.filter(t => t.run && (t.run.km || t.run.sec)).slice(-5).reverse();
   if(runs.length) h += `<div class="card"><h3 style="font-size:1rem;margin-bottom:6px">Últimas salidas</h3>${runs.map(t=>`<div class="hist"><b>${dLabel(t.date)}</b> · ${esc(runTxt(t.run))}${t.c?"<br>💬 "+esc(t.c):""}</div>`).join("")}</div>`;
   $("entRun").innerHTML = h;
 
-  // Toggle modo
-  $("rfModeKm").onclick = () => { runFree.mode="km"; renderRunFree(); };
-  $("rfModeLap").onclick = () => { runFree.mode="lap"; renderRunFree(); };
+  // Toggle modos
+  $("rfModeKm").onclick  = () => { runFree.mode="km";   renderRunFree(); };
+  $("rfModeLap").onclick = () => { runFree.mode="lap";  renderRunFree(); };
+  $("rfModeCirc").onclick= () => { runFree.mode="circ"; if(!runFree.segs.length) runFree.segs=[{tipo:"caminar",m:""},{tipo:"trote",m:""},{tipo:"pique",m:""}]; renderRunFree(); };
 
-  // Función de actualización de ritmo y resultado vueltas
-  function rfUpdate(){
-    runFree.km   = $("rfKm")  ? $("rfKm").value  : runFree.km;
-    runFree.lapM = $("rfLapM")? $("rfLapM").value : runFree.lapM;
-    runFree.lapN = $("rfLapN")? $("rfLapN").value : runFree.lapN;
-    runFree.m    = $("rfM").value;
-    runFree.s    = $("rfS").value;
-    runFree.rpe  = $("rfRpe").value;
-    runFree.fc   = $("rfFc").value;
-    runFree.c    = $("rfCom").value;
+  // Actualización de preview de ritmo/distancia
+  function rfUpdatePace(){
     const km2 = calcRunKm(runFree), sec2 = (+runFree.m||0)*60 + (+runFree.s||0);
-    if($("rfLapResult")) $("rfLapResult").textContent = km2 && runFree.mode==="lap" ? "Total: "+fmtN(km2)+" km" : "";
     $("rfPace").innerHTML = km2&&sec2?"Ritmo promedio: <b>"+pace({km:km2,sec:sec2})+"</b>":"El ritmo se calcula solo cuando cargás distancia y tiempo.";
   }
 
-  ["rfKm","rfLapM","rfLapN","rfM","rfS","rfRpe","rfFc","rfCom"].forEach(id => {
+  function rfUpdate(){
+    runFree.km    = $("rfKm")   ? $("rfKm").value   : runFree.km;
+    runFree.lapM  = $("rfLapM") ? $("rfLapM").value : runFree.lapM;
+    runFree.lapN  = $("rfLapN") ? $("rfLapN").value : runFree.lapN;
+    runFree.circN = $("rfCircN")? $("rfCircN").value: runFree.circN;
+    runFree.m = $("rfM").value; runFree.s = $("rfS").value;
+    runFree.rpe = $("rfRpe").value; runFree.fc = $("rfFc").value; runFree.c = $("rfCom").value;
+    if($("rfLapResult"))  $("rfLapResult").textContent  = calcRunKm(runFree) && runFree.mode==="lap"  ? "Total: "+fmtN(calcRunKm(runFree))+" km" : "";
+    if($("rfCircResult")) $("rfCircResult").textContent = runFree.mode==="circ" ? circKmPreview(runFree) : "";
+    rfUpdatePace();
+  }
+
+  ["rfKm","rfLapM","rfLapN","rfCircN","rfM","rfS","rfRpe","rfFc","rfCom"].forEach(id => {
     const el = $(id); if(el) el.addEventListener("input", rfUpdate);
   });
 
+  // Circuito: segmentos
+  if($("rfAddSeg")){
+    $("rfAddSeg").onclick = () => {
+      runFree.segs.push({tipo:"trote", m:""});
+      $("rfCircSegs").innerHTML = renderCircSegs(runFree);
+      bindCircSegs();
+    };
+  }
+
+  function bindCircSegs(){
+    document.querySelectorAll(".circ-tipo").forEach(el => {
+      el.addEventListener("change", () => { runFree.segs[+el.dataset.i].tipo = el.value; if($("rfCircResult")) $("rfCircResult").textContent = circKmPreview(runFree); rfUpdatePace(); });
+    });
+    document.querySelectorAll(".circ-m").forEach(el => {
+      el.addEventListener("input", () => { runFree.segs[+el.dataset.i].m = el.value; if($("rfCircResult")) $("rfCircResult").textContent = circKmPreview(runFree); rfUpdatePace(); });
+    });
+    document.querySelectorAll(".circ-del").forEach(el => {
+      el.onclick = () => { runFree.segs.splice(+el.dataset.i, 1); $("rfCircSegs").innerHTML = renderCircSegs(runFree); bindCircSegs(); if($("rfCircResult")) $("rfCircResult").textContent = circKmPreview(runFree); rfUpdatePace(); };
+    });
+  }
+  bindCircSegs();
+
+  // Guardar
   $("rfSave").onclick = () => {
     const km2 = calcRunKm(runFree), sec2 = (+runFree.m||0)*60 + (+runFree.s||0);
     if(!km2 && !sec2){ toast("Cargá al menos la distancia o el tiempo"); return; }
+    // Descripción del circuito para el historial
+    let dn = "Run libre";
+    if(runFree.mode==="circ" && runFree.segs.length){
+      const segDesc = runFree.segs.map(s=>(parseFloat(String(s.m).replace(",",".")) || 0)+"m "+s.tipo).join(" · ");
+      dn = `Pasadas × ${runFree.circN||"?"}: ${segDesc}`;
+    }
     const run = {km:km2, sec:sec2, rpe:+runFree.rpe||0, fc:+runFree.fc||0};
-    S.train.push({plan:"libre", dn:"Run libre", date:todayK(), di:0, dl:0, items:[], run, c:runFree.c});
-    runFree = {mode:runFree.mode, km:"", lapM:"", lapN:"", m:"", s:"", rpe:"", fc:"", c:""};
+    S.train.push({plan:"libre", dn, date:todayK(), di:0, dl:0, items:[], run, c:runFree.c});
+    runFree = {mode:runFree.mode, km:"", lapM:"", lapN:"", m:"", s:"", rpe:"", fc:"", c:"", segs:runFree.mode==="circ"?runFree.segs.map(s=>({...s,m:""})):[], circN:""};
     save(); toast("¡Run guardado! 🏃"); renderRunFree();
   };
 }
