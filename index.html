@@ -164,7 +164,7 @@ header{display:flex;align-items:center;justify-content:space-between;margin-bott
 .logo{display:flex;align-items:center;gap:10px;cursor:pointer;-webkit-tap-highlight-color:transparent;user-select:none}
 .logo .mark{width:52px;height:46px;flex:none}
 .logo .lt b{display:block;font-family:'DM Sans',sans-serif;font-size:.95rem;letter-spacing:.12em;color:#fff}
-.logo .lt b .o{color:#ff9614}.logo .lt b .b{color:#4d7bff}
+.logo .lt b .o{color:#4d7bff}.logo .lt b .b{color:#ff9614}
 .logo .lt small{display:block;font-size:.66rem;color:#a9adb8;margin-top:3px;letter-spacing:.02em}
 .sec-title{font-family:'Fraunces',serif;font-size:1.35rem;margin:4px 2px 12px}
 .sec-title .one{color:var(--warm)}.sec-title .alv{color:var(--accent)}
@@ -219,6 +219,17 @@ textarea.ta{width:100%;min-height:70px;padding:10px;border:1px solid var(--line)
 .cta2 p{color:#cfd6ea;font-size:.88rem;margin:6px 0 12px}
 .cta2 .btn{background:var(--warm);color:#fff;border:none;text-decoration:none}
 .cta2 .btn.sec{background:rgba(255,255,255,.12);color:#fff}
+.wq{display:flex;align-items:center;gap:10px;margin-top:10px}
+.wq button{width:44px;height:44px;border-radius:12px;border:1px solid var(--line);background:var(--card);font-size:1.2rem;font-weight:700}
+.wq .wplus{flex:1;width:auto;background:var(--accent);color:#fff;border-color:var(--accent);font-size:.95rem}
+.glasses{display:flex;flex-wrap:wrap;gap:3px;margin-top:8px;font-size:1.05rem;line-height:1}
+.glasses span{opacity:.25}.glasses span.f{opacity:1}
+.qchips{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}
+.qchips button{flex:1;padding:8px 6px;border:1px solid var(--line);border-radius:12px;background:var(--card);font-size:.82rem}
+.qchips button.on{background:var(--accent);border-color:var(--accent);color:#fff}
+.qchips.per button.on{background:#d6336c;border-color:#d6336c}
+.switch{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:8px 0;font-size:.9rem}
+.switch input{width:20px;height:20px}
 details.hisf summary,details.hisw summary{cursor:pointer;list-style:none}
 details.hisf summary::-webkit-details-marker,details.hisw summary::-webkit-details-marker{display:none}
 details.hisf>summary::after{content:"▾";float:right;color:var(--muted)}
@@ -1228,6 +1239,7 @@ const EXI = Object.fromEntries(EX.map(e=>[e.id,e]));
 const GR = [["rod","Rodilla"],["cad","Cadera"],["emp","Empuje"],["hom","Hombros"],["tra","Tracción"],["ais","Aislamiento"],["cor","Core"],["mov","Movilidad"],["hyx","Híbrido / HYROX"],["car","Cardio"]];
 const GRN = Object.fromEntries(GR);
 S.train = S.train || []; S.bw = S.bw || []; S.antro = S.antro || [];
+S.water = S.water || {}; S.sleep = S.sleep || {}; S.per = S.per || {on:0, share:0, list:[], sy:{}};
 S.coach = S.coach || {students:{}}; S.mod = S.mod || {e:1,c:1,a:0}; S.draft = S.draft || null;
 save();
 const todayK = () => dk(new Date());
@@ -1465,6 +1477,68 @@ function renderLib(){
 $("libQ").addEventListener("input", renderLib);
 
 /* ---------- HOY ---------- */
+/* ---------- agua, sueño, período ---------- */
+const WG = () => +S.profile.wg || 2000;
+const waterOf = k => +(S.water[k]||0);
+function waterCard(){
+  const k = todayK(), ml = waterOf(k), g = WG(), n = Math.round(g/250), f = Math.round(ml/250);
+  return `<div class="card"><div class="kv"><h3>💧 Agua</h3><small>${fmtN(Math.round(ml/100)/10)} / ${fmtN(g/1000)} L</small></div>
+    <div class="glasses">${Array.from({length:Math.max(n,f)},(_,i)=>`<span class="${i<f?"f":""}">💧</span>`).join("")}</div>
+    <div class="wq"><button data-wa="-250" aria-label="Quitar un vaso">−</button><button class="wplus" data-wa="250">+ 1 vaso (250 ml)</button><button data-wa="500" aria-label="Sumar 500 ml" style="font-size:.8rem">+500</button></div>
+    <button class="ghost" id="wgEdit" style="font-size:.8rem;margin-top:4px">Cambiar mi objetivo de agua</button></div>`;
+}
+function sleepCard(){
+  const k = todayK(), z = S.sleep[k] || {};
+  return `<div class="card"><div class="kv"><h3>😴 Sueño de anoche</h3><small>${z.h?fmtN(z.h)+" h":"sin cargar"}</small></div>
+    <div class="wq"><button data-sl="-0.5" aria-label="Menos media hora">−</button><div style="flex:1;text-align:center"><b style="font-size:1.4rem">${z.h?fmtN(z.h):"–"}</b> <span style="color:var(--muted)">horas</span></div><button data-sl="0.5" aria-label="Más media hora">+</button></div>
+    <div class="qchips">${[["1","😫 Mal"],["2","😐 Regular"],["3","😊 Bien"]].map(([v,l])=>`<button data-sq="${v}" class="${String(z.q)===v?"on":""}">${l}</button>`).join("")}</div></div>`;
+}
+const SY = [["col","Cólicos"],["can","Cansancio"],["hin","Hinchazón"],["ani","Ánimo bajo"],["ham","Más hambre"]];
+function perActive(){ const l = S.per.list; const x = l[l.length-1]; return x && !x.e ? x : null; }
+function perCard(){
+  if(!S.per.on) return "";
+  const k = todayK(), a = perActive(), sy = S.per.sy[k] || [];
+  const day = a ? Math.round((new Date(k+"T12:00") - new Date(a.s+"T12:00"))/864e5) + 1 : 0;
+  return `<div class="card"><div class="kv"><h3>🩸 Período</h3><small>${a?"día "+day:"–"}</small></div>`
+    + (a ? `<p style="font-size:.88rem;margin-top:6px">Empezó el ${dLabel(a.s)}.</p><button class="btn sec wide" id="perEnd">Terminó hoy</button>`
+         : `<p style="font-size:.85rem;color:var(--muted);margin-top:6px">${perNextTxt()}</p><button class="btn wide" id="perStart" style="background:#d6336c">Me vino hoy</button>`)
+    + `<div style="font-size:.8rem;color:var(--muted);margin-top:10px">¿Cómo te sentís hoy? (opcional)</div><div class="qchips per">${SY.map(([c,l])=>`<button data-sy="${c}" class="${sy.includes(c)?"on":""}">${l}</button>`).join("")}</div></div>`;
+}
+function perCycle(){ const st = S.per.list.map(x=>x.s).sort(); if(st.length<2) return 0; const d = []; for(let i=1;i<st.length;i++) d.push((new Date(st[i]+"T12:00")-new Date(st[i-1]+"T12:00"))/864e5); const r = d.slice(-6).filter(x=>x>=15&&x<=60); return r.length ? Math.round(r.reduce((a,b)=>a+b,0)/r.length) : 0; }
+function perNextTxt(){ const c = perCycle(), l = S.per.list; if(!c || !l.length) return "Tocá el botón el día que te venga, así queda registrado."; const nx = new Date(l[l.length-1].s+"T12:00"); nx.setDate(nx.getDate()+c); const dd = Math.round((nx - new Date(todayK()+"T12:00"))/864e5); return `Ciclo promedio: ${c} días · próximo estimado ${dLabel(nx.toISOString().slice(0,10))}${dd>=0?" (en "+dd+" días)":""}`; }
+function wellClick(e){
+  const t = e.target, k = todayK();
+  const wa = t.closest("[data-wa]"); if(wa){ S.water[k] = Math.max(0, waterOf(k) + (+wa.dataset.wa)); save(); rerenderWell(); return true; }
+  const sl = t.closest("[data-sl]"); if(sl){ const z = S.sleep[k] = S.sleep[k] || {}; z.h = Math.max(0, Math.min(16, (z.h || 7) + (z.h ? +sl.dataset.sl : 0))); save(); rerenderWell(); return true; }
+  const sq = t.closest("[data-sq]"); if(sq){ const z = S.sleep[k] = S.sleep[k] || {}; z.q = z.q==sq.dataset.sq ? 0 : +sq.dataset.sq; if(!z.h) z.h = 7; save(); rerenderWell(); return true; }
+  const sy = t.closest("[data-sy]"); if(sy){ const a = S.per.sy[k] = S.per.sy[k] || []; const i = a.indexOf(sy.dataset.sy); if(i>=0) a.splice(i,1); else a.push(sy.dataset.sy); if(!a.length) delete S.per.sy[k]; save(); rerenderWell(); return true; }
+  if(t.id==="hoySelf"){ openSelf(); return true; }
+  if(t.id==="perStart"){ S.per.list.push({s:k}); save(); rerenderWell(); toast("Registrado 🩸"); return true; }
+  if(t.id==="perEnd"){ const a = perActive(); if(a) a.e = k; save(); rerenderWell(); toast("Listo ✓"); return true; }
+  if(t.id==="wgEdit"){ const v = prompt("¿Cuántos litros de agua por día querés tomar?", fmtN(WG()/1000)); if(v===null) return true; const n = parseFloat(String(v).replace(",",".")); if(n>0 && n<8){ S.profile.wg = Math.round(n*1000); save(); rerenderWell(); toast("Objetivo guardado"); } else toast("Escribí un número de litros, ej: 2,5"); return true; }
+  return false;
+}
+function lastDays(n){ const out = []; for(let i=n-1;i>=0;i--){ const d = new Date(); d.setHours(12,0,0,0); d.setDate(d.getDate()-i); out.push(d.toISOString().slice(0,10)); } return out; }
+function wellProg(){
+  const D7 = lastDays(7), g = WG();
+  const wv = D7.map(k => waterOf(k)), wd = wv.filter(x=>x>0), wavg = wd.length ? wd.reduce((a,b)=>a+b,0)/wd.length : 0;
+  let h = `<div class="card"><h3 style="font-size:1rem">💧 Agua · últimos 7 días</h3>`
+    + `<div style="display:flex;align-items:flex-end;gap:6px;height:90px;margin-top:12px">${D7.map((k,i)=>`<div style="flex:1;text-align:center"><div style="height:${Math.min(70, wv[i]/g*70)}px;background:${wv[i]>=g?"var(--accent)":"#9db7ff"};border-radius:6px 6px 0 0;min-height:${wv[i]?3:0}px"></div><small style="font-size:.65rem;color:var(--muted)">${new Date(k+"T12:00").toLocaleDateString("es-AR",{weekday:"short"}).slice(0,2)}</small></div>`).join("")}</div>`
+    + `<p style="font-size:.85rem;margin-top:8px">${wd.length?`Promedio: <b>${fmtN(Math.round(wavg/100)/10)} L/día</b> · objetivo cumplido ${wv.filter(x=>x>=g).length} de 7 días`:"Todavía no registraste agua esta semana."}</p></div>`;
+  const sv = D7.map(k => S.sleep[k]||{}), sd = sv.filter(z=>z.h), savg = sd.length ? sd.reduce((a,z)=>a+z.h,0)/sd.length : 0;
+  const qn = ["","😫","😐","😊"];
+  h += `<div class="card"><h3 style="font-size:1rem">😴 Sueño · últimos 7 días</h3>`
+    + (sd.length ? `<p style="font-size:.85rem;margin-top:6px">Promedio: <b>${fmtN(Math.round(savg*10)/10)} h</b> por noche</p><div style="display:flex;gap:6px;margin-top:8px">${D7.map((k,i)=>`<div style="flex:1;text-align:center;font-size:.75rem"><div style="font-weight:700">${sv[i].h?fmtN(sv[i].h):"–"}</div><div>${qn[sv[i].q||0]||"&nbsp;"}</div><small style="color:var(--muted);font-size:.65rem">${new Date(k+"T12:00").toLocaleDateString("es-AR",{weekday:"short"}).slice(0,2)}</small></div>`).join("")}</div>` : `<p style="font-size:.85rem;color:var(--muted);margin-top:6px">Cargá tus horas de sueño en Hoy.</p>`) + `</div>`;
+  const P = S.per;
+  h += `<div class="card"><h3 style="font-size:1rem">🩸 Registro de período <small style="font-weight:400;color:var(--muted)">(opcional)</small></h3>
+    <label class="switch"><span>Activar el registro de período</span><input type="checkbox" id="perOn"${P.on?" checked":""}></label>`
+    + (P.on ? `<label class="switch"><span>Compartir con mi entrenadora<br><small style="color:var(--muted)">Se incluye en el reporte que le mandás</small></span><input type="checkbox" id="perShare"${P.share?" checked":""}></label>
+      <p style="font-size:.85rem;margin-top:4px">${perNextTxt()}</p>`
+      + (P.list.length ? P.list.slice(-6).reverse().map((x,i)=>{ const len = x.e ? Math.round((new Date(x.e+"T12:00")-new Date(x.s+"T12:00"))/864e5)+1 : 0; return `<div class="hist"><div style="display:flex;justify-content:space-between;align-items:center"><span><b>${dLabel(x.s)}</b>${x.e?" → "+dLabel(x.e)+" · "+len+" días":" · en curso"}</span><button class="xbtn" data-perdel="${P.list.length-1-i}" aria-label="Borrar">✕</button></div></div>`; }).join("") : "")
+      + `<p style="font-size:.75rem;color:var(--muted);margin-top:8px">El registro queda solo en tu celular. Es orientativo y no reemplaza la consulta médica.</p>` : `<p style="font-size:.8rem;color:var(--muted)">Si lo activás, te aparece en Hoy para registrar cuándo empieza y termina, y cómo te sentís.</p>`) + `</div>`;
+  return h;
+}
+function rerenderWell(){ if(VIEW==="hoy") renderHoy(); else if(VIEW==="progreso") renderProg(); }
 function renderHoy(){
   const nm = (S.profile.name||"").trim();
   $("hello").textContent = nm ? `¡Hola, ${nm}!` : "¡Hola!";
@@ -1474,7 +1548,7 @@ function renderHoy(){
   h += nextAnCard();
   if(S.mod.e){
     const p = S.plan;
-    if(!p) h += `<div class="card"><div class="kv"><h3>🏋️ Entrenamiento</h3></div><p style="font-size:.88rem;color:var(--muted);margin-top:6px">Cuando tu entrenadora te mande tu rutina por link, la vas a ver acá.</p><button class="btn sec wide" data-go="entreno">Ver biblioteca de ejercicios</button></div>`;
+    if(!p) h += `<div class="card"><div class="kv"><h3>🏋️ Entrenamiento</h3></div><p style="font-size:.88rem;color:var(--muted);margin-top:6px">Todavía no tenés rutina. Armala vos o, si entrenás con 1dz, abrí el link que te manda tu entrenadora.</p><button class="btn wide" id="hoySelf">✏️ Armar mi rutina</button></div>`;
     else {
       const w = planWeek(), dl = isDl(w), done = S.train.find(t => t.date===todayK() && t.plan===p.name);
       const nd = p.days[nextDay()];
@@ -1484,6 +1558,7 @@ function renderHoy(){
         + `<button class="btn wide" data-go="entreno">${done?"Ver mi rutina":"Empezar a entrenar"}</button></div>`;
     }
   }
+  h += waterCard() + sleepCard() + perCard();
   if(S.mod.c){
     let k=0; (S.log[todayK()]||[]).forEach(e => k += e.k*e.q); k = Math.round(k);
     const g = S.profile.goal||2000, pct = Math.min(100, k/g*100);
@@ -1491,7 +1566,7 @@ function renderHoy(){
   }
   $("hoyCards").innerHTML = h;
 }
-$("hoyCards").addEventListener("click", e => { const b = e.target.closest("[data-go]"); if(b){ if(b.dataset.go==="entreno" && !S.plan){ entTab="lib"; document.querySelectorAll("#segEnt button").forEach(x=>x.classList.toggle("on",x.dataset.v==="lib")); } show(b.dataset.go); } });
+$("hoyCards").addEventListener("click", e => { if(wellClick(e)) return; const b = e.target.closest("[data-go]"); if(b){ if(b.dataset.go==="entreno" && !S.plan){ entTab="lib"; document.querySelectorAll("#segEnt button").forEach(x=>x.classList.toggle("on",x.dataset.v==="lib")); } show(b.dataset.go); } });
 
 /* ---------- PROGRESO ---------- */
 const AF = [["peso","Peso","kg"],["gr","% grasa","%"],["mm","Masa muscular","kg"],["ma","Masa adiposa","kg"],["sp","Σ pliegues","mm"],["ci","Cintura","cm"],["ca","Cadera","cm"],["br","Brazo","cm"],["mu","Muslo","cm"]];
@@ -1548,7 +1623,11 @@ function renderProg(){
     const n28 = S.train.filter(t => (new Date() - new Date(t.date+"T12:00")) < 28*864e5).length;
     h += `<p style="font-size:.85rem;margin-top:10px">Entrenamientos en las últimas 4 semanas: <b>${n28}</b></p></div>`;
   }
+  h += wellProg();
   $("progCards").innerHTML = h;
+  const po = $("perOn"); if(po) po.onchange = () => { S.per.on = po.checked ? 1 : 0; save(); renderProg(); };
+  const ps = $("perShare"); if(ps) ps.onchange = () => { S.per.share = ps.checked ? 1 : 0; save(); toast(ps.checked ? "Se va a incluir en tu reporte" : "No se comparte"); };
+  $("progCards").querySelectorAll("[data-perdel]").forEach(b => b.onclick = () => { if(!confirm("¿Borrar este registro?")) return; S.per.list.splice(+b.dataset.perdel,1); save(); renderProg(); });
   const b = $("bwSave"); if(b) b.onclick = () => { const v = parseFloat(String($("bwIn").value).replace(",",".")); if(!(v>20&&v<400)){ toast("Escribí un peso válido"); return; }
     const k = todayK(); S.bw = S.bw.filter(x=>x.d!==k); S.bw.push({d:k, kg:v}); save(); renderProg(); toast("Peso guardado"); };
 }
@@ -1565,6 +1644,17 @@ buildReport = function(){
     t += `\n\n🏋️ *Entrenamiento* — ${S.plan.name}, semana ${w} de ${S.plan.weeks}${isDl(w)?" (descarga)":""}\n`;
     const rk = ses.filter(s=>s.run).reduce((a,s)=>a+(s.run.km||0),0);
     t += ses.length ? ses.map(s => `• ${dLabel(s.date)} · ${s.dn}\n` + (s.run ? `   🏃 ${runTxt(s.run)}` : "") + s.items.map(i => `   - ${(EXI[i.x]||{}).n||i.x}: ${i.sets.map(z => (z.kg?fmtN(z.kg)+"×":"")+z.r+(z.rir!=null&&z.rir!==""&&!isNaN(z.rir)?" (RIR "+z.rir+")":"")).join(", ")}`).join("\n") + (s.c ? `\n   💬 ${s.c}` : "")).join("\n") + `\nSesiones: ${ses.length}` + (rk ? ` · Run: ${fmtN(Math.round(rk*10)/10)} km` : "") : "Sin entrenamientos registrados en este período.";
+  }
+  { const n = repMode==="week" ? 7 : 1, D = lastDays(n);
+    const wd = D.map(k=>waterOf(k)).filter(x=>x>0), sd = D.map(k=>S.sleep[k]).filter(z=>z&&z.h), qn = ["","mal","regular","bien"];
+    if(wd.length || sd.length){ t += `\n\n🌙 *Hábitos*`;
+      if(wd.length) t += `\n💧 Agua: ${n>1?"promedio ":""}${fmtN(Math.round(wd.reduce((a,b)=>a+b,0)/wd.length/100)/10)} L/día (objetivo ${fmtN(WG()/1000)} L)${n>1?" · "+wd.length+" días registrados":""}`;
+      if(sd.length) t += `\n😴 Sueño: ${n>1?"promedio ":""}${fmtN(Math.round(sd.reduce((a,z)=>a+z.h,0)/sd.length*10)/10)} h` + (n===1 && sd[0].q ? " · durmió "+qn[sd[0].q] : (n>1 ? " · " + sd.filter(z=>z.q).map(z=>["","😫","😐","😊"][z.q]).join("") : ""));
+    }
+    if(S.per.on && S.per.share){ const a = perActive(), inW = S.per.list.filter(x => D.includes(x.s) || (x.e && D.includes(x.e)));
+      const sy = [...new Set(D.flatMap(k => S.per.sy[k]||[]))].map(c => (SY.find(z=>z[0]===c)||[,c])[1]);
+      if(a || inW.length || sy.length) t += `\n🩸 Período: ` + (a ? "en curso desde "+dLabel(a.s) : inW.map(x=>dLabel(x.s)+(x.e?" → "+dLabel(x.e):"")).join(", ")) + (sy.length ? " · " + sy.join(", ").toLowerCase() : "");
+    }
   }
   const bw = [...S.bw].sort((a,b)=>a.d<b.d?-1:1);
   if(bw.length){ const l = bw[bw.length-1], p = bw[bw.length-2]; t += `\n\n⚖️ Peso: ${fmtN(l.kg)} kg (${dLabel(l.d)})${p?" · antes "+fmtN(p.kg)+" kg":""}`; }
@@ -1756,7 +1846,7 @@ $("bkAllOut").onclick = () => { const c = JSON.parse(JSON.stringify(S)); delete 
 $("bkAllIn").onchange = async e => { try{ const o = await readFile(e.target); if(o.t!=="1dz-datos"||!o.data) throw 0;
   if(!confirm("Esto reemplaza los datos de este celular por los del archivo. ¿Seguir?")){ e.target.value=""; return; }
   const ok = S.coachOk; Object.keys(S).forEach(k => delete S[k]); Object.assign(S, o.data); S.coachOk = ok;
-  S.train=S.train||[]; S.bw=S.bw||[]; S.antro=S.antro||[]; S.coach=S.coach||{students:{}}; S.mod=S.mod||{e:1,c:1,a:0}; S.log=S.log||{}; S.custom=S.custom||[];
+  S.train=S.train||[]; S.bw=S.bw||[]; S.antro=S.antro||[]; S.water=S.water||{}; S.sleep=S.sleep||{}; S.per=S.per||{on:0,share:0,list:[],sy:{}}; S.coach=S.coach||{students:{}}; S.mod=S.mod||{e:1,c:1,a:0}; S.log=S.log||{}; S.custom=S.custom||[];
   save(); applyMods(); show("hoy"); toast("Datos importados ✓");
   }catch(err){ toast("Ese archivo no es un respaldo de datos de 1dz"); } e.target.value = ""; };
 /* ---------- arranque ---------- */
