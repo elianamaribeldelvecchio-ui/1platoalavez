@@ -535,13 +535,17 @@ details.hisw>summary{font-weight:700;font-size:.9rem}
         <div><div style="font-family:'Fraunces',serif;font-size:1.3rem;font-weight:700;color:var(--muted)" id="macPrev_g">—</div><div style="font-size:.72rem;color:var(--muted);margin-top:2px">Grasas g</div></div>
       </div>
       <div id="macPrev_kcal" style="font-size:.78rem;color:var(--muted);text-align:center;margin-top:6px"></div>
-      <button class="btn sec wide" id="btnEditMacros" style="margin-top:8px;font-size:.85rem">✏️ Editar macros manualmente</button>
+      <button class="btn sec wide" id="btnEditMacros" style="margin-top:8px;font-size:.85rem">✏️ Cambiar proteínas</button>
     </div>
 
-    <!-- Edición manual de macros (oculta por defecto si hay auto) -->
+    <!-- Edición de proteínas → carbos y grasas se calculan solos -->
     <div id="macroManualBox" style="margin-top:10px">
-      <div class="grid3"><div class="field"><label>Proteínas g</label><input type="number" inputmode="numeric" id="inMP" placeholder="Opcional"></div><div class="field"><label>Carbos g</label><input type="number" inputmode="numeric" id="inMC" placeholder="Opcional"></div><div class="field"><label>Grasas g</label><input type="number" inputmode="numeric" id="inMG" placeholder="Opcional"></div></div>
-      <p style="font-size:.77rem;color:var(--muted);margin-top:4px" id="macManualHint">Si los dejás vacíos, se usa la distribución sugerida.</p>
+      <div class="grid3">
+        <div class="field"><label style="font-weight:700;color:var(--accent)">Proteínas g ✏️</label><input type="number" inputmode="numeric" id="inMP" placeholder="Ej: 120"></div>
+        <div class="field"><label style="color:var(--muted)">Carbos g <span style="font-size:.72rem">(auto)</span></label><input type="number" inputmode="numeric" id="inMC" readonly style="background:var(--bg);color:var(--muted);cursor:default"></div>
+        <div class="field"><label style="color:var(--muted)">Grasas g <span style="font-size:.72rem">(auto)</span></label><input type="number" inputmode="numeric" id="inMG" readonly style="background:var(--bg);color:var(--muted);cursor:default"></div>
+      </div>
+      <p style="font-size:.77rem;color:var(--muted);margin-top:4px" id="macManualHint">Escribí las proteínas y los carbos y grasas se ajustan solos.</p>
     </div>
 
     <!-- Sección deportista -->
@@ -1340,11 +1344,12 @@ function updPreview(){
   }
 }
 function recalcMacrosFromProt(){
-  // Si el usuario editó proteínas, redistribuir el resto (carbs y grasas)
-  // Prioridad: valor manual escrito → calculado automático
   const goal = +$("inManual").value || calcGoal() || 0;
   if(!goal) return;
-  const prot = +$("inMP").value || 0;
+  const w = +$("inW").value;
+  // Proteínas: las que escribió el usuario, o auto si no puso nada
+  const autoProt = (w && goal) ? Math.round(w * 1.8) : 0;
+  const prot = +$("inMP").value || autoProt;
   if(!prot) return;
   const remaining = goal - prot * 4;
   if(remaining < 0){ $("macManualHint").textContent = "⚠️ Las proteínas superan el total de calorías."; return; }
@@ -1353,23 +1358,22 @@ function recalcMacrosFromProt(){
   $("inMC").value = carbs;
   $("inMG").value = fats;
   const total = prot*4 + carbs*4 + fats*9;
-  $("macManualHint").textContent = `Carbs y grasas actualizados · Total: ${total} kcal`;
+  $("macManualHint").textContent = `Total: ${total} kcal · Carbos y grasas calculados automáticamente`;
 }
 $("btnEditMacros").onclick = () => {
-  const mac = (() => {
+  // Prellenar proteínas con el valor auto si está vacío
+  if(!$("inMP").value){
     const w = +$("inW").value;
     const g = +$("inManual").value || calcGoal() || 0;
-    return calcAutoMacros(w, g);
-  })();
-  if(mac && !$("inMP").value){ $("inMP").value = mac.p; }
-  if(mac && !$("inMC").value){ $("inMC").value = mac.c; }
-  if(mac && !$("inMG").value){ $("inMG").value = mac.g; }
+    const mac = calcAutoMacros(w, g);
+    if(mac) $("inMP").value = mac.p;
+    recalcMacrosFromProt();
+  }
   $("macroManualBox").style.display = "";
-  $("macManualHint").textContent = "Editá los valores que quieras. Se guardan los que ponés acá.";
-  // Cuando cambia proteínas, recalcular carbs y grasas automáticamente
-  $("inMP").addEventListener("change", recalcMacrosFromProt);
   $("inMP").focus();
 };
+// Listener siempre activo: al escribir proteínas → carbos y grasas se recalculan solos
+$("inMP").addEventListener("input", recalcMacrosFromProt);
 function openSettings(welcome){
   const P=S.profile;tmpSex=P.sex;tmpObj=P.obj;
   $("setTitle").textContent=welcome?"¡Bienvenida/o a 1 plato a la vez!":"Mis calorías y macros";
@@ -1387,31 +1391,11 @@ function applyDepMode(){
   const tab = $("tabDep"); if(tab) tab.style.display = on ? "" : "none";
   if(!on && entTab==="dep"){ entTab="rut"; document.querySelectorAll("#segEnt button").forEach(x=>x.classList.toggle("on",x.dataset.v==="rut")); }
 }
-["inManual"].forEach(id=>$(id).addEventListener("input",()=>{
+$("inManual").addEventListener("input",()=>{
   updPreview();
-  // Cuando cambia el objetivo de kcal, recalcular macros automáticamente
-  const goal = +$("inManual").value || calcGoal() || 0;
-  const w = +$("inW").value;
-  if(!goal || !w) return;
-  const mac = calcAutoMacros(w, goal);
-  if(!mac) return;
-  // Si el usuario ya editó proteínas manualmente, respetar eso y recalcular carbos/grasas
-  const userProt = +$("inMP").value;
-  if(userProt > 0){
-    const remaining = goal - userProt * 4;
-    if(remaining >= 0){
-      $("inMC").value = Math.round((remaining * 0.57) / 4);
-      $("inMG").value = Math.round((remaining * 0.43) / 9);
-    }
-  } else {
-    // Sin proteínas manuales: rellenar todo automáticamente
-    $("inMP").value = mac.p;
-    $("inMC").value = mac.c;
-    $("inMG").value = mac.g;
-  }
-  // Mostrar la caja de macros para que se vea el cambio
-  $("macroManualBox").style.display = "";
-}));
+  // Cuando cambian las kcal, recalcular carbos y grasas (proteínas se respetan si ya se pusieron)
+  recalcMacrosFromProt();
+});
 $("saveSettings").onclick=()=>{
   const manual=parseInt($("inManual").value),calc=calcGoal();
   const goal=manual>0?manual:(calc||S.profile.goal||2000);
