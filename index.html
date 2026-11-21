@@ -318,6 +318,10 @@ details.hisw>summary{font-weight:700;font-size:.9rem}
     </div>
   </section>
 
+  <section class="view" id="v-habitos" hidden>
+    <h2 class="sec-title">Mis hábitos</h2>
+    <div id="habCards"></div>
+  </section>
   <section class="view" id="v-progreso" hidden>
     <h2 class="sec-title">Mi progreso</h2>
     <div id="progCards"></div>
@@ -370,6 +374,7 @@ details.hisw>summary{font-weight:700;font-size:.9rem}
   <button data-v="hoy" class="on"><span class="i">🏠</span>Hoy</button>
   <button data-v="entreno"><span class="i">🏋️</span>Entreno</button>
   <button data-v="comidas"><span class="i">🍽️</span>Comidas</button>
+  <button data-v="habitos"><span class="i">🌙</span>Hábitos</button>
   <button data-v="progreso"><span class="i">📈</span>Progreso</button>
 </nav>
 <div class="timer" id="timer"><span>⏱ Descanso <b id="timerT">0:00</b></span><button id="timerSkip">Saltar</button></div>
@@ -1259,7 +1264,7 @@ function show(v, fromPop){
   VIEW = v;
   document.querySelectorAll(".view").forEach(x => x.hidden = x.id !== "v-"+v);
   document.querySelectorAll(".nav button").forEach(b => b.classList.toggle("on", b.dataset.v === v));
-  if(v==="hoy") renderHoy(); if(v==="entreno") renderEnt(); if(v==="progreso") renderProg(); if(v==="comidas") render();
+  if(v==="hoy") renderHoy(); if(v==="entreno") renderEnt(); if(v==="progreso") renderProg(); if(v==="habitos") renderHab(); if(v==="comidas") render();
   window.scrollTo(0,0);
 }
 try{ history.replaceState({v:"hoy"}, ""); }catch(e){}
@@ -1529,16 +1534,26 @@ function wellProg(){
   const qn = ["","😫","😐","😊"];
   h += `<div class="card"><h3 style="font-size:1rem">😴 Sueño · últimos 7 días</h3>`
     + (sd.length ? `<p style="font-size:.85rem;margin-top:6px">Promedio: <b>${fmtN(Math.round(savg*10)/10)} h</b> por noche</p><div style="display:flex;gap:6px;margin-top:8px">${D7.map((k,i)=>`<div style="flex:1;text-align:center;font-size:.75rem"><div style="font-weight:700">${sv[i].h?fmtN(sv[i].h):"–"}</div><div>${qn[sv[i].q||0]||"&nbsp;"}</div><small style="color:var(--muted);font-size:.65rem">${new Date(k+"T12:00").toLocaleDateString("es-AR",{weekday:"short"}).slice(0,2)}</small></div>`).join("")}</div>` : `<p style="font-size:.85rem;color:var(--muted);margin-top:6px">Cargá tus horas de sueño en Hoy.</p>`) + `</div>`;
-  const P = S.per;
+  return h;
+}
+function perSettings(){
+  const P = S.per; let h = "";
   h += `<div class="card"><h3 style="font-size:1rem">🩸 Registro de período <small style="font-weight:400;color:var(--muted)">(opcional)</small></h3>
     <label class="switch"><span>Activar el registro de período</span><input type="checkbox" id="perOn"${P.on?" checked":""}></label>`
     + (P.on ? `<label class="switch"><span>Compartir con mi entrenadora<br><small style="color:var(--muted)">Se incluye en el reporte que le mandás</small></span><input type="checkbox" id="perShare"${P.share?" checked":""}></label>
       <p style="font-size:.85rem;margin-top:4px">${perNextTxt()}</p>`
       + (P.list.length ? P.list.slice(-6).reverse().map((x,i)=>{ const len = x.e ? Math.round((new Date(x.e+"T12:00")-new Date(x.s+"T12:00"))/864e5)+1 : 0; return `<div class="hist"><div style="display:flex;justify-content:space-between;align-items:center"><span><b>${dLabel(x.s)}</b>${x.e?" → "+dLabel(x.e)+" · "+len+" días":" · en curso"}</span><button class="xbtn" data-perdel="${P.list.length-1-i}" aria-label="Borrar">✕</button></div></div>`; }).join("") : "")
-      + `<p style="font-size:.75rem;color:var(--muted);margin-top:8px">El registro queda solo en tu celular. Es orientativo y no reemplaza la consulta médica.</p>` : `<p style="font-size:.8rem;color:var(--muted)">Si lo activás, te aparece en Hoy para registrar cuándo empieza y termina, y cómo te sentís.</p>`) + `</div>`;
+      + `<p style="font-size:.75rem;color:var(--muted);margin-top:8px">El registro queda solo en tu celular. Es orientativo y no reemplaza la consulta médica.</p>` : `<p style="font-size:.8rem;color:var(--muted)">Si lo activás, te aparece arriba para registrar cuándo empieza y termina, y cómo te sentís.</p>`) + `</div>`;
   return h;
 }
-function rerenderWell(){ if(VIEW==="hoy") renderHoy(); else if(VIEW==="progreso") renderProg(); }
+function rerenderWell(){ if(VIEW==="habitos") renderHab(); }
+function renderHab(){
+  $("habCards").innerHTML = `<p style="font-size:.85rem;color:var(--muted);margin:-4px 0 12px">Registrá cómo te cuidás día a día: agua, descanso${S.per.on?" y tu ciclo":""}.</p>` + waterCard() + sleepCard() + (S.per.on ? perCard() + wellProg() + perSettings() : perSettings() + wellProg());
+  const po = $("perOn"); if(po) po.onchange = () => { S.per.on = po.checked ? 1 : 0; save(); renderHab(); if(po.checked) toast("Listo: arriba te aparece el registro 🩸"); };
+  const ps = $("perShare"); if(ps) ps.onchange = () => { S.per.share = ps.checked ? 1 : 0; save(); toast(ps.checked ? "Se va a incluir en tu reporte" : "No se comparte"); };
+  $("habCards").querySelectorAll("[data-perdel]").forEach(b => b.onclick = () => { if(!confirm("¿Borrar este registro?")) return; S.per.list.splice(+b.dataset.perdel,1); save(); renderHab(); });
+}
+$("habCards").addEventListener("click", e => { wellClick(e); });
 function renderHoy(){
   const nm = (S.profile.name||"").trim();
   $("hello").textContent = nm ? `¡Hola, ${nm}!` : "¡Hola!";
@@ -1558,7 +1573,6 @@ function renderHoy(){
         + `<button class="btn wide" data-go="entreno">${done?"Ver mi rutina":"Empezar a entrenar"}</button></div>`;
     }
   }
-  h += waterCard() + sleepCard() + perCard();
   if(S.mod.c){
     let k=0; (S.log[todayK()]||[]).forEach(e => k += e.k*e.q); k = Math.round(k);
     const g = S.profile.goal||2000, pct = Math.min(100, k/g*100);
@@ -1623,11 +1637,7 @@ function renderProg(){
     const n28 = S.train.filter(t => (new Date() - new Date(t.date+"T12:00")) < 28*864e5).length;
     h += `<p style="font-size:.85rem;margin-top:10px">Entrenamientos en las últimas 4 semanas: <b>${n28}</b></p></div>`;
   }
-  h += wellProg();
   $("progCards").innerHTML = h;
-  const po = $("perOn"); if(po) po.onchange = () => { S.per.on = po.checked ? 1 : 0; save(); renderProg(); };
-  const ps = $("perShare"); if(ps) ps.onchange = () => { S.per.share = ps.checked ? 1 : 0; save(); toast(ps.checked ? "Se va a incluir en tu reporte" : "No se comparte"); };
-  $("progCards").querySelectorAll("[data-perdel]").forEach(b => b.onclick = () => { if(!confirm("¿Borrar este registro?")) return; S.per.list.splice(+b.dataset.perdel,1); save(); renderProg(); });
   const b = $("bwSave"); if(b) b.onclick = () => { const v = parseFloat(String($("bwIn").value).replace(",",".")); if(!(v>20&&v<400)){ toast("Escribí un peso válido"); return; }
     const k = todayK(); S.bw = S.bw.filter(x=>x.d!==k); S.bw.push({d:k, kg:v}); save(); renderProg(); toast("Peso guardado"); };
 }
