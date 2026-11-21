@@ -1493,19 +1493,50 @@ function openAltVar(){
   $("altVarTxt").focus();
 }
 // --- Run libre ---
-let runFree = {km:"", m:"", s:"", rpe:"", fc:"", c:""};
+let runFree = {mode:"km", km:"", lapM:"", lapN:"", m:"", s:"", rpe:"", fc:"", c:""};
+function calcRunKm(r){
+  if(r.mode==="lap"){
+    const lm = parseFloat(String(r.lapM).replace(",",".")) || 0;
+    const ln = parseInt(r.lapN) || 0;
+    return lm && ln ? Math.round(lm * ln) / 1000 : 0;
+  }
+  return parseFloat(String(r.km).replace(",",".")) || 0;
+}
 function renderRunFree(){
   const r = runFree;
-  const km = parseFloat(String(r.km).replace(",",".")) || 0, sec = (+r.m||0)*60 + (+r.s||0);
+  const km = calcRunKm(r), sec = (+r.m||0)*60 + (+r.s||0);
+  const lapKm = r.mode==="lap" && km > 0 ? fmtN(km) : "";
   let h = `<div class="card">
     <h3>🏃 Registrar salida a correr</h3>
     <p style="font-size:.85rem;color:var(--muted);margin-top:4px">Registrá cualquier salida, independientemente de tu rutina.</p>
-    <div class="grid3" style="margin-top:14px">
+
+    <!-- Toggle modo distancia -->
+    <div style="display:flex;gap:8px;margin-top:14px;margin-bottom:12px">
+      <button class="btn${r.mode==="km"?" on":""}" id="rfModeKm" style="flex:1;font-size:.85rem">📏 Distancia directa</button>
+      <button class="btn${r.mode==="lap"?" on":""}" id="rfModeLap" style="flex:1;font-size:.85rem">🔄 Por vueltas</button>
+    </div>
+
+    <!-- Modo km directo -->
+    <div id="rfBlockKm" style="display:${r.mode==="km"?"":"none"}">
       <div class="field"><label>Distancia km</label><input inputmode="decimal" id="rfKm" value="${esc(r.km)}" placeholder="Ej: 5,2"></div>
+    </div>
+
+    <!-- Modo vueltas -->
+    <div id="rfBlockLap" style="display:${r.mode==="lap"?"":"none"}">
+      <div class="grid2">
+        <div class="field"><label>Largo de la vuelta (m)</label><input inputmode="decimal" id="rfLapM" value="${esc(r.lapM)}" placeholder="Ej: 400"></div>
+        <div class="field"><label>Cantidad de vueltas</label><input inputmode="numeric" id="rfLapN" value="${esc(r.lapN)}" placeholder="Ej: 8"></div>
+      </div>
+      <div id="rfLapResult" style="font-size:.88rem;color:var(--p);font-weight:600;margin-top:4px;min-height:1.4em">${lapKm?"Total: "+lapKm+" km":""}</div>
+    </div>
+
+    <!-- Tiempo -->
+    <div class="grid2" style="margin-top:12px">
       <div class="field"><label>Minutos</label><input inputmode="numeric" id="rfM" value="${esc(r.m)}" placeholder="32"></div>
       <div class="field"><label>Segundos</label><input inputmode="numeric" id="rfS" value="${esc(r.s)}" placeholder="15"></div>
     </div>
     <div class="sug" id="rfPace">${km&&sec?"Ritmo promedio: <b>"+pace({km,sec})+"</b>":"El ritmo se calcula solo cuando cargás distancia y tiempo."}</div>
+
     <div class="grid2" style="margin-top:10px">
       <div class="field"><label>Esfuerzo (RPE 1–10)</label><select id="rfRpe"><option value="">–</option>${[1,2,3,4,5,6,7,8,9,10].map(n=>`<option${String(r.rpe)===String(n)?" selected":""}>${n}</option>`).join("")}</select></div>
       <div class="field"><label>FC promedio (opcional)</label><input inputmode="numeric" id="rfFc" value="${esc(r.fc)}" placeholder="Ej: 150"></div>
@@ -1518,23 +1549,36 @@ function renderRunFree(){
   const runs = S.train.filter(t => t.run && (t.run.km || t.run.sec)).slice(-5).reverse();
   if(runs.length) h += `<div class="card"><h3 style="font-size:1rem;margin-bottom:6px">Últimas salidas</h3>${runs.map(t=>`<div class="hist"><b>${dLabel(t.date)}</b> · ${esc(runTxt(t.run))}${t.c?"<br>💬 "+esc(t.c):""}</div>`).join("")}</div>`;
   $("entRun").innerHTML = h;
-  // Inputs
-  ["Km","M","S","Rpe","Fc","Com"].forEach(k => {
-    const el = $("rf"+k); if(!el) return;
-    el.addEventListener("input", () => {
-      runFree.km = $("rfKm").value; runFree.m = $("rfM").value; runFree.s = $("rfS").value;
-      runFree.rpe = $("rfRpe").value; runFree.fc = $("rfFc").value; runFree.c = $("rfCom").value;
-      const km2 = parseFloat(String(runFree.km).replace(",",".")) || 0, sec2 = (+runFree.m||0)*60 + (+runFree.s||0);
-      $("rfPace").innerHTML = km2&&sec2?"Ritmo promedio: <b>"+pace({km:km2,sec:sec2})+"</b>":"El ritmo se calcula solo cuando cargás distancia y tiempo.";
-    });
+
+  // Toggle modo
+  $("rfModeKm").onclick = () => { runFree.mode="km"; renderRunFree(); };
+  $("rfModeLap").onclick = () => { runFree.mode="lap"; renderRunFree(); };
+
+  // Función de actualización de ritmo y resultado vueltas
+  function rfUpdate(){
+    runFree.km   = $("rfKm")  ? $("rfKm").value  : runFree.km;
+    runFree.lapM = $("rfLapM")? $("rfLapM").value : runFree.lapM;
+    runFree.lapN = $("rfLapN")? $("rfLapN").value : runFree.lapN;
+    runFree.m    = $("rfM").value;
+    runFree.s    = $("rfS").value;
+    runFree.rpe  = $("rfRpe").value;
+    runFree.fc   = $("rfFc").value;
+    runFree.c    = $("rfCom").value;
+    const km2 = calcRunKm(runFree), sec2 = (+runFree.m||0)*60 + (+runFree.s||0);
+    if($("rfLapResult")) $("rfLapResult").textContent = km2 && runFree.mode==="lap" ? "Total: "+fmtN(km2)+" km" : "";
+    $("rfPace").innerHTML = km2&&sec2?"Ritmo promedio: <b>"+pace({km:km2,sec:sec2})+"</b>":"El ritmo se calcula solo cuando cargás distancia y tiempo.";
+  }
+
+  ["rfKm","rfLapM","rfLapN","rfM","rfS","rfRpe","rfFc","rfCom"].forEach(id => {
+    const el = $(id); if(el) el.addEventListener("input", rfUpdate);
   });
+
   $("rfSave").onclick = () => {
-    const r2 = runFree;
-    const km2 = parseFloat(String(r2.km).replace(",",".")) || 0, sec2 = (+r2.m||0)*60 + (+r2.s||0);
+    const km2 = calcRunKm(runFree), sec2 = (+runFree.m||0)*60 + (+runFree.s||0);
     if(!km2 && !sec2){ toast("Cargá al menos la distancia o el tiempo"); return; }
-    const run = {km:km2, sec:sec2, rpe:+r2.rpe||0, fc:+r2.fc||0};
-    S.train.push({plan:"libre", dn:"Run libre", date:todayK(), di:0, dl:0, items:[], run, c:r2.c});
-    runFree = {km:"",m:"",s:"",rpe:"",fc:"",c:""};
+    const run = {km:km2, sec:sec2, rpe:+runFree.rpe||0, fc:+runFree.fc||0};
+    S.train.push({plan:"libre", dn:"Run libre", date:todayK(), di:0, dl:0, items:[], run, c:runFree.c});
+    runFree = {mode:runFree.mode, km:"", lapM:"", lapN:"", m:"", s:"", rpe:"", fc:"", c:""};
     save(); toast("¡Run guardado! 🏃"); renderRunFree();
   };
 }
