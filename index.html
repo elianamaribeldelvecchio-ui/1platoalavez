@@ -315,9 +315,10 @@ details.hisw>summary{font-weight:700;font-size:.9rem}
   <section class="view" id="v-entreno" hidden>
     <h2 class="sec-title">Entreno</h2>
     <p style="font-size:.82rem;color:var(--accent);margin:-8px 2px 12px;font-family:'Fraunces',serif"><span style="color:var(--warm)">1</span> entreno a la vez</p>
-    <div class="seg" id="segEnt" style="margin-bottom:14px"><button data-v="rut" class="on">Mi rutina</button><button data-v="run">🏃 Run</button><button data-v="his">Historial</button><button data-v="lib">Biblioteca</button></div>
+    <div class="seg" id="segEnt" style="margin-bottom:14px"><button data-v="rut" class="on">Mi rutina</button><button data-v="run">🏃 Run</button><button data-v="dep" id="tabDep" style="display:none">⚽ Deporte</button><button data-v="his">Historial</button><button data-v="lib">Biblioteca</button></div>
     <div id="entRut"></div>
     <div id="entRun" hidden></div>
+    <div id="entDep" hidden></div>
     <div id="entHis" hidden></div>
     <div id="entLib" hidden>
       <div class="field" style="margin-bottom:8px"><input type="search" id="libQ" placeholder="Buscar ejercicio…" autocomplete="off"></div>
@@ -541,6 +542,59 @@ details.hisw>summary{font-weight:700;font-size:.9rem}
     <div id="macroManualBox" style="margin-top:10px">
       <div class="grid3"><div class="field"><label>Proteínas g</label><input type="number" inputmode="numeric" id="inMP" placeholder="Opcional"></div><div class="field"><label>Carbos g</label><input type="number" inputmode="numeric" id="inMC" placeholder="Opcional"></div><div class="field"><label>Grasas g</label><input type="number" inputmode="numeric" id="inMG" placeholder="Opcional"></div></div>
       <p style="font-size:.77rem;color:var(--muted);margin-top:4px" id="macManualHint">Si los dejás vacíos, se usa la distribución sugerida.</p>
+    </div>
+
+    <!-- Sección deportista -->
+    <div style="margin-top:16px;border-top:1px solid var(--line);padding-top:14px">
+      <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:.95rem;font-weight:600">
+        <input type="checkbox" id="chkDeportista" style="width:18px;height:18px;accent-color:var(--accent)"> Soy deportista / entreno un deporte
+      </label>
+      <div id="depFields" style="display:none;margin-top:12px">
+        <div class="field"><label>Deporte</label>
+          <select id="inDeporte">
+            <option value="">– Seleccioná –</option>
+            <option value="Fútbol">⚽ Fútbol</option>
+            <option value="Básquet">🏀 Básquet</option>
+            <option value="Vóley">🏐 Vóley</option>
+            <option value="Rugby">🏉 Rugby</option>
+            <option value="Hockey">🏑 Hockey</option>
+            <option value="Tenis">🎾 Tenis</option>
+            <option value="Pádel">🏓 Pádel</option>
+            <option value="Natación">🏊 Natación</option>
+            <option value="Atletismo">🏃 Atletismo</option>
+            <option value="Handball">🤾 Handball</option>
+            <option value="Boxeo">🥊 Boxeo</option>
+            <option value="MMA">🥋 MMA</option>
+            <option value="HYROX">🔥 HYROX</option>
+            <option value="Híbrido">💪 Híbrido</option>
+            <option value="Salto con vallas">🚧 Salto con vallas</option>
+            <option value="Ciclismo">🚴 Ciclismo</option>
+          </select>
+        </div>
+        <div class="grid2">
+          <div class="field"><label>Posición / Rol (opcional)</label><input type="text" id="inDepPos" placeholder="Ej: defensa, lateral…"></div>
+          <div class="field"><label>Nivel</label>
+            <select id="inDepNivel">
+              <option value="">– Nivel –</option>
+              <option value="Recreativo">Recreativo</option>
+              <option value="Amateur">Amateur</option>
+              <option value="Federado">Federado</option>
+              <option value="Semi-profesional">Semi-profesional</option>
+              <option value="Profesional">Profesional</option>
+            </select>
+          </div>
+        </div>
+        <div class="field"><label>Fase de temporada</label>
+          <select id="inDepFase">
+            <option value="">– Fase –</option>
+            <option value="Pretemporada">Pretemporada</option>
+            <option value="Temporada">Temporada</option>
+            <option value="Playoffs / Finales">Playoffs / Finales</option>
+            <option value="Postemporada">Postemporada</option>
+            <option value="Fuera de temporada">Fuera de temporada</option>
+          </select>
+        </div>
+      </div>
     </div>
 
     <button class="primary" id="saveSettings">Guardar</button>
@@ -1319,11 +1373,19 @@ function openSettings(welcome){
   const P=S.profile;tmpSex=P.sex;tmpObj=P.obj;
   $("setTitle").textContent=welcome?"¡Bienvenida/o a 1 plato a la vez!":"Mis calorías y macros";
   $("inAge").value=P.age;$("inW").value=P.w;$("inH").value=P.h;$("inAct").value=P.act;$("inManual").value=P.manual;$("inMP").value=P.mp||"";$("inMC").value=P.mc||"";$("inMG").value=P.mg||"";
+  const hasD = !!(P.dep && P.dep.deporte); $("chkDeportista").checked=hasD; $("depFields").style.display=hasD?"":"none";
+  if(hasD){$("inDeporte").value=P.dep.deporte||"";$("inDepPos").value=P.dep.pos||"";$("inDepNivel").value=P.dep.nivel||"";$("inDepFase").value=P.dep.fase||"";}
   setSeg("segSex",tmpSex);setSeg("segObj",tmpObj);updPreview();$("ovSettings").classList.add("open");
 }
 $("segSex").onclick=e=>{const b=e.target.closest("button");if(b){tmpSex=b.dataset.v;setSeg("segSex",tmpSex);updPreview()}};
 $("segObj").onclick=e=>{const b=e.target.closest("button");if(b){tmpObj=b.dataset.v;setSeg("segObj",tmpObj);updPreview()}};
 ["inAge","inW","inH","inAct"].forEach(id=>$(id).addEventListener("input",updPreview));
+$("chkDeportista").addEventListener("change",()=>{ $("depFields").style.display=$("chkDeportista").checked?"":"none"; });
+function applyDepMode(){
+  const on = !!(S.profile.dep && S.profile.dep.deporte);
+  const tab = $("tabDep"); if(tab) tab.style.display = on ? "" : "none";
+  if(!on && entTab==="dep"){ entTab="rut"; document.querySelectorAll("#segEnt button").forEach(x=>x.classList.toggle("on",x.dataset.v==="rut")); }
+}
 ["inManual"].forEach(id=>$(id).addEventListener("input",updPreview));
 $("saveSettings").onclick=()=>{
   const manual=parseInt($("inManual").value),calc=calcGoal();
@@ -1334,7 +1396,10 @@ $("saveSettings").onclick=()=>{
   const mp = +$("inMP").value || (autoMac ? autoMac.p : 0) || "";
   const mc = +$("inMC").value || (autoMac ? autoMac.c : 0) || "";
   const mg = +$("inMG").value || (autoMac ? autoMac.g : 0) || "";
-  S.profile={name:S.profile.name||"",sex:tmpSex,age:$("inAge").value,w:$("inW").value,h:$("inH").value,act:$("inAct").value,obj:tmpObj,manual:manual>0?manual:"",goal,mp,mc,mg};
+  const isDeportista = $("chkDeportista").checked;
+  const depData = isDeportista ? {deporte:$("inDeporte").value, pos:$("inDepPos").value, nivel:$("inDepNivel").value, fase:$("inDepFase").value} : null;
+  S.profile={name:S.profile.name||"",sex:tmpSex,age:$("inAge").value,w:$("inW").value,h:$("inH").value,act:$("inAct").value,obj:tmpObj,manual:manual>0?manual:"",goal,mp,mc,mg,dep:depData};
+  applyDepMode();
   save();render();$("ovSettings").classList.remove("open");toast("Objetivo: "+goal+" kcal · P "+mp+"g · C "+mc+"g · G "+mg+"g");
 };
 
@@ -1416,7 +1481,7 @@ const GR = [["rod","Rodilla"],["cad","Cadera"],["emp","Empuje"],["hom","Hombros"
 const GRN = Object.fromEntries(GR);
 S.train = S.train || []; S.bw = S.bw || []; S.antro = S.antro || [];
 S.water = S.water || {}; S.sleep = S.sleep || {}; S.mood = S.mood || {}; S.per = S.per || {on:0, share:0, list:[], sy:{}};
-S.coach = S.coach || {students:{}}; S.mod = S.mod || {e:1,c:1,a:0}; S.draft = S.draft || null;
+S.coach = S.coach || {students:{}}; S.mod = S.mod || {e:1,c:1,a:0}; S.draft = S.draft || null; S.sport = S.sport || [];
 save();
 const todayK = () => dk(new Date());
 const fmtN = n => (Math.round(n*10)/10).toLocaleString("es-AR");
@@ -1708,10 +1773,11 @@ function renderRunFree(){
 $("segEnt").addEventListener("click", e => { const b=e.target.closest("button"); if(!b) return; entTab=b.dataset.v;
   document.querySelectorAll("#segEnt button").forEach(x=>x.classList.toggle("on",x===b)); renderEnt(); });
 function renderEnt(){
-  $("entRut").hidden = entTab!=="rut"; $("entLib").hidden = entTab!=="lib"; $("entHis").hidden = entTab!=="his"; $("entRun").hidden = entTab!=="run";
+  $("entRut").hidden = entTab!=="rut"; $("entLib").hidden = entTab!=="lib"; $("entHis").hidden = entTab!=="his"; $("entRun").hidden = entTab!=="run"; $("entDep").hidden = entTab!=="dep";
   if(entTab==="lib") return renderLib();
   if(entTab==="his") return renderHis();
   if(entTab==="run") return renderRunFree();
+  if(entTab==="dep") return renderDep();
   const p = S.plan;
   if(!p){ $("entRut").innerHTML = `<div class="card empty2"><b style="font-size:1.05rem">Todavía no tenés una rutina</b><br><br>Armala vos con los ejercicios de la biblioteca y registrá cada entrenamiento.<br><br><button class="btn wide" id="goSelf">✏️ Armar mi rutina</button><button class="btn sec wide" id="goLib" style="margin-top:8px">Ver la biblioteca de ejercicios</button><p style="font-size:.8rem;color:var(--muted);margin-top:12px">¿Entrenás con 1dz? Tu entrenadora te manda tu plan por link de WhatsApp: abrilo y se carga solo.</p></div>` + ctaCard();
     $("goLib").onclick = () => document.querySelector('#segEnt [data-v="lib"]').click(); $("goSelf").onclick = openSelf; return; }
@@ -1798,6 +1864,165 @@ function sesHtml(t, canEdit){
   const editBtn = canEdit&&!t.alt?`<button class="ghost" data-hedit="${t._i}" style="width:auto;margin:0;padding:4px 10px;font-size:.78rem">✏️ Editar</button>`:"";
   return `<details class="hist-day"><summary><span style="display:flex;justify-content:space-between;align-items:center;gap:8px;width:100%"><b>${dLabel(t.date)} · ${esc(t.dn)}</b>${editBtn}</span></summary><div class="hist-body">${body}${!t.alt&&t.c?"<br>💬 "+esc(t.c):""}</div></details>`;
 }
+/* =================== SECCIÓN DEPORTISTA =================== */
+let depReg = {}; // registro del día en edición
+
+function renderDep(){
+  const P = S.profile; const dep = P.dep || {};
+  const today = todayK();
+  // Buscar si ya hay registro de hoy
+  const existing = S.sport.find(x => x.date === today);
+  if(!depReg._init || depReg.date !== today){ depReg = existing ? JSON.parse(JSON.stringify(existing)) : {date:today,partido:null,cancha:null,estado:{energia:0,sueno:0,dolor:[],notas:""}}; depReg._init=true; }
+
+  const sport = dep.deporte || "Deporte";
+  const fase = dep.fase ? `<span class="badge" style="background:var(--accent-soft);color:var(--accent)">${esc(dep.fase)}</span>` : "";
+  const nivel = dep.nivel ? `<span class="badge" style="background:#f0f0f0;color:var(--muted)">${esc(dep.nivel)}</span>` : "";
+
+  let h = `<div class="card"><div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><span style="font-size:1.3rem">⚽</span><div><b style="font-size:1.1rem">${esc(sport)}</b>${dep.pos?`<span style="color:var(--muted);font-size:.82rem"> · ${esc(dep.pos)}</span>`:""}${dep.nivel||dep.fase?`<div style="display:flex;gap:6px;margin-top:4px">${nivel}${fase}</div>`:""}</div></div></div>`;
+
+  // — PARTIDO HOY —
+  h += `<div class="card"><h3 style="margin-bottom:10px">🏟️ ¿Tuviste partido hoy?</h3>`;
+  h += `<div class="seg" id="segPartido"><button data-pv="no" class="${depReg.partido===null||depReg.partido===false?'on':''}">No</button><button data-pv="si" class="${depReg.partido&&typeof depReg.partido==='object'?'on':''}">Sí</button></div>`;
+  if(depReg.partido && typeof depReg.partido === 'object'){
+    const p = depReg.partido;
+    h += `<div id="depPartidoFields" style="margin-top:12px">
+      <div class="grid2">
+        <div class="field"><label>Rival (opcional)</label><input type="text" id="inRival" value="${esc(p.rival||'')}" placeholder="Nombre del equipo rival"></div>
+        <div class="field"><label>Resultado</label>
+          <select id="inResultado">
+            <option value="">– –</option>
+            <option value="victoria" ${p.resultado==='victoria'?'selected':''}>🏆 Victoria</option>
+            <option value="empate" ${p.resultado==='empate'?'selected':''}>🤝 Empate</option>
+            <option value="derrota" ${p.resultado==='derrota'?'selected':''}>😤 Derrota</option>
+          </select>
+        </div>
+      </div>
+      <div class="grid2">
+        <div class="field"><label>Minutos jugados</label><input type="number" inputmode="numeric" id="inMinutos" value="${esc(p.minutos||'')}" placeholder="Ej: 90" min="1" max="200"></div>
+        <div class="field"><label>Rendimiento (1–5 ⭐)</label>
+          <div class="seg" id="segRendimiento">${[1,2,3,4,5].map(n=>`<button data-rv="${n}" class="${p.rendimiento===n?'on':''}">${n}⭐</button>`).join('')}</div>
+        </div>
+      </div>
+      <div class="field"><label>¿Cómo te sentiste post partido?</label>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:6px">${[["💪","Bien","bien"],["😐","Normal","normal"],["😩","Cansado","cansado"],["🤕","Con dolor","con_dolor"],["🔥","En llamas","en_llamas"]].map(([ic,lb,v])=>`<button class="chip${p.sensacion===v?' on':''}" data-sens="${v}" style="font-size:.82rem">${ic} ${lb}</button>`).join('')}</div>
+      </div>
+      <div class="field"><label>Notas del partido (opcional)</label><textarea id="inNotasPartido" style="width:100%;border:1px solid var(--line);border-radius:10px;padding:8px;font-size:.88rem;resize:vertical;min-height:60px" placeholder="Jugadas destacadas, aspectos a mejorar…">${esc(p.notas||'')}</textarea></div>
+    </div>`;
+  } else {
+    h += `<div id="depPartidoFields" style="display:none"></div>`;
+  }
+  h += `</div>`;
+
+  // — ENTRENAMIENTO DE CANCHA —
+  h += `<div class="card"><h3 style="margin-bottom:10px">🏃 ¿Hiciste entrenamiento de cancha / equipo?</h3>`;
+  h += `<div class="seg" id="segCancha"><button data-cv="no" class="${!depReg.cancha?'on':''}">No</button><button data-cv="si" class="${depReg.cancha&&typeof depReg.cancha==='object'?'on':''}">Sí</button></div>`;
+  if(depReg.cancha && typeof depReg.cancha === 'object'){
+    const c = depReg.cancha;
+    h += `<div id="depCanchaFields" style="margin-top:12px">
+      <div class="grid2">
+        <div class="field"><label>Duración (min)</label><input type="number" inputmode="numeric" id="inCanchaDur" value="${esc(c.dur||'')}" placeholder="Ej: 90" min="10" max="300"></div>
+        <div class="field"><label>Tipo</label>
+          <select id="inCanchaTipo">
+            <option value="">– Tipo –</option>
+            <option value="Técnica" ${c.tipo==='Técnica'?'selected':''}>🎯 Técnica</option>
+            <option value="Táctica" ${c.tipo==='Táctica'?'selected':''}>♟️ Táctica</option>
+            <option value="Físico" ${c.tipo==='Físico'?'selected':''}>💪 Físico</option>
+            <option value="Amistoso" ${c.tipo==='Amistoso'?'selected':''}>🤝 Amistoso</option>
+            <option value="Mixto" ${c.tipo==='Mixto'?'selected':''}>🔀 Mixto</option>
+          </select>
+        </div>
+      </div>
+    </div>`;
+  } else {
+    h += `<div id="depCanchaFields" style="display:none"></div>`;
+  }
+  h += `</div>`;
+
+  // — ESTADO DEL DÍA —
+  const est = depReg.estado;
+  h += `<div class="card"><h3 style="margin-bottom:10px">📊 Estado del día</h3>
+    <div class="field"><label>⚡ Energía</label>
+      <div class="seg" id="segEnergia">${[1,2,3,4,5].map(n=>`<button data-en="${n}" class="${est.energia===n?'on':''}">${n}</button>`).join('')}</div>
+      <div style="display:flex;justify-content:space-between;font-size:.72rem;color:var(--muted);margin-top:2px"><span>Sin energía</span><span>Al 100%</span></div>
+    </div>
+    <div class="field" style="margin-top:10px"><label>😴 Calidad de sueño</label>
+      <div class="seg" id="segSueno">${[1,2,3,4,5].map(n=>`<button data-sn="${n}" class="${est.sueno===n?'on':''}">${n}</button>`).join('')}</div>
+      <div style="display:flex;justify-content:space-between;font-size:.72rem;color:var(--muted);margin-top:2px"><span>Dormí mal</span><span>Dormí muy bien</span></div>
+    </div>
+    <div class="field" style="margin-top:10px"><label>🤕 Dolor / Molestia (opcional)</label>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:6px">${[["Rodilla","rod"],["Tobillo","tob"],["Cadera","cad"],["Lumbar","lum"],["Hombro","hom"],["Cuello","cue"],["Muslo","mus"],["Gemelo","gem"]].map(([lb,v])=>`<button class="chip${(est.dolor||[]).includes(v)?' on':''}" data-dol="${v}" style="font-size:.8rem">${lb}</button>`).join('')}</div>
+    </div>
+    <div class="field" style="margin-top:10px"><label>📝 Notas del día (opcional)</label>
+      <textarea id="inNotasDia" style="width:100%;border:1px solid var(--line);border-radius:10px;padding:8px;font-size:.88rem;resize:vertical;min-height:60px" placeholder="Cómo te sentiste, qué pasó hoy…">${esc(est.notas||'')}</textarea>
+    </div>
+  </div>`;
+
+  h += `<button class="primary wide" id="saveDep">Guardar registro del día</button>`;
+
+  // — HISTORIAL reciente —
+  const hist = S.sport.filter(x => x.date !== today).slice().sort((a,b)=>a.date<b.date?1:-1).slice(0,5);
+  if(hist.length){
+    h += `<h4 style="margin-top:18px;margin-bottom:8px">Registros recientes</h4>`;
+    hist.forEach(r => {
+      const tags = [];
+      if(r.partido && typeof r.partido==='object'){ const res = r.partido.resultado; tags.push(res==='victoria'?'🏆 Victoria':res==='empate'?'🤝 Empate':res==='derrota'?'😤 Derrota':'🏟️ Partido'); }
+      if(r.cancha && typeof r.cancha==='object') tags.push('🏃 Cancha');
+      if(r.estado && r.estado.energia) tags.push(`⚡${r.estado.energia}`);
+      if(r.estado && r.estado.sueno) tags.push(`😴${r.estado.sueno}`);
+      h += `<div class="hist"><b>${dLabel(r.date)}</b> ${tags.map(t=>`<span class="badge">${t}</span>`).join(' ')}${r.estado&&r.estado.notas?`<br><small style="color:var(--muted)">${esc(r.estado.notas.slice(0,80))}</small>`:''}</div>`;
+    });
+  }
+
+  $("entDep").innerHTML = h;
+
+  // Events: partido toggle
+  $("segPartido").querySelectorAll("button").forEach(b => b.onclick = () => {
+    if(b.dataset.pv==="si"){ if(!depReg.partido || typeof depReg.partido!=="object") depReg.partido = {rival:"",resultado:"",minutos:"",rendimiento:0,sensacion:"",notas:""}; }
+    else depReg.partido = false;
+    renderDep();
+  });
+  // Events: cancha toggle
+  $("segCancha").querySelectorAll("button").forEach(b => b.onclick = () => {
+    if(b.dataset.cv==="si"){ if(!depReg.cancha || typeof depReg.cancha!=="object") depReg.cancha = {dur:"",tipo:""}; }
+    else depReg.cancha = false;
+    renderDep();
+  });
+  // Rendimiento stars
+  const segRend = $("segRendimiento"); if(segRend) segRend.querySelectorAll("button").forEach(b => b.onclick = () => { depReg.partido.rendimiento=+b.dataset.rv; renderDep(); });
+  // Sensación post-partido
+  $("entDep").querySelectorAll("[data-sens]").forEach(b => b.onclick = () => { if(depReg.partido && typeof depReg.partido==='object') depReg.partido.sensacion=b.dataset.sens; renderDep(); });
+  // Dolor chips
+  $("entDep").querySelectorAll("[data-dol]").forEach(b => b.onclick = () => {
+    depReg.estado.dolor = depReg.estado.dolor || [];
+    const v = b.dataset.dol, idx = depReg.estado.dolor.indexOf(v);
+    if(idx>=0) depReg.estado.dolor.splice(idx,1); else depReg.estado.dolor.push(v);
+    b.classList.toggle("on", depReg.estado.dolor.includes(v));
+  });
+  // Energía / Sueño segs
+  $("segEnergia").querySelectorAll("button").forEach(b => b.onclick = () => { depReg.estado.energia=+b.dataset.en; renderDep(); });
+  $("segSueno").querySelectorAll("button").forEach(b => b.onclick = () => { depReg.estado.sueno=+b.dataset.sn; renderDep(); });
+
+  // Guardar
+  $("saveDep").onclick = () => {
+    if(depReg.partido && typeof depReg.partido==='object'){
+      depReg.partido.rival = ($("inRival")||{}).value||"";
+      depReg.partido.resultado = ($("inResultado")||{}).value||"";
+      depReg.partido.minutos = ($("inMinutos")||{}).value||"";
+      depReg.partido.notas = ($("inNotasPartido")||{}).value||"";
+    }
+    if(depReg.cancha && typeof depReg.cancha==='object'){
+      depReg.cancha.dur = ($("inCanchaDur")||{}).value||"";
+      depReg.cancha.tipo = ($("inCanchaTipo")||{}).value||"";
+    }
+    depReg.estado.notas = ($("inNotasDia")||{}).value||"";
+    const rec = {...depReg}; delete rec._init;
+    S.sport = S.sport.filter(x => x.date !== today); S.sport.push(rec); save();
+    depReg._init = false; // force refresh next time
+    toast("Registro del día guardado ✓"); renderDep();
+  };
+}
+/* =================== FIN SECCIÓN DEPORTISTA =================== */
+
 function renderHis(){
   const all = S.train.map((t,i)=>({...t,_i:i}));
   if(!all.length){ $("entHis").innerHTML = `<div class="card empty2">Todavía no hay entrenamientos guardados.<br>Cada vez que termines un entrenamiento, queda guardado acá ordenado por mesociclo y semana.</div>`; return; }
@@ -2450,7 +2675,9 @@ function sharedSummary(){
     foodLog: D3.map(k => ({d:k, items:(S.log[k]||[]).map(e => ({m:e.m, n:e.n, a:e.amt || ((e.q!==1?r1(e.q)+" × ":"")+e.por), k:Math.round(e.k*e.q), up:e.up?1:0}))})).filter(x => x.items.length),
     water: D30.map(k => [k, S.water[k]||0]).filter(x => x[1]), sleep: D30.map(k => [k, S.sleep[k]||null]).filter(x => x[1] && x[1].h),
     mood: D30.map(k => [k, S.mood[k]||null]).filter(x => x[1]),
-    bw: (S.bw||[]).slice(-12), antro: S.antro||[], nextAn: S.nextAn||null, last: S._ts || Date.now()
+    bw: (S.bw||[]).slice(-12), antro: S.antro||[], nextAn: S.nextAn||null, last: S._ts || Date.now(),
+    sport: (S.sport||[]).filter(x => x.date >= D30[0]),
+    profile: P.dep ? {dep: P.dep} : undefined
   };
   if(S.per && S.per.on && S.per.share){
     const x = !S.per.horm && S.per.list.length ? phaseAt(todayK()) : null;
@@ -2696,6 +2923,24 @@ function openStu(id){
   const bw = (d.bw||[]).slice().sort((a,b)=>a.d<b.d?-1:1);
   if(bw.length) h += `<h4 style="margin-top:12px">Peso</h4><p style="font-size:.85rem">${bw.slice(-4).map(x=>dLabel(x.d)+": <b>"+fmtN(x.kg)+" kg</b>").join(" · ")}</p>`;
   if((d.antro||[]).length){ const a = d.antro.slice().sort((x,y)=>x.d<y.d?1:-1)[0]; h += `<h4 style="margin-top:12px">Última antropometría (${dLabel(a.d)})</h4><p style="font-size:.85rem">${AF.filter(([k])=>a[k]!=null&&a[k]!=="").map(([k,n,u])=>n+": <b>"+fmtN(a[k])+u+"</b>").join(" · ")}</p>`; }
+  // — Sección deportista —
+  const profDep = d.profile && d.profile.dep;
+  const sportLogs = (d.sport||[]).slice().sort((a,b)=>a.date<b.date?1:-1).slice(0,7);
+  if(profDep && profDep.deporte){
+    h += `<h4 style="margin-top:12px">⚽ Deporte — ${esc(profDep.deporte)}${profDep.nivel?" · "+esc(profDep.nivel):""}${profDep.fase?" · "+esc(profDep.fase):""}</h4>`;
+    if(sportLogs.length){
+      sportLogs.forEach(r => {
+        const tags = [];
+        if(r.partido && typeof r.partido==='object'){ const res = r.partido.resultado; tags.push(res==='victoria'?'🏆 Victoria':res==='empate'?'🤝 Empate':res==='derrota'?'😤 Derrota':'🏟️ Partido'); if(r.partido.rival) tags.push(esc(r.partido.rival)); if(r.partido.minutos) tags.push(r.partido.minutos+"min"); if(r.partido.rendimiento) tags.push('⭐'.repeat(r.partido.rendimiento)); }
+        if(r.cancha && typeof r.cancha==='object'){ tags.push('🏃 '+esc(r.cancha.tipo||'Cancha')); if(r.cancha.dur) tags.push(r.cancha.dur+"min"); }
+        const en = r.estado&&r.estado.energia?`⚡${r.estado.energia}`:""; const sn = r.estado&&r.estado.sueno?`😴${r.estado.sueno}`:"";
+        const dolor = r.estado&&r.estado.dolor&&r.estado.dolor.length?`🤕 ${r.estado.dolor.join(", ")}`:"";
+        h += `<div class="hist" style="font-size:.85rem"><b>${dLabel(r.date)}</b> ${tags.map(t=>`<span class="badge">${t}</span>`).join(' ')} ${en?`<span class="badge">${en}</span>`:''} ${sn?`<span class="badge">${sn}</span>`:''} ${dolor?`<span style="color:#b8590a;font-size:.78rem">${dolor}</span>`:''}${r.estado&&r.estado.notas?`<br><small style="color:var(--muted)">${esc(r.estado.notas.slice(0,100))}</small>`:''}</div>`;
+      });
+    } else {
+      h += `<p style="font-size:.85rem;color:var(--muted)">Todavía no hay registros deportivos.</p>`;
+    }
+  }
   h += `<div class="grid2" style="margin-top:14px"><button class="btn" id="stuChat">💬 Chat</button><button class="btn sec" id="stuUnlink" style="color:#c8364b">Desvincular</button></div>`;
   $("stuTitle").textContent = s.name || "Alumno"; $("stuBody").innerHTML = h; $("ovStu").classList.add("open");
   $("stuChat").onclick = () => openChat(ME.id, id, "💬 " + (s.name||"Alumno"));
@@ -2709,7 +2954,7 @@ document.addEventListener("visibilitychange", async () => {
 });
 
 /* ---------- arranque ---------- */
-applyMods();
+applyMods(); applyDepMode();
 if(!checkHash() && location.hash === "#entrenadora") openCoach();
 show("hoy");
 cloudInit();
