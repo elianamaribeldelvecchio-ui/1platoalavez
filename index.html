@@ -1387,7 +1387,31 @@ function applyDepMode(){
   const tab = $("tabDep"); if(tab) tab.style.display = on ? "" : "none";
   if(!on && entTab==="dep"){ entTab="rut"; document.querySelectorAll("#segEnt button").forEach(x=>x.classList.toggle("on",x.dataset.v==="rut")); }
 }
-["inManual"].forEach(id=>$(id).addEventListener("input",updPreview));
+["inManual"].forEach(id=>$(id).addEventListener("input",()=>{
+  updPreview();
+  // Cuando cambia el objetivo de kcal, recalcular macros automáticamente
+  const goal = +$("inManual").value || calcGoal() || 0;
+  const w = +$("inW").value;
+  if(!goal || !w) return;
+  const mac = calcAutoMacros(w, goal);
+  if(!mac) return;
+  // Si el usuario ya editó proteínas manualmente, respetar eso y recalcular carbos/grasas
+  const userProt = +$("inMP").value;
+  if(userProt > 0){
+    const remaining = goal - userProt * 4;
+    if(remaining >= 0){
+      $("inMC").value = Math.round((remaining * 0.57) / 4);
+      $("inMG").value = Math.round((remaining * 0.43) / 9);
+    }
+  } else {
+    // Sin proteínas manuales: rellenar todo automáticamente
+    $("inMP").value = mac.p;
+    $("inMC").value = mac.c;
+    $("inMG").value = mac.g;
+  }
+  // Mostrar la caja de macros para que se vea el cambio
+  $("macroManualBox").style.display = "";
+}));
 $("saveSettings").onclick=()=>{
   const manual=parseInt($("inManual").value),calc=calcGoal();
   const goal=manual>0?manual:(calc||S.profile.goal||2000);
