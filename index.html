@@ -60,6 +60,14 @@ header{display:flex;align-items:center;justify-content:space-between;margin-bott
 .entry .name{font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .entry .sub{font-size:.78rem;color:var(--muted)}
 .entry .kc{font-weight:700;font-size:.92rem}
+.entry .info,.entry .kc{cursor:pointer}
+.entry .info .sub::after{content:" · ✏️";opacity:.6}
+.recent{display:flex;gap:6px;overflow-x:auto;padding:2px 0 8px;margin-top:6px}
+.recent button{flex:none;padding:7px 11px;border:1px solid var(--line);border-radius:20px;background:var(--card);font-size:.8rem;white-space:nowrap}
+.mealpick{display:flex;flex-wrap:wrap;gap:6px;margin:4px 0 10px}
+.mealpick button{padding:6px 10px;border:1px solid var(--line);border-radius:16px;font-size:.8rem;background:var(--card)}
+.mealpick button.on{background:var(--accent);border-color:var(--accent);color:#fff}
+#ovAdd.editing .search,#ovAdd.editing #foodList,#ovAdd.editing #btnCustom,#ovAdd.editing #customForm,#ovAdd.editing #btnScan,#ovAdd.editing #photoBox,#ovAdd.editing #recentBox{display:none!important}
 .entry .del{width:30px;height:30px;border-radius:8px;color:var(--muted);font-size:1.1rem}
 .entry .del:hover{background:var(--bg);color:var(--g)}
 .add-btn{margin-top:8px;width:100%;padding:10px;border-radius:12px;border:1.5px dashed var(--line);color:var(--accent);font-weight:700}
@@ -474,7 +482,7 @@ details.hisw>summary{font-weight:700;font-size:.9rem}
 <div class="overlay" id="ovAdd">
   <div class="sheet">
     <div class="sheet-head">
-      <div><h2>Agregar a <span id="addMealName"></span></h2></div>
+      <div><h2 id="addTitle">Agregar a <span id="addMealName"></span></h2></div>
       <button class="close" data-close="ovAdd">✕</button>
     </div>
     <div id="pickArea"></div>
@@ -489,11 +497,12 @@ details.hisw>summary{font-weight:700;font-size:.9rem}
       <div class="pb-hint">Plato: estima alimentos y porciones (es aproximado, revisalo). Etiqueta: sacale foto a la tabla de "Información nutricional" del envase y el producto queda guardado en tus alimentos.</div>
       <div id="photoRes"></div>
     </div>
+    <div id="recentBox"></div>
     <div class="search"><div class="field" style="margin:8px 0 0"><input type="search" id="q" placeholder="Buscar: milanesa, mate, empanada…" autocomplete="off"></div><div class="chips" id="chips"></div></div>
     <div class="foods" id="foodList"></div>
     <button class="ghost" id="btnCustom">+ Crear un alimento propio</button>
     <div id="customForm" style="display:none;margin-top:8px">
-      <div class="field"><label>Nombre</label><input id="cName" placeholder="Ej: Tarta de la abuela"></div>
+      <div class="field"><label>Nombre</label><input id="fName" placeholder="Ej: Tarta de la abuela"></div>
       <div class="grid2">
         <div class="field"><label>Porción</label><input id="cPortion" placeholder="1 porción"></div>
         <div class="field"><label>Gramos de esa porción</label><input type="number" id="cGr" placeholder="Ej: 120 (opcional)"></div>
@@ -920,11 +929,28 @@ function renderWeek(){
 
 /* --- Agregar --- */
 let addMeal="desayuno", picked=null;
+function recentFoods(){
+  const out=[],seen=new Set();
+  Object.keys(S.log).sort().reverse().slice(0,21).forEach(k=>{(S.log[k]||[]).slice().reverse().forEach(e=>{const key=e.n+"|"+e.k;if(!seen.has(key)&&out.length<10){seen.add(key);out.push(e)}})});
+  return out;
+}
+function foodOf(e){return allFoods().find(x=>x.n===e.n&&x.k===e.k)||{n:e.n,por:e.por,k:e.k,p:e.p,c:e.c,g:e.g,up:e.up,gr:e.gr,u:e.u}}
 function openAdd(meal){
-  addMeal=meal;picked=null;
+  addMeal=meal;picked=null;$("ovAdd").classList.remove("editing");
+  $("addTitle").innerHTML='Agregar a <span id="addMealName"></span>';
   $("addMealName").textContent=MEALS.find(m=>m[0]===meal)[1].toLowerCase();
+  const rec=recentFoods();
+  $("recentBox").innerHTML=rec.length?`<div style="font-size:.8rem;color:var(--muted);margin-top:8px">⏱ Usados hace poco · tocá para repetir</div><div class="recent">${rec.map((e,i)=>`<button data-rec="${i}">${esc(e.n)}${e.amt?" · "+esc(e.amt):""}</button>`).join("")}</div>`:"";
+  $("recentBox").onclick=ev=>{const b=ev.target.closest("[data-rec]");if(!b)return;const e=rec[+b.dataset.rec];picked={f:foodOf(e),q:e.q,mode:e.amt?"gr":"por"};renderPick()};
   $("q").value="";$("customForm").style.display="none";$("pickArea").innerHTML="";$("photoRes").innerHTML="";photoItems=[];
   curCat="all";renderChips();renderFoods();$("ovAdd").classList.add("open");
+}
+function openEditFood(i){
+  const k=dk(cur),e=(S.log[k]||[])[i];if(!e)return;
+  addMeal=e.m;$("ovAdd").classList.add("editing");$("addTitle").textContent="Editar alimento";
+  picked={f:foodOf(e),q:e.q,mode:e.amt?"gr":"por",edit:i};
+  $("q").value="";$("customForm").style.display="none";$("photoRes").innerHTML="";$("recentBox").innerHTML="";
+  renderPick();$("ovAdd").classList.add("open");
 }
 function baseGr(f){
   if(f.gr>0)return{v:+f.gr,u:f.u||"g"};
@@ -952,29 +978,34 @@ function renderPick(){
     ${b?`<div class="seg" id="segMode" style="margin-bottom:10px"><button data-v="por" class="${isGr?"":"on"}">Porciones</button><button data-v="gr" class="${isGr?"on":""}">${b.u==="ml"?"Mililitros":"Gramos"}</button></div>`:""}
     <div class="stepper"><button id="qMinus">−</button><input id="qIn" type="number" inputmode="decimal" step="${isGr?1:0.5}" min="0" value="${isGr?grams:q}"><button id="qPlus">+</button><span style="color:var(--muted);font-size:.85rem">${isGr?b.u:"porciones"}</span></div>
     <div class="total-line">Total: <b>${Math.round(f.k*q)} kcal</b> · P ${r1(f.p*q)} g · C ${r1(f.c*q)} g · G ${r1(f.g*q)} g</div>
-    <button class="primary" id="confirmAdd">Agregar</button></div>`;
+    ${picked.edit!=null?`<div style="font-size:.8rem;color:var(--muted);margin-top:12px">Comida</div><div class="mealpick" id="mealPick">${MEALS.map(([id,nm])=>`<button data-mp="${id}" class="${id===addMeal?"on":""}">${nm}</button>`).join("")}</div>`:""}
+    <button class="primary" id="confirmAdd">${picked.edit!=null?"Guardar cambios":"Agregar"}</button>${picked.edit!=null?`<button class="ghost" id="editDel" style="color:var(--g)">Quitar este alimento</button>`:""}</div>`;
+  if($("mealPick"))$("mealPick").onclick=e=>{const x=e.target.closest("[data-mp]");if(x){addMeal=x.dataset.mp;renderPick()}};
+  if($("editDel"))$("editDel").onclick=()=>{const k=dk(cur);S.log[k].splice(picked.edit,1);save();render();$("ovAdd").classList.remove("open","editing");toast("Quitado")};
   if(b)$("segMode").onclick=e=>{const x=e.target.closest("button");if(x){picked.mode=x.dataset.v;renderPick()}};
   const stepG=b&&b.v>=100?10:5;
   $("qMinus").onclick=()=>{if(isGr){picked.q=Math.max(1,grams-stepG)/b.v}else picked.q=Math.max(.5,r1(picked.q-.5));renderPick()};
   $("qPlus").onclick=()=>{if(isGr){picked.q=(grams+stepG)/b.v}else picked.q=r1(picked.q+.5);renderPick()};
-  $("qIn").onchange=e=>{const v=parseFloat(String(e.target.value).replace(",","."));if(!(v>0)){renderPick();return}picked.q=isGr?v/b.v:v;renderPick()};
+  const syncQ=()=>{const v=parseFloat(String($("qIn").value).replace(",","."));if(v>0)picked.q=isGr?v/b.v:v;const q2=picked.q;const tl=$("pickArea").querySelector(".total-line");if(tl)tl.innerHTML=`Total: <b>${Math.round(f.k*q2)} kcal</b> · P ${r1(f.p*q2)} g · C ${r1(f.c*q2)} g · G ${r1(f.g*q2)} g`};
+  $("qIn").oninput=syncQ;
   $("confirmAdd").onclick=()=>{
-    const k=dk(cur),amt=isGr?`${Math.round(picked.q*b.v)} ${b.u}`:null;
-    (S.log[k]=S.log[k]||[]).push({n:f.n,por:f.por,k:f.k,p:f.p,c:f.c,g:f.g,q:picked.q,m:addMeal,amt,up:f.up?1:0});
-    save();render();$("ovAdd").classList.remove("open");toast("Agregado ✓");
+    syncQ();const k=dk(cur),amt=isGr?`${Math.round(picked.q*b.v)} ${b.u}`:null;
+    const ent={n:f.n,por:f.por,k:f.k,p:f.p,c:f.c,g:f.g,q:picked.q,m:addMeal,amt,up:f.up?1:0};if(f.gr>0){ent.gr=f.gr;ent.u=f.u||"g"}
+    if(picked.edit!=null){S.log[k][picked.edit]=ent}else (S.log[k]=S.log[k]||[]).push(ent);
+    const was=picked.edit!=null;save();render();$("ovAdd").classList.remove("open","editing");toast(was?"Cambios guardados ✓":"Agregado ✓");
   };
   $("ovAdd").querySelector(".sheet").scrollTop=0;
 }
 $("foodList").addEventListener("click",e=>{const b=e.target.closest("[data-food]");if(!b)return;{const f=allFoods()[+b.dataset.food];picked={f,q:1,mode:/^\d/.test(String(f.por).trim())&&baseGr(f)?"gr":"por"};renderPick()}});
 $("q").addEventListener("input",renderFoods);
-$("btnCustom").onclick=()=>{const f=$("customForm");f.style.display=f.style.display==="none"?"block":"none";if(f.style.display==="block")$("cName").value=$("q").value};
+$("btnCustom").onclick=()=>{const f=$("customForm");f.style.display=f.style.display==="none"?"block":"none";if(f.style.display==="block")$("fName").value=$("q").value};
 $("saveCustom").onclick=()=>{
-  const n=$("cName").value.trim(),k=parseFloat($("cKcal").value);
+  const n=$("fName").value.trim(),k=parseFloat($("cKcal").value);
   if(!n||!(k>=0)){toast("Poné al menos nombre y calorías");return}
   const gr=parseFloat($("cGr").value);const f={n,gr:gr>0?gr:undefined,u:"g",por:$("cPortion").value.trim()||(gr>0?gr+" g":"1 porción"),k:Math.round(k),p:parseFloat($("cP").value)||0,c:parseFloat($("cC").value)||0,g:parseFloat($("cG").value)||0,up:$("cUp").checked?1:0};$("cUp").checked=false;
-  if($("cName").dataset.code){f.code=$("cName").dataset.code;delete $("cName").dataset.code}
+  if($("fName").dataset.code){f.code=$("fName").dataset.code;delete $("fName").dataset.code}
   S.custom.unshift(f);save();
-  ["cName","cPortion","cGr","cKcal","cP","cC","cG"].forEach(id=>$(id).value="");
+  ["fName","cPortion","cGr","cKcal","cP","cC","cG"].forEach(id=>$(id).value="");
   $("customForm").style.display="none";$("q").value="";renderFoods();
   picked={f,q:1,mode:"por"};renderPick();toast("Alimento guardado");
 };
@@ -1090,7 +1121,7 @@ async function onCode(code){
     picked={f,q:1,mode:"por"};renderPick();toast("Producto encontrado ✓");
   }catch(e){
     stopScan();
-    $("customForm").style.display="block";$("cName").value="";$("cName").dataset.code=code;
+    $("customForm").style.display="block";$("fName").value="";$("fName").dataset.code=code;
     $("ovAdd").querySelector(".sheet").scrollTop=$("ovAdd").querySelector(".sheet").scrollHeight;
     toast(navigator.onLine===false?"Sin internet: cargalo a mano":"No encontramos ese código: cargalo a mano y queda guardado");
   }
@@ -1171,6 +1202,7 @@ $("saveSettings").onclick=()=>{
 document.addEventListener("click",e=>{
   const c=e.target.closest("[data-close]");if(c)$(c.dataset.close).classList.remove("open");
   const a=e.target.closest("[data-add]");if(a)openAdd(a.dataset.add);
+  const en=e.target.closest(".entry");if(en&&!e.target.closest("[data-del]")){const i=+en.querySelector("[data-del]").dataset.del;openEditFood(i);return}
   const d=e.target.closest("[data-del]");if(d){const k=dk(cur);S.log[k].splice(+d.dataset.del,1);save();render();toast("Quitado")}
 });
 document.querySelectorAll(".overlay").forEach(o=>o.addEventListener("click",e=>{if(e.target===o)o.classList.remove("open")}));
