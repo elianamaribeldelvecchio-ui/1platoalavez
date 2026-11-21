@@ -1320,7 +1320,7 @@ function updPreview(){
   const g = calcGoal();
   $("goalCalc").textContent = g ? g.toLocaleString("es-AR") : "—";
   const w = +$("inW").value;
-  const goal = g || +$("inManual").value || 0;
+  const goal = +$("inManual").value || g || 0;
   const mac = (w && goal) ? calcAutoMacros(w, goal) : null;
   const autoBox = $("macroAutoBox");
   const manualBox = $("macroManualBox");
@@ -1341,7 +1341,8 @@ function updPreview(){
 }
 function recalcMacrosFromProt(){
   // Si el usuario editó proteínas, redistribuir el resto (carbs y grasas)
-  const goal = calcGoal() || +$("inManual").value || 0;
+  // Prioridad: valor manual escrito → calculado automático
+  const goal = +$("inManual").value || calcGoal() || 0;
   if(!goal) return;
   const prot = +$("inMP").value || 0;
   if(!prot) return;
@@ -1357,7 +1358,7 @@ function recalcMacrosFromProt(){
 $("btnEditMacros").onclick = () => {
   const mac = (() => {
     const w = +$("inW").value;
-    const g = calcGoal() || +$("inManual").value || 0;
+    const g = +$("inManual").value || calcGoal() || 0;
     return calcAutoMacros(w, g);
   })();
   if(mac && !$("inMP").value){ $("inMP").value = mac.p; }
