@@ -308,22 +308,16 @@ details.hisw>summary{font-weight:700;font-size:.9rem}
     <div class="hello-sub" id="helloSub"></div>
     <div id="hoyCards"></div>
     <button class="report-btn" id="btnReport">📤 Enviar mi reporte a 1dz</button>
-    <div class="card cta">
-      <h3>¿Querés un plan a tu medida?</h3>
-      <p>Entrenamiento, nutrición y acompañamiento personalizado con 1dz.</p>
-      <div class="cta-btns">
-        <a class="wa" href="https://wa.me/5491127520419?text=Hola%201dz%2C%20vengo%20de%20la%20app%20y%20quiero%20info%20sobre%20los%20planes" target="_blank" rel="noopener">WhatsApp<small>11 2752-0419</small></a>
-        <a class="ig" href="https://instagram.com/1diaalavez9" target="_blank" rel="noopener">Instagram<small>@1diaalavez9</small></a>
-      </div>
-    </div>
+    <div id="ctaArea"></div>
     <p class="footer-brand">Una herramienta de <b>1dz</b> · <span>1 día a la vez</span><br>Entrenamiento · Asesoría nutricional · Antropometría</p>
   </section>
 
   <section class="view" id="v-entreno" hidden>
     <h2 class="sec-title">Entreno</h2>
     <p style="font-size:.82rem;color:var(--accent);margin:-8px 2px 12px;font-family:'Fraunces',serif"><span style="color:var(--warm)">1</span> entreno a la vez</p>
-    <div class="seg" id="segEnt" style="margin-bottom:14px"><button data-v="rut" class="on">Mi rutina</button><button data-v="his">Historial</button><button data-v="lib">Biblioteca</button></div>
+    <div class="seg" id="segEnt" style="margin-bottom:14px"><button data-v="rut" class="on">Mi rutina</button><button data-v="run">🏃 Run</button><button data-v="his">Historial</button><button data-v="lib">Biblioteca</button></div>
     <div id="entRut"></div>
+    <div id="entRun" hidden></div>
     <div id="entHis" hidden></div>
     <div id="entLib" hidden>
       <div class="field" style="margin-bottom:8px"><input type="search" id="libQ" placeholder="Buscar ejercicio…" autocomplete="off"></div>
@@ -1392,12 +1386,93 @@ const runTxt = r => [r.km ? fmtN(r.km)+" km" : "", r.sec ? "en "+fmtT(r.sec) : "
 
 /* ---------- ENTRENO ---------- */
 let entTab = "rut", selDay = null, wodAnyway = false, libG = "all";
+// --- Variante para socios con plan de coach ---
+function openAltVar(){
+  const p = S.plan; if(!p) return;
+  const dn = p.days && p.days[selDay] ? p.days[selDay].n : "Hoy";
+  const existing = S.train.filter(t => t.alt && t.date === todayK() && t.plan === p.name);
+  let h = `<div class="card" style="border:2px solid var(--pri);margin-top:12px" id="altVarCard">
+    <h3>🔄 Registrar variante de hoy</h3>
+    <p style="font-size:.85rem;color:var(--muted);margin-top:4px">Día del plan: <b>${esc(dn)}</b>. Contale a tu entrenadora qué hiciste realmente (ejercicios cambiados, carga distinta, cómo te sentiste).</p>
+    <div class="field" style="margin-top:12px"><label>¿Qué hiciste hoy?</label><textarea class="ta" id="altVarTxt" rows="5" placeholder="Ej: cambié la búlgara por la sentadilla goblet porque me molestaba la rodilla. Hice 4×10 con 12 kg. Me salió bien, llegué sin problemas."style="min-height:100px"></textarea></div>
+    <div class="grid2" style="margin-top:8px">
+      <div class="field"><label>Esfuerzo (RPE 1–10, opcional)</label><select id="altVarRpe"><option value="">–</option>${[1,2,3,4,5,6,7,8,9,10].map(n=>`<option>${n}</option>`).join("")}</select></div>
+      <div class="field"><label>Cómo te sentiste</label><select id="altVarSens"><option value="">–</option><option>💪 Bien</option><option>😐 Regular</option><option>😩 Pesado</option><option>🤕 Me molestó algo</option></select></div>
+    </div>
+    <button class="primary" id="altVarSave">Guardar variante</button>
+    <button class="ghost" id="altVarCancel" style="margin-top:4px">Cancelar</button>
+  </div>`;
+  if(existing.length) h += `<div class="card" style="margin-top:8px"><h3 style="font-size:.9rem;margin-bottom:6px">Variantes guardadas hoy</h3>${existing.map(t=>`<div class="hist">📝 ${esc(t.c||"")}${t.rpe?" · RPE "+t.rpe:""}${t.sens?" · "+t.sens:""}</div>`).join("")}</div>`;
+  // inyectamos al final de #entRut
+  const existing_card = $("altVarCard");
+  if(existing_card) existing_card.closest(".card") ? existing_card.closest(".card").remove() : existing_card.remove();
+  $("entRut").insertAdjacentHTML("beforeend", h);
+  $("altVarSave").onclick = () => {
+    const txt = ($("altVarTxt").value||"").trim();
+    if(!txt){ toast("Escribí qué hiciste"); return; }
+    const rpe = $("altVarRpe").value;
+    const sens = $("altVarSens").value;
+    const p2 = S.plan; const di = selDay;
+    S.train.push({plan: p2.name, dn: "Variante · "+dn, date: todayK(), di, dl:0, items:[], alt:true, c: txt, rpe: +rpe||0, sens});
+    save(); toast("Variante guardada ✅");
+    const card = $("altVarCard"); if(card) card.remove();
+  };
+  $("altVarCancel").onclick = () => { const card = $("altVarCard"); if(card) card.remove(); };
+  $("altVarTxt").focus();
+}
+// --- Run libre ---
+let runFree = {km:"", m:"", s:"", rpe:"", fc:"", c:""};
+function renderRunFree(){
+  const r = runFree;
+  const km = parseFloat(String(r.km).replace(",",".")) || 0, sec = (+r.m||0)*60 + (+r.s||0);
+  let h = `<div class="card">
+    <h3>🏃 Registrar salida a correr</h3>
+    <p style="font-size:.85rem;color:var(--muted);margin-top:4px">Registrá cualquier salida, independientemente de tu rutina.</p>
+    <div class="grid3" style="margin-top:14px">
+      <div class="field"><label>Distancia km</label><input inputmode="decimal" id="rfKm" value="${esc(r.km)}" placeholder="Ej: 5,2"></div>
+      <div class="field"><label>Minutos</label><input inputmode="numeric" id="rfM" value="${esc(r.m)}" placeholder="32"></div>
+      <div class="field"><label>Segundos</label><input inputmode="numeric" id="rfS" value="${esc(r.s)}" placeholder="15"></div>
+    </div>
+    <div class="sug" id="rfPace">${km&&sec?"Ritmo promedio: <b>"+pace({km,sec})+"</b>":"El ritmo se calcula solo cuando cargás distancia y tiempo."}</div>
+    <div class="grid2" style="margin-top:10px">
+      <div class="field"><label>Esfuerzo (RPE 1–10)</label><select id="rfRpe"><option value="">–</option>${[1,2,3,4,5,6,7,8,9,10].map(n=>`<option${String(r.rpe)===String(n)?" selected":""}>${n}</option>`).join("")}</select></div>
+      <div class="field"><label>FC promedio (opcional)</label><input inputmode="numeric" id="rfFc" value="${esc(r.fc)}" placeholder="Ej: 150"></div>
+    </div>
+    <div class="field" style="margin-top:8px"><label>Notas (opcional)</label><textarea class="ta" id="rfCom" placeholder="Ej: cómo te sentiste, terreno, calor, molestias">${esc(r.c)}</textarea></div>
+    <p style="font-size:.78rem;color:var(--muted);margin-top:4px">RPE: 1 = muy suave, 10 = máximo esfuerzo.</p>
+    <button class="primary" id="rfSave">Guardar run</button>
+  </div>`;
+  // Últimos runs registrados (libres o del plan)
+  const runs = S.train.filter(t => t.run && (t.run.km || t.run.sec)).slice(-5).reverse();
+  if(runs.length) h += `<div class="card"><h3 style="font-size:1rem;margin-bottom:6px">Últimas salidas</h3>${runs.map(t=>`<div class="hist"><b>${dLabel(t.date)}</b> · ${esc(runTxt(t.run))}${t.c?"<br>💬 "+esc(t.c):""}</div>`).join("")}</div>`;
+  $("entRun").innerHTML = h;
+  // Inputs
+  ["Km","M","S","Rpe","Fc","Com"].forEach(k => {
+    const el = $("rf"+k); if(!el) return;
+    el.addEventListener("input", () => {
+      runFree.km = $("rfKm").value; runFree.m = $("rfM").value; runFree.s = $("rfS").value;
+      runFree.rpe = $("rfRpe").value; runFree.fc = $("rfFc").value; runFree.c = $("rfCom").value;
+      const km2 = parseFloat(String(runFree.km).replace(",",".")) || 0, sec2 = (+runFree.m||0)*60 + (+runFree.s||0);
+      $("rfPace").innerHTML = km2&&sec2?"Ritmo promedio: <b>"+pace({km:km2,sec:sec2})+"</b>":"El ritmo se calcula solo cuando cargás distancia y tiempo.";
+    });
+  });
+  $("rfSave").onclick = () => {
+    const r2 = runFree;
+    const km2 = parseFloat(String(r2.km).replace(",",".")) || 0, sec2 = (+r2.m||0)*60 + (+r2.s||0);
+    if(!km2 && !sec2){ toast("Cargá al menos la distancia o el tiempo"); return; }
+    const run = {km:km2, sec:sec2, rpe:+r2.rpe||0, fc:+r2.fc||0};
+    S.train.push({plan:"libre", dn:"Run libre", date:todayK(), di:0, dl:0, items:[], run, c:r2.c});
+    runFree = {km:"",m:"",s:"",rpe:"",fc:"",c:""};
+    save(); toast("¡Run guardado! 🏃"); renderRunFree();
+  };
+}
 $("segEnt").addEventListener("click", e => { const b=e.target.closest("button"); if(!b) return; entTab=b.dataset.v;
   document.querySelectorAll("#segEnt button").forEach(x=>x.classList.toggle("on",x===b)); renderEnt(); });
 function renderEnt(){
-  $("entRut").hidden = entTab!=="rut"; $("entLib").hidden = entTab!=="lib"; $("entHis").hidden = entTab!=="his";
+  $("entRut").hidden = entTab!=="rut"; $("entLib").hidden = entTab!=="lib"; $("entHis").hidden = entTab!=="his"; $("entRun").hidden = entTab!=="run";
   if(entTab==="lib") return renderLib();
   if(entTab==="his") return renderHis();
+  if(entTab==="run") return renderRunFree();
   const p = S.plan;
   if(!p){ $("entRut").innerHTML = `<div class="card empty2"><b style="font-size:1.05rem">Todavía no tenés una rutina</b><br><br>Armala vos con los ejercicios de la biblioteca y registrá cada entrenamiento.<br><br><button class="btn wide" id="goSelf">✏️ Armar mi rutina</button><button class="btn sec wide" id="goLib" style="margin-top:8px">Ver la biblioteca de ejercicios</button><p style="font-size:.8rem;color:var(--muted);margin-top:12px">¿Entrenás con 1dz? Tu entrenadora te manda tu plan por link de WhatsApp: abrilo y se carga solo.</p></div>` + ctaCard();
     $("goLib").onclick = () => document.querySelector('#segEnt [data-v="lib"]').click(); $("goSelf").onclick = openSelf; return; }
@@ -1449,6 +1524,7 @@ function renderEnt(){
   const mine = S.train.map((t,i)=>({...t, _i:i})).filter(t=>t.plan===p.name).slice(-3).reverse();
   if(mine.length) h += `<div class="card"><h3 style="font-size:1rem;margin-bottom:6px">Últimos entrenamientos</h3>${mine.map(t=>`<div class="hist"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><span><b>${dLabel(t.date)} · ${esc(t.dn)}</b>${t.dl?' <span class="badge">descarga</span>':""}</span><button class="ghost" data-edit="${t._i}" style="width:auto;margin:0;padding:4px 10px;font-size:.78rem">✏️ Editar</button></div>${t.run?"🏃 "+esc(runTxt(t.run))+(t.c?"<br>💬 "+esc(t.c):""):""}${t.items.map(i=>esc((EXI[i.x]||{}).n||"")+": "+i.sets.map(s=>(s.kg?fmtN(s.kg)+"×":"")+s.r).join(", ")).join("<br>")}</div>`).join("")}</div>`;
   if(p.own) h += `<button class="btn sec wide" id="goSelf2">✏️ Editar mi rutina</button>` + ctaCard();
+  if(!p.own) h += `<div class="card" style="border:2px dashed var(--line)"><p style="font-size:.88rem;color:var(--muted);margin-bottom:10px">¿Hoy adaptaste los ejercicios? Podés registrar lo que hiciste realmente sin tocar el plan de tu entrenadora.</p><button class="btn sec wide" id="altVarBtn">🔄 Registrar variante de hoy</button></div>`;
   if(S.train.length) h += `<button class="btn sec wide" id="goHis">📂 Ver historial completo (${S.train.length})</button>`;
   $("entRut").innerHTML = h;
   save();
@@ -1464,6 +1540,7 @@ $("entRut").addEventListener("click", e => {
   if(e.target.id==="goSelf2"){ openSelf(); return; }
   if(e.target.id==="goHis"){ document.querySelector('#segEnt [data-v="his"]').click(); window.scrollTo(0,0); return; }
   if(e.target.id==="edCancel"){ S.draft = null; selDay = null; save(); renderEnt(); window.scrollTo(0,0); return; }
+  if(e.target.id==="altVarBtn"){ openAltVar(); return; }
   const ed = e.target.closest("[data-edit]"); if(ed){ startEdit(+ed.dataset.edit); return; }
 });
 $("entRut").addEventListener("input", e => {
@@ -1475,9 +1552,12 @@ $("entRut").addEventListener("input", e => {
   if(t.dataset.k){ S.draft.rows[+t.dataset.x][+t.dataset.s][t.dataset.k] = t.value.replace(",","."); save(); }
 });
 function sesHtml(t, canEdit){
-  const body = t.run ? "🏃 "+esc(runTxt(t.run)) : t.items.map(i=>esc((EXI[i.x]||{}).n||i.x)+": "+i.sets.map(s=>(s.kg?fmtN(s.kg)+"×":"")+s.r+(s.rir!=null&&s.rir!==""&&!isNaN(s.rir)?" (RIR "+s.rir+")":"")).join(", ")).join("<br>");
-  const editBtn = canEdit?`<button class="ghost" data-hedit="${t._i}" style="width:auto;margin:0;padding:4px 10px;font-size:.78rem">✏️ Editar</button>`:"";
-  return `<details class="hist-day"><summary><span style="display:flex;justify-content:space-between;align-items:center;gap:8px;width:100%"><b>${dLabel(t.date)} · ${esc(t.dn)}</b>${editBtn}</span></summary><div class="hist-body">${body}${t.c?"<br>💬 "+esc(t.c):""}</div></details>`;
+  let body;
+  if(t.run) body = "🏃 "+esc(runTxt(t.run));
+  else if(t.alt) body = "📝 "+esc(t.c||"")+(t.rpe?" · RPE "+t.rpe:"")+(t.sens?" · "+esc(t.sens):"");
+  else body = t.items.map(i=>esc((EXI[i.x]||{}).n||i.x)+": "+i.sets.map(s=>(s.kg?fmtN(s.kg)+"×":"")+s.r+(s.rir!=null&&s.rir!==""&&!isNaN(s.rir)?" (RIR "+s.rir+")":"")).join(", ")).join("<br>");
+  const editBtn = canEdit&&!t.alt?`<button class="ghost" data-hedit="${t._i}" style="width:auto;margin:0;padding:4px 10px;font-size:.78rem">✏️ Editar</button>`:"";
+  return `<details class="hist-day"><summary><span style="display:flex;justify-content:space-between;align-items:center;gap:8px;width:100%"><b>${dLabel(t.date)} · ${esc(t.dn)}</b>${editBtn}</span></summary><div class="hist-body">${body}${!t.alt&&t.c?"<br>💬 "+esc(t.c):""}</div></details>`;
 }
 function renderHis(){
   const all = S.train.map((t,i)=>({...t,_i:i}));
@@ -1749,6 +1829,17 @@ function renderHoy(){
     h += `<div class="card"><div class="kv"><h3>🍽️ Comidas de hoy</h3><small>${k.toLocaleString("es-AR")} / ${g.toLocaleString("es-AR")} kcal</small></div><div class="bar" style="margin-top:10px;height:10px"><i style="width:${pct}%;background:${k>g?"var(--warm)":"var(--accent)"}"></i></div><button class="btn sec wide" data-go="comidas">Cargar comidas</button></div>`;
   }
   $("hoyCards").innerHTML = h;
+  // Banner inferior: naranja solo para socios (plan de coach), negro siempre para todos
+  const hasCoachPlan = S.plan && !S.plan.own;
+  const ctaNegro = `<div class="card cta">
+      <h3>¿Querés un plan a tu medida?</h3>
+      <p>Entrenamiento, nutrición y acompañamiento personalizado con 1dz.</p>
+      <div class="cta-btns">
+        <a class="wa" href="https://wa.me/5491127520419?text=Hola%201dz%2C%20vengo%20de%20la%20app%20y%20quiero%20info%20sobre%20los%20planes" target="_blank" rel="noopener">WhatsApp<small>11 2752-0419</small></a>
+        <a class="ig" href="https://instagram.com/1diaalavez9" target="_blank" rel="noopener">Instagram<small>@1diaalavez9</small></a>
+      </div>
+    </div>`;
+  $("ctaArea").innerHTML = (hasCoachPlan ? ctaCard() : "") + ctaNegro;
 }
 $("hoyCards").addEventListener("click", e => { if(wellClick(e)) return; const b = e.target.closest("[data-go]"); if(b){ if(b.dataset.go==="entreno" && !S.plan){ entTab="lib"; document.querySelectorAll("#segEnt button").forEach(x=>x.classList.toggle("on",x.dataset.v==="lib")); } show(b.dataset.go); } });
 

@@ -1,6 +1,6 @@
 // 1 plato a la vez — funcionamiento sin internet
 // Cuando cambies index.html, subí el número de versión para que los celulares se actualicen.
-const VERSION = "v34";
+const VERSION = "v36";
 const CACHE = "1plato-" + VERSION;
 const APP = ["./", "./index.html", "./manifest.webmanifest?v=4", "./1dz-192.png", "./1dz-512.png", "./1dz-apple.png"];
 
