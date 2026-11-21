@@ -213,6 +213,12 @@ header{display:flex;align-items:center;justify-content:space-between;margin-bott
 textarea.ta{width:100%;min-height:70px;padding:10px;border:1px solid var(--line);border-radius:12px;background:var(--bg);font:inherit;resize:vertical}
 .hist{font-size:.82rem;border-top:1px dashed var(--line);padding:8px 0}
 .hist b{font-size:.88rem}
+#ovCoach.self .conly{display:none!important}
+#ovCoach:not(.self) .sonly{display:none!important}
+.cta2{background:linear-gradient(135deg,#0d0d10,#1b2a5c);color:#fff;border:none}
+.cta2 p{color:#cfd6ea;font-size:.88rem;margin:6px 0 12px}
+.cta2 .btn{background:var(--warm);color:#fff;border:none;text-decoration:none}
+.cta2 .btn.sec{background:rgba(255,255,255,.12);color:#fff}
 details.hisf summary,details.hisw summary{cursor:pointer;list-style:none}
 details.hisf summary::-webkit-details-marker,details.hisw summary::-webkit-details-marker{display:none}
 details.hisf>summary::after{content:"▾";float:right;color:var(--muted)}
@@ -379,18 +385,18 @@ details.hisw>summary{font-weight:700;font-size:.9rem}
 </div></div>
 
 <div class="overlay coach" id="ovCoach"><div class="sheet">
-  <div class="sheet-head"><div><h2>👩‍🏫 Modo entrenadora</h2><p class="lead">Armá el plan de cada alumno y mandale su link.</p></div><button class="close" data-close="ovCoach">✕</button></div>
-  <div class="field"><label>Alumno guardado</label><select id="cSel"></select></div>
-  <div class="field"><label>Nombre del alumno</label><input id="cName" placeholder="Ej: Laura"></div>
-  <div class="field"><label>Mensaje para el alumno (aparece en Hoy)</label><input id="cMsg" placeholder="Ej: ¡Arrancamos el mesociclo! Prioridad: técnica"></div>
-  <div class="field"><label>Secciones que ve</label>
+  <div class="sheet-head"><div><h2 id="cTitle">👩‍🏫 Modo entrenadora</h2><p class="lead" id="cLead">Armá el plan de cada alumno y mandale su link.</p></div><button class="close" data-close="ovCoach">✕</button></div>
+  <div class="conly field"><label>Alumno guardado</label><select id="cSel"></select></div>
+  <div class="conly field"><label>Nombre del alumno</label><input id="cName" placeholder="Ej: Laura"></div>
+  <div class="conly field"><label>Mensaje para el alumno (aparece en Hoy)</label><input id="cMsg" placeholder="Ej: ¡Arrancamos el mesociclo! Prioridad: técnica"></div>
+  <div class="conly field"><label>Secciones que ve</label>
     <label class="chk"><input type="checkbox" id="cModE" checked> Entreno</label>
     <label class="chk"><input type="checkbox" id="cModC" checked> Comidas</label>
     <label class="chk"><input type="checkbox" id="cModA"> Antropometría (seguimiento presencial)</label>
   </div>
-  <div class="field"><label>Objetivo de calorías (opcional)</label><input type="number" inputmode="numeric" id="cGoalK" placeholder="Ej: 1900"></div>
-  <div class="grid3"><div class="field"><label>Proteínas g</label><input type="number" inputmode="numeric" id="cMP" placeholder="Ej: 120"></div><div class="field"><label>Carbohidratos g</label><input type="number" inputmode="numeric" id="cMC" placeholder="Ej: 200"></div><div class="field"><label>Grasas g</label><input type="number" inputmode="numeric" id="cMG" placeholder="Ej: 60"></div></div>
-  <p style="font-size:.78rem;color:var(--muted);margin:-4px 0 8px" id="cMacHint">Macros opcionales. Si los dejás vacíos, la app reparte 25% proteínas, 50% carbohidratos y 25% grasas.</p>
+  <div class="conly field"><label>Objetivo de calorías (opcional)</label><input type="number" inputmode="numeric" id="cGoalK" placeholder="Ej: 1900"></div>
+  <div class="conly grid3"><div class="field"><label>Proteínas g</label><input type="number" inputmode="numeric" id="cMP" placeholder="Ej: 120"></div><div class="field"><label>Carbohidratos g</label><input type="number" inputmode="numeric" id="cMC" placeholder="Ej: 200"></div><div class="field"><label>Grasas g</label><input type="number" inputmode="numeric" id="cMG" placeholder="Ej: 60"></div></div>
+  <p class="conly" style="font-size:.78rem;color:var(--muted);margin:-4px 0 8px" id="cMacHint">Macros opcionales. Si los dejás vacíos, la app reparte 25% proteínas, 50% carbohidratos y 25% grasas.</p>
   <h3 style="margin:16px 0 8px">Mesociclo</h3>
   <div class="grid2">
     <div class="field"><label>Nombre</label><input id="cPName" placeholder="Mesociclo 1"></div>
@@ -399,14 +405,14 @@ details.hisw>summary{font-weight:700;font-size:.9rem}
   <div class="grid3">
     <div class="field"><label>Semanas</label><input type="number" id="cWeeks" value="8" min="1" max="16"></div>
     <div class="field"><label>Descarga (sem.)</label><input id="cDl" value="4,8"></div>
-    <div class="field"><label>Tipo</label><select id="cDm"><option value="auto">Descarga</option><option value="wod">WOD presencial</option></select></div>
+    <div class="field conly"><label>Tipo</label><select id="cDm"><option value="auto">Descarga</option><option value="wod">WOD presencial</option></select></div>
   </div>
   <div class="field"><label>Nota para semanas de descarga (opcional)</label><input id="cDn" placeholder="Ej: una serie menos, mismos pesos"></div>
   <label class="chk"><input type="checkbox" id="cRir"> Registrar RIR/RPE (alumnos avanzados)</label>
   <h3 style="margin:16px 0 8px">Días de entrenamiento</h3>
   <div id="cDays"></div>
   <button class="ghost" id="cAddDay">+ Agregar día</button>
-  <div id="cAnBox">
+  <div id="cAnBox" class="conly">
     <h3 style="margin:16px 0 8px">Antropometría</h3>
     <div class="grid2"><div class="field"><label>📅 Próxima antro</label><input type="date" id="cNx"></div><div class="field"><label>Indicación (opcional)</label><input id="cNxt" placeholder="Ej: venir en ayunas"></div></div>
     <div class="grid3">
@@ -424,17 +430,19 @@ details.hisw>summary{font-weight:700;font-size:.9rem}
     <button class="ghost" id="cAddAn">+ Guardar medición</button>
     <div class="anlist" id="cAnList"></div>
   </div>
-  <button class="primary" id="cSave">Guardar alumno</button>
-  <button class="primary" id="cLink" style="background:var(--warm)">🔗 Generar link para el alumno</button>
-  <div id="cOut"></div>
-  <button class="ghost" id="cDel" style="color:#c8364b">Borrar este alumno de mi lista</button>
-  <div class="card" style="background:var(--bg);margin-top:14px">
+  <button class="primary sonly" id="selfSave">💾 Guardar mi rutina</button>
+  <p class="sonly" style="font-size:.78rem;color:var(--muted);margin-top:8px">Podés volver a editarla cuando quieras desde Entreno → "✏️ Editar mi rutina". Tus registros anteriores se conservan.</p>
+  <button class="primary conly" id="cSave">Guardar alumno</button>
+  <button class="primary conly" id="cLink" style="background:var(--warm)">🔗 Generar link para el alumno</button>
+  <div id="cOut" class="conly"></div>
+  <button class="ghost conly" id="cDel" style="color:#c8364b">Borrar este alumno de mi lista</button>
+  <div class="card conly" style="background:var(--bg);margin-top:14px">
     <h3 style="font-size:1rem">💾 Respaldo de mis alumnos</h3>
     <p style="font-size:.82rem;color:var(--muted);margin:4px 0 10px">Guardá tu lista en un archivo para pasarla a otro celular o computadora, o como copia de seguridad.</p>
     <button class="btn wide" id="bkAluOut">Exportar mis alumnos</button>
     <label class="btn sec wide" style="cursor:pointer">Importar alumnos desde archivo<input type="file" id="bkAluIn" accept=".json,application/json,text/plain" hidden></label>
   </div>
-  <button class="ghost" id="cLock" style="color:var(--muted)">🔒 Bloquear modo entrenadora en este celular</button>
+  <button class="ghost conly" id="cLock" style="color:var(--muted)">🔒 Bloquear modo entrenadora en este celular</button>
 </div></div>
 
 <div class="overlay" id="ovPick"><div class="sheet">
@@ -1306,8 +1314,8 @@ function renderEnt(){
   if(entTab==="lib") return renderLib();
   if(entTab==="his") return renderHis();
   const p = S.plan;
-  if(!p){ $("entRut").innerHTML = `<div class="card empty2">Todavía no tenés una rutina cargada.<br>Tu entrenadora te la manda por un link de WhatsApp: abrilo y se carga sola.<br><br><button class="btn sec" id="goLib">Ver la biblioteca de ejercicios</button></div>`;
-    $("goLib").onclick = () => document.querySelector('#segEnt [data-v="lib"]').click(); return; }
+  if(!p){ $("entRut").innerHTML = `<div class="card empty2"><b style="font-size:1.05rem">Todavía no tenés una rutina</b><br><br>Armala vos con los ejercicios de la biblioteca y registrá cada entrenamiento.<br><br><button class="btn wide" id="goSelf">✏️ Armar mi rutina</button><button class="btn sec wide" id="goLib" style="margin-top:8px">Ver la biblioteca de ejercicios</button><p style="font-size:.8rem;color:var(--muted);margin-top:12px">¿Entrenás con 1dz? Tu entrenadora te manda tu plan por link de WhatsApp: abrilo y se carga solo.</p></div>` + ctaCard();
+    $("goLib").onclick = () => document.querySelector('#segEnt [data-v="lib"]').click(); $("goSelf").onclick = openSelf; return; }
   const w = planWeek();
   if((selDay===null || selDay>=p.days.length) && S.draft && S.draft.date===todayK() && S.draft.di < p.days.length) selDay = S.draft.di;
   if(selDay===null || selDay>=p.days.length) selDay = nextDay();
@@ -1351,9 +1359,10 @@ function renderEnt(){
       + rows.map((r,si)=>`<div class="setrow" style="grid-template-columns:${cols}"><span class="n">${si+1}</span><input inputmode="decimal" data-k="kg" data-x="${xi}" data-s="${si}" value="${r.kg??""}" placeholder="–"><input inputmode="numeric" data-k="r" data-x="${xi}" data-s="${si}" value="${r.r??""}" placeholder="${it.r2}">${p.rir?`<input inputmode="numeric" data-k="rir" data-x="${xi}" data-s="${si}" value="${r.rir??""}" placeholder="–">`:""}<button class="okb${r.ok?" done":""}" data-ok="${xi}" data-s="${si}" data-rest="${it.d||0}">✓</button></div>`).join("")
       + `</div>`;
   });
-  h += `<div class="card"><div class="field" style="margin:0"><label>Comentario para tu entrenadora (opcional)</label><textarea class="ta" id="entCom" placeholder="${isRun(d)?"Ej: cómo te sentiste, terreno, calor, molestias":"Ej: me molestó el hombro en el press"}">${esc(S.draft.c||"")}</textarea></div><button class="primary" id="entSave">${S.draft.edit!=null?"Guardar cambios":"Terminar y guardar entrenamiento"}</button></div>`;
+  h += `<div class="card"><div class="field" style="margin:0"><label>${p.own?"Notas del entrenamiento (opcional)":"Comentario para tu entrenadora (opcional)"}</label><textarea class="ta" id="entCom" placeholder="${isRun(d)?"Ej: cómo te sentiste, terreno, calor, molestias":"Ej: me molestó el hombro en el press"}">${esc(S.draft.c||"")}</textarea></div><button class="primary" id="entSave">${S.draft.edit!=null?"Guardar cambios":"Terminar y guardar entrenamiento"}</button></div>`;
   const mine = S.train.map((t,i)=>({...t, _i:i})).filter(t=>t.plan===p.name).slice(-3).reverse();
   if(mine.length) h += `<div class="card"><h3 style="font-size:1rem;margin-bottom:6px">Últimos entrenamientos</h3>${mine.map(t=>`<div class="hist"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><span><b>${dLabel(t.date)} · ${esc(t.dn)}</b>${t.dl?' <span class="badge">descarga</span>':""}</span><button class="ghost" data-edit="${t._i}" style="width:auto;margin:0;padding:4px 10px;font-size:.78rem">✏️ Editar</button></div>${t.run?"🏃 "+esc(runTxt(t.run))+(t.c?"<br>💬 "+esc(t.c):""):""}${t.items.map(i=>esc((EXI[i.x]||{}).n||"")+": "+i.sets.map(s=>(s.kg?fmtN(s.kg)+"×":"")+s.r).join(", ")).join("<br>")}</div>`).join("")}</div>`;
+  if(p.own) h += `<button class="btn sec wide" id="goSelf2">✏️ Editar mi rutina</button>` + ctaCard();
   if(S.train.length) h += `<button class="btn sec wide" id="goHis">📂 Ver historial completo (${S.train.length})</button>`;
   $("entRut").innerHTML = h;
   save();
@@ -1366,6 +1375,7 @@ $("entRut").addEventListener("click", e => {
     if(r.ok && String(r.r??"").trim()===""){ const inp = ok.parentElement.querySelector('[data-k="r"]'); if(inp && inp.placeholder){ r.r = inp.placeholder; inp.value = r.r; } } ok.classList.toggle("done", !!r.ok); save();
     if(r.ok && +ok.dataset.rest) startTimer(+ok.dataset.rest); return; }
   if(e.target.id==="entSave") saveSession();
+  if(e.target.id==="goSelf2"){ openSelf(); return; }
   if(e.target.id==="goHis"){ document.querySelector('#segEnt [data-v="his"]').click(); window.scrollTo(0,0); return; }
   if(e.target.id==="edCancel"){ S.draft = null; selDay = null; save(); renderEnt(); window.scrollTo(0,0); return; }
   const ed = e.target.closest("[data-edit]"); if(ed){ startEdit(+ed.dataset.edit); return; }
@@ -1573,6 +1583,7 @@ function checkHash(){
     + (p ? `<p style="margin-top:6px">🏋️ ${esc(p.name)} · ${p.days.length} días · ${p.weeks} semanas · empieza ${dLabel(p.start)}</p>` : "")
     + (P.k ? `<p style="margin-top:6px">🍽️ Objetivo: ${P.k} kcal/día</p>` : "")
     + (P.an && P.an.length ? `<p style="margin-top:6px">📏 ${P.an.length} medición(es) de antropometría</p>` : "")
+    + (P.p && S.plan && S.plan.own ? `<p style="margin-top:8px;font-size:.85rem">⚠️ Este plan <b>reemplaza la rutina que armaste vos</b>.</p>` : "")
     + `<p style="margin-top:8px;font-size:.8rem;color:var(--muted)">Tus comidas y entrenamientos anteriores se conservan.</p></div>`;
   $("ovSettings").classList.remove("open");
   $("ovImport").classList.add("open");
@@ -1601,13 +1612,41 @@ let taps = 0, tapT = null;
 $("logo").addEventListener("click", () => { taps++; clearTimeout(tapT); tapT = setTimeout(() => taps = 0, 1500); if(taps >= 5){ taps = 0; openCoach(); } });
 const PIN_H = "3af2124a3c4030936b3566a7a026953d24455d8c585d08e0db7c8b984fdfd3c7";
 async function pinHash(v){ const b = await crypto.subtle.digest("SHA-256", new TextEncoder().encode("1dz-pin:"+v)); return [...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,"0")).join(""); }
-function openCoach(){ if(!S.coachOk){ $("pinIn").value=""; $("ovPin").classList.add("open"); setTimeout(()=>$("pinIn").focus(),100); return; } if(!CS) CS = blankStudent(); fillCoach(); $("ovCoach").classList.add("open"); }
+function openCoach(){ $("ovCoach").classList.remove("self"); $("cTitle").textContent="👩‍🏫 Modo entrenadora"; $("cLead").textContent="Armá el plan de cada alumno y mandale su link."; if(CS && CS._self) CS = null; if(!S.coachOk){ $("pinIn").value=""; $("ovPin").classList.add("open"); setTimeout(()=>$("pinIn").focus(),100); return; } if(!CS) CS = blankStudent(); fillCoach(); $("ovCoach").classList.add("open"); }
 async function tryPin(){ let ok=false; try{ ok = (await pinHash($("pinIn").value.trim())) === PIN_H; }catch(e){}
   if(!ok){ toast("PIN incorrecto"); $("pinIn").value=""; return; }
   S.coachOk = 1; save(); $("ovPin").classList.remove("open"); openCoach(); }
 $("pinOk").onclick = tryPin;
 $("pinIn").addEventListener("keydown", e => { if(e.key==="Enter") tryPin(); });
 $("cLock").onclick = () => { S.coachOk = 0; save(); $("ovCoach").classList.remove("open"); toast("Modo entrenadora bloqueado"); };
+function openSelf(){
+  if(S.plan && !S.plan.own){ toast("Tu rutina la armó tu entrenadora: no se puede editar"); return; }
+  CS = blankStudent(); CS._self = 1;
+  if(S.plan && S.plan.own) CS.p = JSON.parse(JSON.stringify(S.plan)); else { CS.p.name = "Mi rutina"; CS.p.dl = []; }
+  $("ovCoach").classList.add("self"); $("cTitle").textContent = S.plan && S.plan.own ? "✏️ Editar mi rutina" : "✏️ Armar mi rutina";
+  $("cLead").textContent = "Elegí tus días y ejercicios de la biblioteca. Después registrás cada entrenamiento.";
+  fillCoach(); $("ovCoach").classList.add("open");
+}
+$("selfSave").onclick = () => {
+  readCoach(); const p = CS.p; p.own = 1; p.dm = "auto";
+  if(!p.days.length || !p.days.some(d => d.it.length || isRun(d))){ toast("Agregá al menos un ejercicio"); return; }
+  const isNew = !S.plan || S.plan.name !== p.name;
+  if(isNew){ S.draft = null; S.drafts = {}; }
+  S.plan = p; S.mod.e = 1; save(); applyMods();
+  $("ovCoach").classList.remove("open","self"); CS = null; selDay = null;
+  entTab = "rut"; document.querySelectorAll("#segEnt button").forEach(x=>x.classList.toggle("on",x.dataset.v==="rut"));
+  show("entreno"); toast(isNew ? "¡Rutina creada! 💪" : "Rutina actualizada ✓");
+};
+function planTxt(p){
+  return `*${p.name}* (${p.weeks} semanas${(p.dl||[]).length?", descarga sem. "+p.dl.join(" y "):""})\n` + p.days.map(d => `\n*${d.n}*\n` + (isRun(d) ? "🏃 "+(d.rx||"Run") : d.it.map(it => `• ${(EXI[it.x]||{}).n||it.x}: ${it.s}×${it.r1}${it.r2!=it.r1?"–"+it.r2:""}`).join("\n"))).join("\n");
+}
+function ctaCard(){
+  const msg = "Hola Eli! Armé mi rutina en la app 1dz y me gustaría que me acompañes con mi progreso. ¿Cómo son los planes?";
+  const rev = S.plan ? "Hola Eli! Armé esta rutina en la app 1dz, ¿me la revisás?\n\n" + planTxt(S.plan) : msg;
+  return `<div class="card cta2"><h3 style="font-size:1.05rem">🤝 ¿Querés que te acompañe?</h3><p>Revisión de tu rutina, ajustes de cargas, seguimiento semanal de tu progreso y alimentación con 1dz.</p>
+    <a class="btn wide" href="https://wa.me/5491127520419?text=${encodeURIComponent(msg)}" target="_blank" rel="noopener">Quiero acompañamiento</a>
+    ${S.plan?`<a class="btn sec wide" href="https://wa.me/5491127520419?text=${encodeURIComponent(rev)}" target="_blank" rel="noopener" style="margin-top:8px">Mandarle mi rutina para que la revise</a>`:""}</div>`;
+}
 function fillCoach(){
   const names = Object.keys(S.coach.students).sort();
   $("cSel").innerHTML = `<option value="">— Nuevo alumno —</option>` + names.map(n => { const x = S.coach.students[n].nx; return `<option value="${esc(n)}"${n===CS.n?" selected":""}>${x&&x<todayK()?"⚠️ ":""}${esc(n)}${x?" · antro "+dLabel(x):""}</option>`; }).join("");
