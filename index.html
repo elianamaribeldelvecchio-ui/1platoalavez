@@ -1245,7 +1245,7 @@ const EXI = Object.fromEntries(EX.map(e=>[e.id,e]));
 const GR = [["rod","Rodilla"],["cad","Cadera"],["emp","Empuje"],["hom","Hombros"],["tra","Tracción"],["ais","Aislamiento"],["cor","Core"],["mov","Movilidad"],["hyx","Híbrido / HYROX"],["car","Cardio"],["reh","Rehab y prevención"],["may","Adultos mayores"]];
 const GRN = Object.fromEntries(GR);
 S.train = S.train || []; S.bw = S.bw || []; S.antro = S.antro || [];
-S.water = S.water || {}; S.sleep = S.sleep || {}; S.per = S.per || {on:0, share:0, list:[], sy:{}};
+S.water = S.water || {}; S.sleep = S.sleep || {}; S.mood = S.mood || {}; S.per = S.per || {on:0, share:0, list:[], sy:{}};
 S.coach = S.coach || {students:{}}; S.mod = S.mod || {e:1,c:1,a:0}; S.draft = S.draft || null;
 save();
 const todayK = () => dk(new Date());
@@ -1353,6 +1353,7 @@ function renderEnt(){
     $("wodAny").onclick = () => { wodAnyway = true; renderEnt(); }; return;
   }
   if(S.draft.edit != null && S.train[S.draft.edit]) h += `<div class="banner dl">✏️ <b>Editando el entrenamiento del ${dLabel(S.train[S.draft.edit].date)}.</b> Corregí lo que necesites y tocá "Guardar cambios".<br><button class="ghost" id="edCancel" style="width:auto;padding:4px 0">Cancelar edición</button></div>`;
+  if(S.per && S.per.on && !S.per.horm && S.per.list.length){ const x = phaseAt(todayK()); if(x && !x.late && (x.ph==="men" || x.ph==="lut")) h += `<div class="banner" style="background:#fbeff5;color:#7a2350;border-radius:12px;padding:10px 12px;margin-bottom:12px;font-size:.85rem">${PH[x.ph].ic} Estás en tu fase ${PH[x.ph].n.toLowerCase()}. Si hoy rendís menos o te cuesta más, es normal y no es un retroceso: ajustá la carga si lo necesitás.</div>`; }
   if(dl) h += `<div class="banner dl">🔵 <b>Semana de descarga:</b> ${isRun(d)?"en el run bajá el volumen y hacelo a ritmo cómodo.":"hacé una serie menos en cada ejercicio, con los pesos que ya alcanzaste."}${p.dn?"<br>"+esc(p.dn):""}</div>`;
   if(S.draft.edit==null) h += `<div class="chips2">${p.days.map((x,i)=>`<button class="chip${i===selDay?" on":""}" data-day="${i}">${esc(x.n)}</button>`).join("")}</div>`;
   if(isRun(d)){
@@ -1554,6 +1555,7 @@ function wellClick(e){
   const sq = t.closest("[data-sq]"); if(sq){ const z = S.sleep[k] = S.sleep[k] || {}; z.q = z.q==sq.dataset.sq ? 0 : +sq.dataset.sq; if(!z.h) z.h = 7; save(); rerenderWell(); return true; }
   const sy = t.closest("[data-sy]"); if(sy){ const a = S.per.sy[k] = S.per.sy[k] || []; const i = a.indexOf(sy.dataset.sy); if(i>=0) a.splice(i,1); else a.push(sy.dataset.sy); if(!a.length) delete S.per.sy[k]; save(); rerenderWell(); return true; }
   if(t.id==="hoySelf"){ openSelf(); return true; }
+  const md = t.closest("[data-md]"); if(md){ const [key,v] = md.dataset.md.split(":"); const z = S.mood[k] = S.mood[k] || {}; z[key] = z[key]==+v ? 0 : +v; if(!z.e && !z.a) delete S.mood[k]; save(); rerenderWell(); return true; }
   if(t.id==="perStart"){ S.per.list.push({s:k}); save(); rerenderWell(); toast("Registrado 🩸"); return true; }
   if(t.id==="perEnd"){ const a = perActive(); if(a) a.e = k; save(); rerenderWell(); toast("Listo ✓"); return true; }
   if(t.id==="wgEdit"){ const v = prompt("¿Cuántos litros de agua por día querés tomar?", fmtN(WG()/1000)); if(v===null) return true; const n = parseFloat(String(v).replace(",",".")); if(n>0 && n<8){ S.profile.wg = Math.round(n*1000); save(); rerenderWell(); toast("Objetivo guardado"); } else toast("Escribí un número de litros, ej: 2,5"); return true; }
@@ -1569,7 +1571,9 @@ function wellProg(){
   const sv = D7.map(k => S.sleep[k]||{}), sd = sv.filter(z=>z.h), savg = sd.length ? sd.reduce((a,z)=>a+z.h,0)/sd.length : 0;
   const qn = ["","😫","😐","😊"];
   h += `<div class="card"><h3 style="font-size:1rem">😴 Sueño · últimos 7 días</h3>`
-    + (sd.length ? `<p style="font-size:.85rem;margin-top:6px">Promedio: <b>${fmtN(Math.round(savg*10)/10)} h</b> por noche</p><div style="display:flex;gap:6px;margin-top:8px">${D7.map((k,i)=>`<div style="flex:1;text-align:center;font-size:.75rem"><div style="font-weight:700">${sv[i].h?fmtN(sv[i].h):"–"}</div><div>${qn[sv[i].q||0]||"&nbsp;"}</div><small style="color:var(--muted);font-size:.65rem">${new Date(k+"T12:00").toLocaleDateString("es-AR",{weekday:"short"}).slice(0,2)}</small></div>`).join("")}</div>` : `<p style="font-size:.85rem;color:var(--muted);margin-top:6px">Cargá tus horas de sueño en Hoy.</p>`) + `</div>`;
+    + (sd.length ? `<p style="font-size:.85rem;margin-top:6px">Promedio: <b>${fmtN(Math.round(savg*10)/10)} h</b> por noche</p><div style="display:flex;gap:6px;margin-top:8px">${D7.map((k,i)=>`<div style="flex:1;text-align:center;font-size:.75rem"><div style="font-weight:700">${sv[i].h?fmtN(sv[i].h):"–"}</div><div>${qn[sv[i].q||0]||"&nbsp;"}</div><small style="color:var(--muted);font-size:.65rem">${new Date(k+"T12:00").toLocaleDateString("es-AR",{weekday:"short"}).slice(0,2)}</small></div>`).join("")}</div>` : `<p style="font-size:.85rem;color:var(--muted);margin-top:6px">Cargá tus horas de sueño arriba, en un toque.</p>`) + `</div>`;
+  const mv = D7.map(k => S.mood[k]||{}), me = mv.filter(z=>z.e), ma = mv.filter(z=>z.a), EI = ["","😫","😐","🙂","💪"], AI = ["","😢","😐","🙂","😄"];
+  h += `<div class="card"><h3 style="font-size:1rem">⚡ Energía y ánimo · últimos 7 días</h3>` + (me.length || ma.length ? `<div style="display:flex;gap:6px;margin-top:8px">${D7.map((k,i)=>`<div style="flex:1;text-align:center;font-size:.95rem"><div>${EI[mv[i].e||0]||"·"}</div><div>${AI[mv[i].a||0]||"·"}</div><small style="color:var(--muted);font-size:.65rem">${new Date(k+"T12:00").toLocaleDateString("es-AR",{weekday:"short"}).slice(0,2)}</small></div>`).join("")}</div><p style="font-size:.75rem;color:var(--muted);margin-top:6px">Arriba energía, abajo ánimo.</p>` : `<p style="font-size:.85rem;color:var(--muted);margin-top:6px">Registralo arriba en un toque cada día.</p>`) + `</div>`;
   return h;
 }
 function perSettings(){
@@ -1577,15 +1581,55 @@ function perSettings(){
   h += `<div class="card"><h3 style="font-size:1rem">🩸 Registro de período <small style="font-weight:400;color:var(--muted)">(opcional)</small></h3>
     <label class="switch"><span>Activar el registro de período</span><input type="checkbox" id="perOn"${P.on?" checked":""}></label>`
     + (P.on ? `<label class="switch"><span>Compartir con mi entrenadora<br><small style="color:var(--muted)">Se incluye en el reporte que le mandás</small></span><input type="checkbox" id="perShare"${P.share?" checked":""}></label>
+      <label class="switch"><span>Uso anticonceptivos hormonales<br><small style="color:var(--muted)">No se muestran fases; solo registrás energía y ánimo</small></span><input type="checkbox" id="perHorm"${P.horm?" checked":""}></label>
       <p style="font-size:.85rem;margin-top:4px">${perNextTxt()}</p>`
       + (P.list.length ? P.list.slice(-6).reverse().map((x,i)=>{ const len = x.e ? Math.round((new Date(x.e+"T12:00")-new Date(x.s+"T12:00"))/864e5)+1 : 0; return `<div class="hist"><div style="display:flex;justify-content:space-between;align-items:center"><span><b>${dLabel(x.s)}</b>${x.e?" → "+dLabel(x.e)+" · "+len+" días":" · en curso"}</span><button class="xbtn" data-perdel="${P.list.length-1-i}" aria-label="Borrar">✕</button></div></div>`; }).join("") : "")
       + `<p style="font-size:.75rem;color:var(--muted);margin-top:8px">El registro queda solo en tu celular. Es orientativo y no reemplaza la consulta médica.</p>` : `<p style="font-size:.8rem;color:var(--muted)">Si lo activás, te aparece arriba para registrar cuándo empieza y termina, y cómo te sentís.</p>`) + `</div>`;
   return h;
 }
+/* --- ciclo: fases, energía y ánimo --- */
+const PH = {
+  men:{n:"Menstrual",ic:"🩸",t:"Es normal tener menos energía, cansancio o cólicos. Moverte suave puede aliviar; si te sentís bien, entrená normal.",tips:["Entreno: escuchá tu cuerpo, bajá la carga si lo necesitás","Alimentación: hierro (carnes, legumbres) y buena hidratación","Emociones: date permiso para ir más lento"]},
+  fol:{n:"Folicular",ic:"🌱",t:"Sube el estrógeno: suele haber más energía, mejor ánimo y mejor tolerancia al esfuerzo.",tips:["Entreno: buen momento para progresar cargas","Alimentación: suele haber menos hambre","Emociones: más motivación para proponerte cosas nuevas"]},
+  ovu:{n:"Ovulatoria",ic:"⚡",t:"Pico de energía y ánimo para muchas mujeres.",tips:["Entreno: aprovechá si te sentís fuerte, cuidando la técnica","Alimentación: mantené tu plan habitual","Emociones: más sociable y con más confianza"]},
+  lut:{n:"Lútea",ic:"🌙",t:"Sube la progesterona: más temperatura, más hambre y retención de líquido. Hacia el final pueden aparecer irritabilidad, ansiedad o bajón.",tips:["Entreno: puede costar más; está bien ajustar volumen o intensidad","Alimentación: es normal tener más hambre; priorizá proteínas, fibra y agua","Peso: puede subir por retención, no es grasa","Emociones: priorizá dormir bien y bajar el estrés"]}};
+function cycLen(){ return perCycle() || 28; }
+function phaseAt(k){
+  const st = S.per.list.map(x=>x.s).filter(d => d <= k).sort(); if(!st.length) return null;
+  const s0 = st[st.length-1], L = cycLen(), day = Math.round((new Date(k+"T12:00") - new Date(s0+"T12:00"))/864e5) + 1;
+  const rec = S.per.list.find(x => x.s === s0), endD = rec && rec.e ? Math.round((new Date(rec.e+"T12:00") - new Date(s0+"T12:00"))/864e5) + 1 : 5;
+  if(day > L + 10) return {late:1, day};
+  const ov = Math.max(10, L - 14);
+  const menEnd = rec && rec.e ? endD : (rec && !rec.e ? Math.max(5, Math.min(day, 10)) : 5);
+  const ph = day <= menEnd ? "men" : day < ov - 1 ? "fol" : day <= ov + 1 ? "ovu" : "lut";
+  return {ph, day, L};
+}
+function moodCard(){
+  const z = S.mood[todayK()] || {};
+  const row = (key, label, opts) => `<div style="font-size:.8rem;color:var(--muted);margin-top:10px">${label}</div><div class="qchips">${opts.map(([v,l])=>`<button data-md="${key}:${v}" class="${String(z[key])===v?"on":""}">${l}</button>`).join("")}</div>`;
+  return `<div class="card"><div class="kv"><h3>⚡ Energía y ánimo de hoy</h3><small>${z.e||z.a?"registrado":"sin cargar"}</small></div>`
+    + row("e","Energía",[["1","😫 Muy baja"],["2","😐 Baja"],["3","🙂 Buena"],["4","💪 Alta"]])
+    + row("a","Ánimo",[["1","😢 Bajo"],["2","😐 Regular"],["3","🙂 Bien"],["4","😄 Muy bien"]]) + `</div>`;
+}
+function phaseCard(){
+  if(!S.per.on || S.per.horm || !S.per.list.length) return "";
+  const x = phaseAt(todayK()); if(!x) return "";
+  if(x.late) return `<div class="card"><h3 style="font-size:1rem">🔄 Tu ciclo</h3><p style="font-size:.88rem;margin-top:6px">Pasaron ${x.day-1} días desde tu último período registrado. Si ya te vino, registralo con "Me vino hoy".</p></div>`;
+  const P = PH[x.ph];
+  return `<div class="card"><div class="kv"><h3>${P.ic} Fase ${P.n.toLowerCase()}</h3><small>día ${x.day} de ~${x.L}</small></div><p style="font-size:.88rem;margin-top:6px">${P.t}</p><ul style="font-size:.84rem;margin:8px 0 0 18px;color:var(--muted)">${P.tips.map(t=>`<li>${esc(t)}</li>`).join("")}</ul>${patternTxt()}<div style="background:var(--bg);border-radius:12px;padding:10px 12px;margin-top:10px;font-size:.78rem;color:var(--muted)">💜 <b>No es universal.</b> Cada mujer lo vive distinto según su edad, su cuerpo, el sueño, el estrés o si usa anticonceptivos. Puede que sientas todo esto, una parte o nada. Si un día tu fuerza o tu ánimo bajan, no es un retroceso: es parte del ciclo. Registrá cómo te sentís para conocer tu propio patrón.</div></div>`;
+}
+function patternTxt(){
+  const acc = {}; let n = 0;
+  Object.entries(S.mood).forEach(([k,z]) => { if(!z.e) return; const x = phaseAt(k); if(!x || x.late) return; (acc[x.ph] = acc[x.ph] || []).push(z.e); n++; });
+  const av = Object.entries(acc).filter(([,v]) => v.length >= 2).map(([p,v]) => [p, v.reduce((a,b)=>a+b,0)/v.length]).sort((a,b)=>b[1]-a[1]);
+  if(n < 10 || av.length < 2) return `<p style="font-size:.8rem;margin-top:8px">📊 Registrando tu energía todos los días, en un par de ciclos la app te muestra tu propio patrón.</p>`;
+  return `<p style="font-size:.85rem;margin-top:8px">📊 <b>Tu patrón:</b> tu energía suele ser más alta en la fase ${PH[av[0][0]].n.toLowerCase()} y más baja en la ${PH[av[av.length-1][0]].n.toLowerCase()}.</p>`;
+}
 function rerenderWell(){ if(VIEW==="habitos") renderHab(); }
 function renderHab(){
-  $("habCards").innerHTML = `<p style="font-size:.85rem;color:var(--muted);margin:-4px 0 12px">Registrá cómo te cuidás día a día: agua, descanso${S.per.on?" y tu ciclo":""}.</p>` + waterCard() + sleepCard() + (S.per.on ? perCard() + wellProg() + perSettings() : perSettings() + wellProg());
+  $("habCards").innerHTML = `<p style="font-size:.85rem;color:var(--muted);margin:-4px 0 12px">Registrá cómo te cuidás día a día: agua, descanso${S.per.on?" y tu ciclo":""}.</p>` + (S.per.on ? phaseCard() + perCard() : "") + waterCard() + sleepCard() + moodCard() + (S.per.on ? wellProg() + perSettings() : perSettings() + wellProg());
   const po = $("perOn"); if(po) po.onchange = () => { S.per.on = po.checked ? 1 : 0; save(); renderHab(); if(po.checked) toast("Listo: arriba te aparece el registro 🩸"); };
+  const ph = $("perHorm"); if(ph) ph.onchange = () => { S.per.horm = ph.checked ? 1 : 0; save(); renderHab(); };
   const ps = $("perShare"); if(ps) ps.onchange = () => { S.per.share = ps.checked ? 1 : 0; save(); toast(ps.checked ? "Se va a incluir en tu reporte" : "No se comparte"); };
   $("habCards").querySelectorAll("[data-perdel]").forEach(b => b.onclick = () => { if(!confirm("¿Borrar este registro?")) return; S.per.list.splice(+b.dataset.perdel,1); save(); renderHab(); });
 }
@@ -1697,6 +1741,11 @@ buildReport = function(){
       if(wd.length) t += `\n💧 Agua: ${n>1?"promedio ":""}${fmtN(Math.round(wd.reduce((a,b)=>a+b,0)/wd.length/100)/10)} L/día (objetivo ${fmtN(WG()/1000)} L)${n>1?" · "+wd.length+" días registrados":""}`;
       if(sd.length) t += `\n😴 Sueño: ${n>1?"promedio ":""}${fmtN(Math.round(sd.reduce((a,z)=>a+z.h,0)/sd.length*10)/10)} h` + (n===1 && sd[0].q ? " · durmió "+qn[sd[0].q] : (n>1 ? " · " + sd.filter(z=>z.q).map(z=>["","😫","😐","😊"][z.q]).join("") : ""));
     }
+    const me = D.map(k=>S.mood[k]).filter(z=>z&&z.e), ma = D.map(k=>S.mood[k]).filter(z=>z&&z.a), EN = ["","muy baja","baja","buena","alta"], AN = ["","bajo","regular","bien","muy bien"];
+    if(me.length || ma.length){ if(!(wd.length || sd.length)) t += `\n\n🌙 *Hábitos*`;
+      if(n===1){ const z = S.mood[D[0]]||{}; t += `\n⚡ Energía: ${EN[z.e||0]||"–"} · Ánimo: ${AN[z.a||0]||"–"}`; }
+      else t += `\n⚡ Energía: ${me.map(z=>["","😫","😐","🙂","💪"][z.e]).join("")||"–"} · Ánimo: ${ma.map(z=>["","😢","😐","🙂","😄"][z.a]).join("")||"–"}`; }
+    if(S.per.on && S.per.share && !S.per.horm){ const x = phaseAt(todayK()); if(x && !x.late) t += `\n🔄 Fase del ciclo hoy: ${PH[x.ph].n.toLowerCase()} (día ${x.day})`; }
     if(S.per.on && S.per.share){ const a = perActive(), inW = S.per.list.filter(x => D.includes(x.s) || (x.e && D.includes(x.e)));
       const sy = [...new Set(D.flatMap(k => S.per.sy[k]||[]))].map(c => (SY.find(z=>z[0]===c)||[,c])[1]);
       if(a || inW.length || sy.length) t += `\n🩸 Período: ` + (a ? "en curso desde "+dLabel(a.s) : inW.map(x=>dLabel(x.s)+(x.e?" → "+dLabel(x.e):"")).join(", ")) + (sy.length ? " · " + sy.join(", ").toLowerCase() : "");
@@ -1892,7 +1941,7 @@ $("bkAllOut").onclick = () => { const c = JSON.parse(JSON.stringify(S)); delete 
 $("bkAllIn").onchange = async e => { try{ const o = await readFile(e.target); if(o.t!=="1dz-datos"||!o.data) throw 0;
   if(!confirm("Esto reemplaza los datos de este celular por los del archivo. ¿Seguir?")){ e.target.value=""; return; }
   const ok = S.coachOk; Object.keys(S).forEach(k => delete S[k]); Object.assign(S, o.data); S.coachOk = ok;
-  S.train=S.train||[]; S.bw=S.bw||[]; S.antro=S.antro||[]; S.water=S.water||{}; S.sleep=S.sleep||{}; S.per=S.per||{on:0,share:0,list:[],sy:{}}; S.coach=S.coach||{students:{}}; S.mod=S.mod||{e:1,c:1,a:0}; S.log=S.log||{}; S.custom=S.custom||[];
+  S.train=S.train||[]; S.bw=S.bw||[]; S.antro=S.antro||[]; S.water=S.water||{}; S.sleep=S.sleep||{}; S.mood=S.mood||{}; S.per=S.per||{on:0,share:0,list:[],sy:{}}; S.coach=S.coach||{students:{}}; S.mod=S.mod||{e:1,c:1,a:0}; S.log=S.log||{}; S.custom=S.custom||[];
   save(); applyMods(); show("hoy"); toast("Datos importados ✓");
   }catch(err){ toast("Ese archivo no es un respaldo de datos de 1dz"); } e.target.value = ""; };
 /* ---------- arranque ---------- */
