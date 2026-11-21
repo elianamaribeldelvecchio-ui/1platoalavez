@@ -965,8 +965,8 @@ function renderChips(){$("chips").innerHTML=CATS.filter(c=>c[0]!=="mine"||S.cust
 $("chips").addEventListener("click",e=>{const b=e.target.closest("[data-cat]");if(!b)return;curCat=b.dataset.cat;renderChips();renderFoods()});
 function renderFoods(){
   const q=norm($("q").value.trim());
-  const list=allFoods().filter(f=>(!q||norm(f.n).includes(q))&&(curCat==="all"||(curCat==="mine"&&f.mine)||(curCat==="up"&&f.up)||f.cat===curCat));
-  $("foodList").innerHTML=list.length?list.map((f,i)=>`<button class="food" data-food="${allFoods().indexOf(f)}"><div><div class="fn">${esc(f.n)}${f.mine?'<span class="tag">MÍO</span>':""}${f.up?'<span class="tag up">ULTRAPROCESADO</span>':""}</div><div class="fp">${esc(f.por)}</div></div><div class="fk">${f.k} kcal</div></button>`).join("")
+  const AF=allFoods();const list=AF.map((f,ix)=>({...f,_ix:ix})).filter(f=>(!q||norm(f.n).includes(q))&&(curCat==="all"||(curCat==="mine"&&f.mine)||(curCat==="up"&&f.up)||f.cat===curCat));
+  $("foodList").innerHTML=list.length?list.map((f,i)=>`<button class="food" data-food="${f._ix}"><div><div class="fn">${esc(f.n)}${f.mine?'<span class="tag">MÍO</span>':""}${f.up?'<span class="tag up">ULTRAPROCESADO</span>':""}</div><div class="fp">${esc(f.por)}</div></div><div class="fk">${f.k} kcal</div></button>`).join("")
     :`<div class="empty">${$("q").value?`No encontramos "${esc($("q").value)}" en esta categoría.`:"No hay alimentos en esta categoría."} Podés crearlo abajo.</div>`;
 }
 function renderPick(){
