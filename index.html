@@ -1563,9 +1563,15 @@ function perCard(){
   if(!S.per.on) return "";
   const k = todayK(), a = perActive(), sy = S.per.sy[k] || [];
   const day = a ? Math.round((new Date(k+"T12:00") - new Date(a.s+"T12:00"))/864e5) + 1 : 0;
+  // campo de fecha: por defecto hoy, pero se puede cambiar
+  const dateInput = `<div style="margin-top:10px;display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+    <label style="font-size:.82rem;color:var(--muted)">¿Cuándo empezó?</label>
+    <input type="date" id="perDate" value="${k}" max="${k}" style="font-size:.82rem;padding:4px 8px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink)">
+  </div>
+  <button class="btn wide" id="perStart" style="background:#d6336c;margin-top:8px">Registrar período</button>`;
   return `<div class="card"><div class="kv"><h3>🩸 Período</h3><small>${a?"día "+day:"–"}</small></div>`
-    + (a ? `<p style="font-size:.88rem;margin-top:6px">Empezó el ${dLabel(a.s)}.</p><button class="btn sec wide" id="perEnd">Terminó hoy</button>`
-         : `<p style="font-size:.85rem;color:var(--muted);margin-top:6px">${perNextTxt()}</p><button class="btn wide" id="perStart" style="background:#d6336c">Me vino hoy</button>`)
+    + (a ? `<p style="font-size:.88rem;margin-top:6px">Empezó el ${dLabel(a.s)} · día ${day} del ciclo.</p><button class="btn sec wide" id="perEnd">Terminó hoy</button>`
+         : `<p style="font-size:.85rem;color:var(--muted);margin-top:6px">${perNextTxt()}</p>${dateInput}`)
     + `<div style="font-size:.8rem;color:var(--muted);margin-top:10px">¿Cómo te sentís hoy? (opcional)</div><div class="qchips per">${SY.map(([c,l])=>`<button data-sy="${c}" class="${sy.includes(c)?"on":""}">${l}</button>`).join("")}</div></div>`;
 }
 function perCycle(){ const st = S.per.list.map(x=>x.s).sort(); if(st.length<2) return 0; const d = []; for(let i=1;i<st.length;i++) d.push((new Date(st[i]+"T12:00")-new Date(st[i-1]+"T12:00"))/864e5); const r = d.slice(-6).filter(x=>x>=15&&x<=60); return r.length ? Math.round(r.reduce((a,b)=>a+b,0)/r.length) : 0; }
@@ -1578,7 +1584,7 @@ function wellClick(e){
   const sy = t.closest("[data-sy]"); if(sy){ const a = S.per.sy[k] = S.per.sy[k] || []; const i = a.indexOf(sy.dataset.sy); if(i>=0) a.splice(i,1); else a.push(sy.dataset.sy); if(!a.length) delete S.per.sy[k]; save(); rerenderWell(); return true; }
   if(t.id==="hoySelf"){ openSelf(); return true; }
   const md = t.closest("[data-md]"); if(md){ const [key,v] = md.dataset.md.split(":"); const z = S.mood[k] = S.mood[k] || {}; z[key] = z[key]==+v ? 0 : +v; if(!z.e && !z.a) delete S.mood[k]; save(); rerenderWell(); return true; }
-  if(t.id==="perStart"){ S.per.list.push({s:k}); save(); rerenderWell(); toast("Registrado 🩸"); return true; }
+  if(t.id==="perStart"){ const pd = $("perDate"); const startDate = pd ? pd.value : k; if(!startDate) return true; S.per.list.push({s:startDate}); S.per.list.sort((a,b)=>a.s.localeCompare(b.s)); save(); rerenderWell(); toast("Registrado 🩸"); return true; }
   if(t.id==="perEnd"){ const a = perActive(); if(a) a.e = k; save(); rerenderWell(); toast("Listo ✓"); return true; }
   if(t.id==="wgEdit"){ const v = prompt("¿Cuántos litros de agua por día querés tomar?", fmtN(WG()/1000)); if(v===null) return true; const n = parseFloat(String(v).replace(",",".")); if(n>0 && n<8){ S.profile.wg = Math.round(n*1000); save(); rerenderWell(); toast("Objetivo guardado"); } else toast("Escribí un número de litros, ej: 2,5"); return true; }
   return false;
@@ -1605,7 +1611,14 @@ function perSettings(){
     + (P.on ? `<label class="switch"><span>Compartir con mi entrenadora<br><small style="color:var(--muted)">Se incluye en el reporte que le mandás</small></span><input type="checkbox" id="perShare"${P.share?" checked":""}></label>
       <label class="switch"><span>Uso anticonceptivos hormonales<br><small style="color:var(--muted)">No se muestran fases; solo registrás energía y ánimo</small></span><input type="checkbox" id="perHorm"${P.horm?" checked":""}></label>
       <p style="font-size:.85rem;margin-top:4px">${perNextTxt()}</p>`
-      + (P.list.length ? P.list.slice(-6).reverse().map((x,i)=>{ const len = x.e ? Math.round((new Date(x.e+"T12:00")-new Date(x.s+"T12:00"))/864e5)+1 : 0; return `<div class="hist"><div style="display:flex;justify-content:space-between;align-items:center"><span><b>${dLabel(x.s)}</b>${x.e?" → "+dLabel(x.e)+" · "+len+" días":" · en curso"}</span><button class="xbtn" data-perdel="${P.list.length-1-i}" aria-label="Borrar">✕</button></div></div>`; }).join("") : "")
+      + (P.list.length ? P.list.slice(-6).reverse().map((x,i)=>{
+          const realIdx = P.list.length-1-i;
+          const len = x.e ? Math.round((new Date(x.e+"T12:00")-new Date(x.s+"T12:00"))/864e5)+1 : 0;
+          const phx = !P.horm ? phaseAt(todayK()) : null;
+          const phTxt = !P.horm && i===0 && phx && !phx.late ? ` · <span style="color:var(--accent)">Hoy: fase ${PH[phx.ph].n.toLowerCase()} (día ${phx.day})</span>` : "";
+          return `<div class="hist"><div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:4px"><span style="font-size:.85rem"><b>${dLabel(x.s)}</b>${x.e?" → "+dLabel(x.e)+" · "+len+" días":" · en curso"}${phTxt}</span>
+            <div style="display:flex;gap:6px"><button class="btn sec" style="font-size:.75rem;padding:3px 8px" data-peredit="${realIdx}">✏️</button><button class="xbtn" data-perdel="${realIdx}" aria-label="Borrar">✕</button></div></div></div>`;
+        }).join("") : "")
       + `<p style="font-size:.75rem;color:var(--muted);margin-top:8px">El registro queda solo en tu celular. Es orientativo y no reemplaza la consulta médica.</p>` : `<p style="font-size:.8rem;color:var(--muted)">Si lo activás, te aparece arriba para registrar cuándo empieza y termina, y cómo te sentís.</p>`) + `</div>`;
   return h;
 }
@@ -1654,6 +1667,11 @@ function renderHab(){
   const ph = $("perHorm"); if(ph) ph.onchange = () => { S.per.horm = ph.checked ? 1 : 0; save(); renderHab(); };
   const ps = $("perShare"); if(ps) ps.onchange = () => { S.per.share = ps.checked ? 1 : 0; save(); toast(ps.checked ? "Se va a incluir en tu reporte" : "No se comparte"); };
   $("habCards").querySelectorAll("[data-perdel]").forEach(b => b.onclick = () => { if(!confirm("¿Borrar este registro?")) return; S.per.list.splice(+b.dataset.perdel,1); save(); renderHab(); });
+  $("habCards").querySelectorAll("[data-peredit]").forEach(b => b.onclick = () => {
+    const idx = +b.dataset.peredit, x = S.per.list[idx]; if(!x) return;
+    const ns = prompt("¿Cuándo empezó este período? (AAAA-MM-DD)", x.s); if(!ns || !/^\d{4}-\d{2}-\d{2}$/.test(ns)) return;
+    S.per.list[idx].s = ns; S.per.list.sort((a,z)=>a.s.localeCompare(z.s)); save(); renderHab(); toast("Fecha actualizada ✓");
+  });
 }
 $("habCards").addEventListener("click", e => { wellClick(e); });
 function renderHoy(){
