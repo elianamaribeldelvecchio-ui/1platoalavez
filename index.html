@@ -1031,7 +1031,11 @@ function render(){
     return `<div class="card meal"><h3>${name}<small>${tot} kcal</small></h3>
       ${list.map(e=>`<div class="entry"><div class="info"><div class="name">${esc(e.n)}${e.up?'<span class="up-dot">UP</span>':""}</div><div class="sub">${e.amt?esc(e.amt):(e.q!==1?r1(e.q)+" × ":"")+esc(e.por)}</div></div><div class="kc">${Math.round(e.k*e.q)}</div><button class="del" data-del="${e.i}" aria-label="Quitar">×</button></div>`).join("")}
       <button class="add-btn" data-add="${id}">+ Agregar</button></div>`;
-  }).join("");
+  }).join("")+(items.length>0?`<button class="btn sec wide" id="btnDelDay" style="margin-bottom:4px;color:var(--muted);font-size:.82rem">🗑 Borrar todo el día (${dateLabel(cur)})</button>`:"");
+  if($("btnDelDay"))$("btnDelDay").onclick=()=>{
+    if(!confirm(`¿Borrar todas las comidas del ${dateLabel(cur)}?`)) return;
+    const k=dk(cur); delete S.log[k]; save(); render(); toast("Día borrado");
+  };
   renderWeek();
 }
 
@@ -1873,7 +1877,8 @@ function sesHtml(t, canEdit){
   else if(t.alt) body = "📝 "+esc(t.c||"")+(t.rpe?" · RPE "+t.rpe:"")+(t.sens?" · "+esc(t.sens):"");
   else body = t.items.map(i=>esc((EXI[i.x]||{}).n||i.x)+": "+i.sets.map(s=>(s.kg?fmtN(s.kg)+"×":"")+s.r+(s.rir!=null&&s.rir!==""&&!isNaN(s.rir)?" (RIR "+s.rir+")":"")).join(", ")).join("<br>");
   const editBtn = canEdit&&!t.alt?`<button class="ghost" data-hedit="${t._i}" style="width:auto;margin:0;padding:4px 10px;font-size:.78rem">✏️ Editar</button>`:"";
-  return `<details class="hist-day"><summary><span style="display:flex;justify-content:space-between;align-items:center;gap:8px;width:100%"><b>${dLabel(t.date)} · ${esc(t.dn)}</b>${editBtn}</span></summary><div class="hist-body">${body}${!t.alt&&t.c?"<br>💬 "+esc(t.c):""}</div></details>`;
+  const delBtn = `<button class="ghost" data-htrain-del="${t._i}" style="width:auto;margin:0;padding:4px 10px;font-size:.78rem;color:var(--muted)" title="Borrar">🗑</button>`;
+  return `<details class="hist-day"><summary><span style="display:flex;justify-content:space-between;align-items:center;gap:8px;width:100%"><b>${dLabel(t.date)} · ${esc(t.dn)}</b><span style="display:flex;gap:4px">${editBtn}${delBtn}</span></span></summary><div class="hist-body">${body}${!t.alt&&t.c?"<br>💬 "+esc(t.c):""}</div></details>`;
 }
 /* =================== SECCIÓN DEPORTISTA =================== */
 let depReg = {}; // registro del día en edición
@@ -2054,8 +2059,20 @@ function renderHis(){
   });
   $("entHis").innerHTML = h;
 }
-$("entHis").addEventListener("click", e => { const b = e.target.closest("[data-hedit]"); if(!b) return;
-  entTab = "rut"; document.querySelectorAll("#segEnt button").forEach(x=>x.classList.toggle("on",x.dataset.v==="rut")); $("entHis").hidden = true; $("entRut").hidden = false; startEdit(+b.dataset.hedit); });
+$("entHis").addEventListener("click", e => {
+  const del = e.target.closest("[data-htrain-del]");
+  if(del){
+    const idx = +del.dataset.htrainDel;
+    const t = S.train[idx];
+    if(!t) return;
+    if(!confirm(`¿Borrar el entreno del ${dLabel(t.date)} (${esc(t.dn)})?`)) return;
+    S.train.splice(idx, 1);
+    save(); renderHis(); toast("Entreno borrado");
+    return;
+  }
+  const b = e.target.closest("[data-hedit]"); if(!b) return;
+  entTab = "rut"; document.querySelectorAll("#segEnt button").forEach(x=>x.classList.toggle("on",x.dataset.v==="rut")); $("entHis").hidden = true; $("entRut").hidden = false; startEdit(+b.dataset.hedit);
+});
 function startEdit(i){
   const t = S.train[i], p = S.plan; if(!t || !p) return;
   const di = t.di < p.days.length ? t.di : 0, d = p.days[di];
