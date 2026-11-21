@@ -524,7 +524,25 @@ details.hisw>summary{font-weight:700;font-size:.9rem}
     </div>
     <div class="goal-preview">Tu referencia: <b id="goalCalc">—</b> kcal/día</div>
     <div class="field" style="margin-top:10px"><label>O escribí tu propio objetivo (opcional)</label><input type="number" id="inManual" placeholder="Ej: 1800 (te lo indicó tu nutricionista)"></div>
-    <div class="grid3"><div class="field"><label>Proteínas g</label><input type="number" inputmode="numeric" id="inMP" placeholder="Opcional"></div><div class="field"><label>Carbos g</label><input type="number" inputmode="numeric" id="inMC" placeholder="Opcional"></div><div class="field"><label>Grasas g</label><input type="number" inputmode="numeric" id="inMG" placeholder="Opcional"></div></div>
+
+    <!-- Distribución de macros auto-calculada -->
+    <div id="macroAutoBox" style="margin-top:14px;display:none">
+      <div style="font-size:.82rem;color:var(--muted);margin-bottom:6px">📊 Distribución sugerida según tu peso:</div>
+      <div style="background:var(--accent-soft);border-radius:12px;padding:12px 14px;display:flex;gap:14px;justify-content:space-around;text-align:center">
+        <div><div style="font-family:'Fraunces',serif;font-size:1.3rem;font-weight:700;color:var(--p)" id="macPrev_p">—</div><div style="font-size:.72rem;color:var(--muted);margin-top:2px">Prot g</div></div>
+        <div><div style="font-family:'Fraunces',serif;font-size:1.3rem;font-weight:700;color:var(--warm)" id="macPrev_c">—</div><div style="font-size:.72rem;color:var(--muted);margin-top:2px">Carbs g</div></div>
+        <div><div style="font-family:'Fraunces',serif;font-size:1.3rem;font-weight:700;color:var(--muted)" id="macPrev_g">—</div><div style="font-size:.72rem;color:var(--muted);margin-top:2px">Grasas g</div></div>
+      </div>
+      <div id="macPrev_kcal" style="font-size:.78rem;color:var(--muted);text-align:center;margin-top:6px"></div>
+      <button class="btn sec wide" id="btnEditMacros" style="margin-top:8px;font-size:.85rem">✏️ Editar macros manualmente</button>
+    </div>
+
+    <!-- Edición manual de macros (oculta por defecto si hay auto) -->
+    <div id="macroManualBox" style="margin-top:10px">
+      <div class="grid3"><div class="field"><label>Proteínas g</label><input type="number" inputmode="numeric" id="inMP" placeholder="Opcional"></div><div class="field"><label>Carbos g</label><input type="number" inputmode="numeric" id="inMC" placeholder="Opcional"></div><div class="field"><label>Grasas g</label><input type="number" inputmode="numeric" id="inMG" placeholder="Opcional"></div></div>
+      <p style="font-size:.77rem;color:var(--muted);margin-top:4px" id="macManualHint">Si los dejás vacíos, se usa la distribución sugerida.</p>
+    </div>
+
     <button class="primary" id="saveSettings">Guardar</button>
   </div>
 </div>
@@ -1232,7 +1250,54 @@ function calcGoal(){
   return Math.round(t/50)*50;
 }
 function setSeg(id,v){document.querySelectorAll(`#${id} button`).forEach(b=>b.classList.toggle("on",b.dataset.v===v))}
-function updPreview(){const g=calcGoal();$("goalCalc").textContent=g?g.toLocaleString("es-AR"):"—"}
+// Calcula macros sugeridos: P = peso×1.8; resto se reparte carbs ~50% kcal, grasas ~25% kcal
+function calcAutoMacros(w, goal){
+  if(!w || !goal) return null;
+  const prot = Math.round(w * 1.8);
+  const kcalProt = prot * 4;
+  const remaining = goal - kcalProt;
+  if(remaining < 0) return {p: prot, c: 0, g: 0};
+  // Carbs: ~57% del remaining (aprox 50% de total), Grasas: ~43% (aprox 25% de total)
+  const carbs = Math.round((remaining * 0.57) / 4);
+  const fats  = Math.round((remaining * 0.43) / 9);
+  return {p: prot, c: carbs, g: fats};
+}
+function updPreview(){
+  const g = calcGoal();
+  $("goalCalc").textContent = g ? g.toLocaleString("es-AR") : "—";
+  const w = +$("inW").value;
+  const goal = g || +$("inManual").value || 0;
+  const mac = (w && goal) ? calcAutoMacros(w, goal) : null;
+  const autoBox = $("macroAutoBox");
+  const manualBox = $("macroManualBox");
+  if(mac){
+    $("macPrev_p").textContent = mac.p;
+    $("macPrev_c").textContent = mac.c;
+    $("macPrev_g").textContent = mac.g;
+    const kcalMac = mac.p*4 + mac.c*4 + mac.g*9;
+    $("macPrev_kcal").textContent = `Total macros: ${kcalMac} kcal · P×1.8 g/kg de peso`;
+    autoBox.style.display = "";
+    // si no hay valores manuales ingresados, ocultar el formulario manual
+    const hasManual = $("inMP").value || $("inMC").value || $("inMG").value;
+    manualBox.style.display = hasManual ? "" : "none";
+  } else {
+    autoBox.style.display = "none";
+    manualBox.style.display = "";
+  }
+}
+$("btnEditMacros").onclick = () => {
+  const mac = (() => {
+    const w = +$("inW").value;
+    const g = calcGoal() || +$("inManual").value || 0;
+    return calcAutoMacros(w, g);
+  })();
+  if(mac && !$("inMP").value){ $("inMP").value = mac.p; }
+  if(mac && !$("inMC").value){ $("inMC").value = mac.c; }
+  if(mac && !$("inMG").value){ $("inMG").value = mac.g; }
+  $("macroManualBox").style.display = "";
+  $("macManualHint").textContent = "Editá los valores que quieras. Se guardan los que ponés acá.";
+  $("inMP").focus();
+};
 function openSettings(welcome){
   const P=S.profile;tmpSex=P.sex;tmpObj=P.obj;
   $("setTitle").textContent=welcome?"¡Bienvenida/o a 1 plato a la vez!":"Mis calorías y macros";
@@ -1242,11 +1307,18 @@ function openSettings(welcome){
 $("segSex").onclick=e=>{const b=e.target.closest("button");if(b){tmpSex=b.dataset.v;setSeg("segSex",tmpSex);updPreview()}};
 $("segObj").onclick=e=>{const b=e.target.closest("button");if(b){tmpObj=b.dataset.v;setSeg("segObj",tmpObj);updPreview()}};
 ["inAge","inW","inH","inAct"].forEach(id=>$(id).addEventListener("input",updPreview));
+["inManual"].forEach(id=>$(id).addEventListener("input",updPreview));
 $("saveSettings").onclick=()=>{
   const manual=parseInt($("inManual").value),calc=calcGoal();
   const goal=manual>0?manual:(calc||S.profile.goal||2000);
-  S.profile={name:S.profile.name||"",sex:tmpSex,age:$("inAge").value,w:$("inW").value,h:$("inH").value,act:$("inAct").value,obj:tmpObj,manual:manual>0?manual:"",goal,mp:+$("inMP").value||"",mc:+$("inMC").value||"",mg:+$("inMG").value||""};
-  save();render();$("ovSettings").classList.remove("open");toast("Objetivo: "+goal+" kcal");
+  // Si no hay macros manuales, usar los auto-calculados
+  const w = +$("inW").value;
+  const autoMac = (w && goal) ? calcAutoMacros(w, goal) : null;
+  const mp = +$("inMP").value || (autoMac ? autoMac.p : 0) || "";
+  const mc = +$("inMC").value || (autoMac ? autoMac.c : 0) || "";
+  const mg = +$("inMG").value || (autoMac ? autoMac.g : 0) || "";
+  S.profile={name:S.profile.name||"",sex:tmpSex,age:$("inAge").value,w:$("inW").value,h:$("inH").value,act:$("inAct").value,obj:tmpObj,manual:manual>0?manual:"",goal,mp,mc,mg};
+  save();render();$("ovSettings").classList.remove("open");toast("Objetivo: "+goal+" kcal · P "+mp+"g · C "+mc+"g · G "+mg+"g");
 };
 
 /* --- General --- */
