@@ -461,16 +461,16 @@ details.hisw>summary{font-weight:700;font-size:.9rem}
     <div class="grid2"><div class="field"><label>📅 Próxima antro</label><input type="date" id="cNx"></div><div class="field"><label>Indicación (opcional)</label><input id="cNxt" placeholder="Ej: venir en ayunas"></div></div>
     <div class="grid3">
       <div class="field"><label>Fecha</label><input type="date" id="aD"></div>
-      <div class="field"><label>Peso kg</label><input type="number" step="0.1" id="aPeso"></div>
-      <div class="field"><label>% grasa</label><input type="number" step="0.1" id="aGr"></div>
-      <div class="field"><label>Masa musc. kg</label><input type="number" step="0.1" id="aMm"></div>
-      <div class="field"><label>Masa adip. kg</label><input type="number" step="0.1" id="aMa"></div>
-      <div class="field"><label>Σ pliegues mm</label><input type="number" step="0.1" id="aSp"></div>
-      <div class="field"><label>Cintura cm</label><input type="number" step="0.1" id="aCi"></div>
-      <div class="field"><label>Cadera cm</label><input type="number" step="0.1" id="aCa"></div>
-      <div class="field"><label>Brazo cm</label><input type="number" step="0.1" id="aBr"></div>
+      <div class="field"><label>Peso kg</label><input type="number" inputmode="decimal" step="0.1" id="aPeso"></div>
+      <div class="field"><label>% grasa</label><input type="number" inputmode="decimal" step="0.1" id="aGr"></div>
+      <div class="field"><label>Masa musc. kg</label><input type="number" inputmode="decimal" step="0.1" id="aMm"></div>
+      <div class="field"><label>Masa adip. kg</label><input type="number" inputmode="decimal" step="0.1" id="aMa"></div>
+      <div class="field"><label>Σ pliegues mm</label><input type="number" inputmode="decimal" step="0.1" id="aSp"></div>
+      <div class="field"><label>Cintura cm</label><input type="number" inputmode="decimal" step="0.1" id="aCi"></div>
+      <div class="field"><label>Cadera cm</label><input type="number" inputmode="decimal" step="0.1" id="aCa"></div>
+      <div class="field"><label>Brazo cm</label><input type="number" inputmode="decimal" step="0.1" id="aBr"></div>
     </div>
-    <div class="grid2"><div class="field"><label>Muslo cm</label><input type="number" step="0.1" id="aMu"></div><div class="field"><label>Nota</label><input id="aNo" placeholder="Opcional"></div></div>
+    <div class="grid2"><div class="field"><label>Muslo cm</label><input type="number" inputmode="decimal" step="0.1" id="aMu"></div><div class="field"><label>Nota</label><input id="aNo" placeholder="Opcional"></div></div>
     <button class="ghost" id="cAddAn">+ Guardar medición</button>
     <div class="anlist" id="cAnList"></div>
   </div>
@@ -509,7 +509,7 @@ details.hisw>summary{font-weight:700;font-size:.9rem}
     </div>
     <div class="grid3">
       <div class="field"><label>Edad</label><input type="number" id="inAge" min="14" max="100" placeholder="30"></div>
-      <div class="field"><label>Peso (kg)</label><input type="number" id="inW" min="30" max="250" placeholder="65"></div>
+      <div class="field"><label>Peso (kg)</label><input type="number" inputmode="decimal" id="inW" min="30" max="250" placeholder="65"></div>
       <div class="field"><label>Altura (cm)</label><input type="number" id="inH" min="120" max="230" placeholder="165"></div>
     </div>
     <div class="field"><label>Actividad física</label>
