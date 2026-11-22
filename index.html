@@ -1094,11 +1094,20 @@ const CATS=[["all","Todos"],["mine","Mis alimentos"],["fru","Frutas"],["ver","Ve
 let curCat="all";
 function renderChips(){$("chips").innerHTML=CATS.filter(c=>c[0]!=="mine"||S.custom.length).map(([id,l])=>`<button class="chip${id==="up"?" upc":""}${curCat===id?" on":""}" data-cat="${id}">${l}</button>`).join("")}
 $("chips").addEventListener("click",e=>{const b=e.target.closest("[data-cat]");if(!b)return;curCat=b.dataset.cat;renderChips();renderFoods()});
+function matchFood(f, q){
+  if(!q) return true;
+  const words = q.split(/\s+/).filter(Boolean);
+  const hay = norm(f.n + " " + (f.brand||"") + " " + (f.por||""));
+  return words.every(w => hay.includes(w));
+}
 function renderFoods(){
-  const q=norm($("q").value.trim());
-  const AF=allFoods();const list=AF.map((f,ix)=>({...f,_ix:ix})).filter(f=>(!q||norm(f.n).includes(q))&&(curCat==="all"||(curCat==="mine"&&f.mine)||(curCat==="up"&&f.up)||f.cat===curCat));
-  $("foodList").innerHTML=list.length?list.map((f,i)=>`<button class="food" data-food="${f._ix}"><div><div class="fn">${esc(f.n)}${f.mine?'<span class="tag">MÍO</span>':""}${f.up?'<span class="tag up">ULTRAPROCESADO</span>':""}</div><div class="fp">${esc(f.por)}</div></div><div class="fk">${f.k} kcal</div></button>`).join("")
-    :`<div class="empty">${$("q").value?`No encontramos "${esc($("q").value)}" en esta categoría.`:"No hay alimentos en esta categoría."} Podés crearlo abajo.</div>`;
+  const raw=$("q").value.trim();
+  const q=norm(raw);
+  const AF=allFoods();
+  const list=AF.map((f,ix)=>({...f,_ix:ix})).filter(f=>matchFood(f,q)&&(curCat==="all"||(curCat==="mine"&&f.mine)||(curCat==="up"&&f.up)||f.cat===curCat));
+  const scanTip = raw && !list.length ? `<div class="empty" style="font-size:.82rem;color:var(--muted);margin-top:8px">💡 Si el alimento tiene código de barras y no lo encontrás escribiendo, <b>escaneá el código por primera vez</b> y queda guardado en tus alimentos.</div>` : "";
+  $("foodList").innerHTML=(list.length?list.map((f,i)=>`<button class="food" data-food="${f._ix}"><div><div class="fn">${esc(f.n)}${f.mine?'<span class="tag">MÍO</span>':""}${f.up?'<span class="tag up">ULTRAPROCESADO</span>':""}</div><div class="fp">${esc(f.por)}</div></div><div class="fk">${f.k} kcal</div></button>`).join("")
+    :`<div class="empty">${raw?`No encontramos "${esc(raw)}" en esta categoría.`:"No hay alimentos en esta categoría."} Podés crearlo abajo o escanearlo.</div>`) + scanTip;
 }
 function renderPick(){
   if(!picked){$("pickArea").innerHTML="";return}
@@ -1236,17 +1245,23 @@ async function onCode(code){
   const mine=S.custom.find(f=>f.code===code);
   if(mine){stopScan();picked={f:mine,q:1,mode:"por"};renderPick();toast("Encontrado en tus alimentos");return}
   try{
-    const r=await fetch(`https://world.openfoodfacts.org/api/v2/product/${code}.json?fields=product_name,product_name_es,brands,nutriments,serving_quantity,nova_group`);
+    const r=await fetch(`https://world.openfoodfacts.org/api/v2/product/${code}.json?fields=product_name,product_name_es,brands,nutriments,serving_quantity,serving_size,nova_group`);
     const d=await r.json();
     const pr=d&&d.status===1&&d.product;
     const nu=pr&&pr.nutriments||{};
     const has=nu["energy-kcal_100g"]!=null||nu["energy-kcal_serving"]!=null;
     if(!pr||!has)throw new Error("nf");
-    const sq=parseFloat(pr.serving_quantity),useS=sq>0;
-    const val=(key)=>{const s=nu[key+"_serving"],c=nu[key+"_100g"];if(useS&&s!=null)return +s;if(c!=null)return useS?+c*sq/100:+c;return 0};
+    // Siempre usamos valores por 100g como base para calcular la porción correctamente
+    const c100=(key)=>+(nu[key+"_100g"]??0);
+    // Porción: tomamos serving_quantity (gramos). Si no hay, usamos 100g
+    const sq=parseFloat(pr.serving_quantity)||0;
+    const useS=sq>=5; // porción válida si ≥ 5g
+    const gr=useS?Math.round(sq):100;
+    // Calculamos los valores de la porción a partir de los valores por 100g
+    const val=(key)=>c100(key)*gr/100;
     let name=(pr.product_name_es||pr.product_name||"Producto").trim();
     if(pr.brands)name+=" ("+String(pr.brands).split(",")[0].trim()+")";
-    const f={n:name,por:useS?`1 porción (${Math.round(sq)} g)`:"100 g",gr:useS?Math.round(sq):100,u:"g",
+    const f={n:name,por:useS?`1 porción (${gr} g)`:"100 g",gr,u:"g",
       k:Math.round(val("energy-kcal")),p:r1(val("proteins")),c:r1(val("carbohydrates")),g:r1(val("fat")),up:pr.nova_group==4?1:0,code};
     S.custom.unshift(f);save();stopScan();
     picked={f,q:1,mode:"por"};renderPick();toast("Producto encontrado ✓");
