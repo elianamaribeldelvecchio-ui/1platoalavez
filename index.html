@@ -289,6 +289,29 @@ details.hisw>summary{font-weight:700;font-size:.9rem}
 
 .toast{transform:translateX(-50%) translateY(220px)}
 .toast.show{transform:translateX(-50%) translateY(0)}
+
+/* ===== TOUR ONBOARDING ===== */
+#tourOverlay{position:fixed;inset:0;z-index:9000;pointer-events:none;display:none}
+#tourOverlay.active{display:block;pointer-events:auto}
+#tourBackdrop{position:absolute;inset:0;background:rgba(10,12,20,.72);transition:all .35s}
+#tourSpotlight{position:absolute;border-radius:16px;box-shadow:0 0 0 9999px rgba(10,12,20,.72);transition:all .35s cubic-bezier(.4,0,.2,1);pointer-events:none;border:2.5px solid var(--warm);z-index:9001}
+#tourBubble{position:absolute;background:var(--card);border-radius:20px;padding:18px 18px 14px;width:min(320px,calc(100vw - 32px));box-shadow:0 8px 32px rgba(0,0,0,.28);z-index:9002;animation:tourPop .3s cubic-bezier(.34,1.56,.64,1)}
+@keyframes tourPop{from{opacity:0;transform:scale(.88) translateY(10px)}to{opacity:1;transform:none}}
+#tourBubble .tb-step{font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--warm);margin-bottom:6px}
+#tourBubble .tb-title{font-family:'Fraunces',serif;font-size:1.1rem;font-weight:700;margin-bottom:7px;color:var(--ink)}
+#tourBubble .tb-text{font-size:.88rem;color:var(--muted);line-height:1.5;margin-bottom:14px}
+#tourBubble .tb-emoji{font-size:1.5rem;margin-bottom:8px;display:block}
+#tourBtns{display:flex;gap:8px;align-items:center}
+#tourBtns .tb-next{flex:1;padding:12px;border-radius:13px;background:var(--accent);color:#fff;font-weight:700;font-size:.92rem;border:none;cursor:pointer}
+#tourBtns .tb-next:hover{filter:brightness(1.08)}
+#tourBtns .tb-skip{padding:10px 12px;border-radius:12px;color:var(--muted);font-size:.82rem;background:none;border:none;cursor:pointer}
+#tourBtns .tb-dots{display:flex;gap:5px;align-items:center}
+#tourBtns .tb-dot{width:7px;height:7px;border-radius:50%;background:var(--line)}
+#tourBtns .tb-dot.on{background:var(--accent);width:18px;border-radius:5px}
+.tour-hint-arrow{position:absolute;width:16px;height:16px;background:var(--card);transform:rotate(45deg);z-index:-1}
+/* botón de replay del tour */
+#tourReplayBtn{position:fixed;bottom:calc(80px + env(safe-area-inset-bottom));right:14px;z-index:35;width:40px;height:40px;border-radius:50%;background:var(--ink);color:#fff;font-size:1.1rem;box-shadow:0 3px 10px rgba(0,0,0,.2);display:none;align-items:center;justify-content:center;border:none;cursor:pointer}
+#tourReplayBtn.visible{display:flex}
 </style>
 </head>
 <body>
@@ -3509,6 +3532,217 @@ function openStu(id){
   $("stuUnlink").onclick = async () => { if(!confirm(`¿Desvincular a ${s.name}? Ya no vas a ver su progreso.`)) return; await sb.from("links").delete().eq("coach_id", ME.id).eq("student_id", id); $("ovStu").classList.remove("open"); renderCoachCloud(); toast("Alumno desvinculado"); };
 }
 
+/* ===== TOUR ONBOARDING JS ===== */
+(function(){
+  const TOUR_KEY = "1dz.tourDone";
+  const steps = [
+    {
+      emoji: "👋",
+      title: "¡Bienvenida a 1dz!",
+      text: "Esta app te ayuda a registrar tus comidas, seguir tus entrenamientos y ver tu progreso. Te lleva menos de un minuto configurarla.",
+      target: null,
+      pos: "center"
+    },
+    {
+      emoji: "👤",
+      title: "Creá tu perfil",
+      text: "Tocá el ícono de persona arriba a la derecha para ingresar tu edad, peso, altura y objetivo. Así la app calcula tus calorías personalizadas.",
+      target: "btnSettings",
+      pos: "below"
+    },
+    {
+      emoji: "🍽️",
+      title: "Registrá lo que comés",
+      text: "En la pantalla de hoy, tocá \"+ Agregar\" en cualquier comida y buscá el alimento. Podés ver calorías, proteínas, hidratos y grasas al instante.",
+      target: "v-hoy",
+      pos: "center-top"
+    },
+    {
+      emoji: "💪",
+      title: "Tu plan de entrenamiento",
+      text: "En la pestaña \"Entreno\" vas a ver tu rutina asignada. Si sos deportista, tu entrenadora carga tu plan semana a semana.",
+      target: "nav",
+      pos: "above",
+      navIndex: 1
+    },
+    {
+      emoji: "📈",
+      title: "Seguí tu progreso",
+      text: "En \"Progreso\" podés ver tus métricas: peso corporal, calorías por semana y más. Todo queda guardado en tu dispositivo.",
+      target: "nav",
+      pos: "above",
+      navIndex: 2
+    },
+    {
+      emoji: "📤",
+      title: "Reportes para Eliana",
+      text: "El botón naranja \"Enviar mi reporte\" te genera un resumen con todo lo del día para mandárselo a Eliana por WhatsApp. ¡Así ella puede ayudarte mejor!",
+      target: "btnReport",
+      pos: "above"
+    },
+    {
+      emoji: "✅",
+      title: "¡Listo, ya sabés todo!",
+      text: "Si querés volver a ver el tour en cualquier momento, tocá el botón 🎓 que aparece abajo a la derecha.",
+      target: null,
+      pos: "center"
+    }
+  ];
+
+  let cur = 0;
+  let spotAnimFrame;
+
+  function getEl(step) {
+    if (!step.target) return null;
+    const el = document.getElementById(step.target);
+    if (!el) return null;
+    if (step.target === "nav" && typeof step.navIndex === "number") {
+      const btns = el.querySelectorAll("button");
+      return btns[step.navIndex] || el;
+    }
+    return el;
+  }
+
+  function getRect(el) {
+    if (!el) return null;
+    const r = el.getBoundingClientRect();
+    return { top: r.top, left: r.left, width: r.width, height: r.height };
+  }
+
+  function positionSpotlight(el) {
+    const sp = document.getElementById("tourSpotlight");
+    if (!el) { sp.style.display = "none"; return; }
+    sp.style.display = "block";
+    const pad = 8;
+    const r = el.getBoundingClientRect();
+    sp.style.top = (r.top - pad) + "px";
+    sp.style.left = (r.left - pad) + "px";
+    sp.style.width = (r.width + pad * 2) + "px";
+    sp.style.height = (r.height + pad * 2) + "px";
+  }
+
+  function positionBubble(step, el) {
+    const bubble = document.getElementById("tourBubble");
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
+    const bw = Math.min(320, vw - 32);
+
+    bubble.style.width = bw + "px";
+
+    // centrado en pantalla por defecto
+    let left = (vw - bw) / 2;
+    let top = (vh - 200) / 2;
+
+    if (el && step.pos !== "center") {
+      const r = el.getBoundingClientRect();
+      const pad = 14;
+      if (step.pos === "below") {
+        top = r.bottom + pad + 10;
+        left = Math.max(16, Math.min(r.left + r.width / 2 - bw / 2, vw - bw - 16));
+      } else if (step.pos === "above") {
+        top = r.top - 180 - pad;
+        if (top < 60) top = r.bottom + pad + 10;
+        left = Math.max(16, Math.min(r.left + r.width / 2 - bw / 2, vw - bw - 16));
+      } else if (step.pos === "center-top") {
+        top = 80;
+        left = (vw - bw) / 2;
+      }
+    }
+
+    top = Math.max(16, Math.min(top, vh - 230));
+    left = Math.max(16, left);
+
+    bubble.style.top = top + "px";
+    bubble.style.left = left + "px";
+  }
+
+  function renderStep() {
+    const step = steps[cur];
+    const el = getEl(step);
+
+    // spotlight
+    positionSpotlight(el);
+
+    // bubble content
+    document.getElementById("tourEmoji").textContent = step.emoji;
+    document.getElementById("tourStepLbl").textContent = "Paso " + (cur + 1) + " de " + steps.length;
+    document.getElementById("tourTitle").textContent = step.title;
+    document.getElementById("tourText").textContent = step.text;
+
+    // dots
+    const dotsEl = document.getElementById("tourDots");
+    dotsEl.innerHTML = steps.map((_, i) =>
+      `<span class="tb-dot ${i === cur ? "on" : ""}"></span>`
+    ).join("");
+
+    // next button text
+    const nextBtn = document.getElementById("tourNext");
+    nextBtn.textContent = cur === steps.length - 1 ? "¡Empezar! 🚀" : "Siguiente →";
+
+    // position bubble
+    positionBubble(step, el);
+
+    // scroll element into view if needed
+    if (el) {
+      el.scrollIntoView({ behavior: "smooth", block: "center" });
+      setTimeout(() => positionBubble(step, el), 320);
+    }
+  }
+
+  function startTour() {
+    cur = 0;
+    document.getElementById("tourOverlay").classList.add("active");
+    renderStep();
+  }
+
+  function endTour() {
+    document.getElementById("tourOverlay").classList.remove("active");
+    localStorage.setItem(TOUR_KEY, "1");
+    document.getElementById("tourReplayBtn").classList.add("visible");
+  }
+
+  window._tourStart = startTour;
+
+  // Wire buttons after DOM ready
+  document.addEventListener("DOMContentLoaded", function() {
+    document.getElementById("tourNext").addEventListener("click", function() {
+      if (cur < steps.length - 1) {
+        cur++;
+        // animate bubble out/in
+        const bubble = document.getElementById("tourBubble");
+        bubble.style.animation = "none";
+        void bubble.offsetWidth;
+        bubble.style.animation = "";
+        renderStep();
+      } else {
+        endTour();
+      }
+    });
+
+    document.getElementById("tourSkip").addEventListener("click", endTour);
+    document.getElementById("tourReplayBtn").addEventListener("click", startTour);
+
+    // close on backdrop click only on welcome/final steps
+    document.getElementById("tourBackdrop").addEventListener("click", function() {
+      if (steps[cur].target === null) endTour();
+    });
+
+    // show replay btn if tour already done
+    if (localStorage.getItem(TOUR_KEY)) {
+      document.getElementById("tourReplayBtn").classList.add("visible");
+    }
+  });
+
+  window.addEventListener("resize", function() {
+    if (document.getElementById("tourOverlay").classList.contains("active")) {
+      const step = steps[cur];
+      const el = getEl(step);
+      positionSpotlight(el);
+      positionBubble(step, el);
+    }
+  });
+})();
+
 /* --- refrescar al volver a la app --- */
 document.addEventListener("visibilitychange", async () => {
   if(document.visibilityState !== "visible" || !sb || !ME) return;
@@ -3520,8 +3754,30 @@ applyMods(); applyDepMode();
 if(!checkHash() && location.hash === "#entrenadora") openCoach();
 show("hoy");
 cloudInit();
-if(firstRun && !PENDING){ /* bienvenida normal */ }
+if(firstRun && !PENDING){
+  /* lanzar tour de bienvenida en primer uso */
+  setTimeout(function(){ if(window._tourStart) window._tourStart(); }, 600);
+}
 
 </script>
+
+<!-- TOUR OVERLAY HTML -->
+<div id="tourOverlay">
+  <div id="tourBackdrop"></div>
+  <div id="tourSpotlight"></div>
+  <div id="tourBubble">
+    <span class="tb-emoji" id="tourEmoji">👋</span>
+    <div class="tb-step" id="tourStepLbl">Paso 1 de 7</div>
+    <div class="tb-title" id="tourTitle">¡Bienvenida!</div>
+    <div class="tb-text" id="tourText"></div>
+    <div id="tourBtns">
+      <button class="tb-skip" id="tourSkip">Saltar</button>
+      <div class="tb-dots" id="tourDots"></div>
+      <button class="tb-next" id="tourNext">Siguiente →</button>
+    </div>
+  </div>
+</div>
+<button id="tourReplayBtn" title="Ver tutorial">🎓</button>
+
 </body>
 </html>
