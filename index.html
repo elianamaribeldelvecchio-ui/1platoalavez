@@ -2431,6 +2431,10 @@ $("entRut").addEventListener("click", e => {
   if(e.target.id==="edCancel"){ S.draft = null; selDay = null; save(); renderEnt(); window.scrollTo(0,0); return; }
   if(e.target.id==="altVarBtn"){ openAltVar(); return; }
   const ed = e.target.closest("[data-edit]"); if(ed){ startEdit(+ed.dataset.edit); return; }
+  const del = e.target.closest("[data-htrain-del]");
+  if(del){ const idx = +del.dataset.htrainDel; const t = S.train[idx]; if(!t) return;
+    if(!confirm(`¿Borrar el entreno del ${dLabel(t.date)} (${esc(t.dn)})?`)) return;
+    S.train.splice(idx, 1); save(); renderEnt(); toast("Entreno borrado"); return; }
 });
 $("entRut").addEventListener("input", e => {
   const t = e.target;
@@ -3069,7 +3073,15 @@ function ctaCard(){
 }
 function fillCoach(){
   const names = Object.keys(S.coach.students).sort();
-  $("cSel").innerHTML = `<option value="">— Nuevo alumno —</option>` + names.map(n => { const x = S.coach.students[n].nx; return `<option value="${esc(n)}"${n===CS.n?" selected":""}>${x&&x<todayK()?"⚠️ ":""}${esc(n)}${x?" · antro "+dLabel(x):""}</option>`; }).join("");
+  // Incluir alumnos cloud que no estén ya guardados localmente
+  const cloudNames = (typeof cloudStus !== "undefined" ? cloudStus : [])
+    .map(s => s.name || "").filter(n => n && !S.coach.students[n]);
+  const allNames = [...names, ...cloudNames];
+  $("cSel").innerHTML = `<option value="">— Nuevo alumno —</option>` + allNames.map(n => {
+    const local = S.coach.students[n]; const x = local && local.nx;
+    const isCloud = !local;
+    return `<option value="${esc(n)}"${n===CS.n?" selected":""}>${x&&x<todayK()?"⚠️ ":""}${esc(n)}${x?" · antro "+dLabel(x):""}${isCloud?" ☁️":""}</option>`;
+  }).join("");
   $("cName").value = CS.n; $("cMsg").value = CS.msg; $("cGoalK").value = CS.k || ""; $("cMP").value = CS.mp || ""; $("cMC").value = CS.mc || ""; $("cMG").value = CS.mg || ""; macHint();
   $("cModE").checked = !!CS.mod.e; $("cModC").checked = !!CS.mod.c; $("cModA").checked = !!CS.mod.a;
   const p = CS.p; $("cPName").value = p.name; $("cStart").value = p.start; $("cWeeks").value = p.weeks;
@@ -3120,7 +3132,16 @@ function macHint(){ const p=+$("cMP").value||0, c=+$("cMC").value||0, g=+$("cMG"
 ["cGoalK","cMP","cMC","cMG"].forEach(id => $(id).addEventListener("input", macHint));
 $("cAddDay").onclick = () => { const L = "ABCDEFGH"; CS.p.days.push({n:"Día "+(L[CS.p.days.length]||CS.p.days.length+1), it:[]}); renderCDays(); };
 $("cModA").onchange = () => { $("cAnBox").style.display = $("cModA").checked ? "" : "none"; };
-$("cSel").onchange = () => { readCoach(); const n = $("cSel").value; CS = n ? JSON.parse(JSON.stringify(S.coach.students[n])) : blankStudent(); fillCoach(); };
+$("cSel").onchange = () => { readCoach(); const n = $("cSel").value;
+  if(!n){ CS = blankStudent(); }
+  else if(S.coach.students[n]){ CS = JSON.parse(JSON.stringify(S.coach.students[n])); }
+  else {
+    // Alumno cloud sin datos locales: crear vacío con su nombre precargado
+    CS = blankStudent(); CS.n = n;
+    const cs = typeof cloudStus !== "undefined" ? cloudStus.find(x => x.name === n) : null;
+    if(cs && cs.data && cs.data.plan){ try{ CS.p = JSON.parse(JSON.stringify(cs.data.plan)); CS.mod = CS.mod||{}; CS.mod.e = 1; }catch(ex){} }
+  }
+  fillCoach(); };
 function renderCAn(){
   const an = [...CS.an].sort((a,b) => a.d<b.d?1:-1);
   $("cAnList").innerHTML = an.length ? an.map(m => `<div><span>${dLabel(m.d)} · ${AF.filter(([k])=>m[k]!=null&&m[k]!=="").map(([k,n,u])=>n+" "+fmtN(m[k])+u).slice(0,3).join(", ")}${AF.filter(([k])=>m[k]!=null&&m[k]!=="").length>3?"…":""}</span><button class="xbtn" data-dela="${m.d}">✕</button></div>`).join("") : `<p style="color:var(--muted)">Sin mediciones cargadas.</p>`;
@@ -3535,9 +3556,22 @@ function openStu(id){
       h += `<p style="font-size:.85rem;color:var(--muted)">Todavía no hay registros deportivos.</p>`;
     }
   }
-  h += `<div class="grid2" style="margin-top:14px"><button class="btn" id="stuChat">💬 Chat</button><button class="btn sec" id="stuUnlink" style="color:#c8364b">Desvincular</button></div>`;
+  h += `<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:14px"><button class="btn" id="stuChat">💬 Chat</button><button class="btn sec" id="stuEditPlan">✏️ Editar plan</button><button class="btn sec" id="stuUnlink" style="color:#c8364b">Desvincular</button></div>`;
   $("stuTitle").textContent = s.name || "Alumno"; $("stuBody").innerHTML = h; $("ovStu").classList.add("open");
   $("stuChat").onclick = () => openChat(ME.id, id, "💬 " + (s.name||"Alumno"));
+  $("stuEditPlan").onclick = () => {
+    $("ovStu").classList.remove("open");
+    // Cargar o crear el alumno en el editor coach
+    const name = s.name || "";
+    if(name && S.coach.students[name]){
+      CS = JSON.parse(JSON.stringify(S.coach.students[name]));
+    } else {
+      CS = blankStudent(); CS.n = name;
+      // Si tiene plan cloud, precargarlo
+      if(d.plan){ try{ CS.p = JSON.parse(JSON.stringify(d.plan)); CS.mod = CS.mod || {}; CS.mod.e = 1; }catch(ex){} }
+    }
+    fillCoach(); $("ovCoach").classList.add("open"); renderCoachCloud();
+  };
   $("stuUnlink").onclick = async () => { if(!confirm(`¿Desvincular a ${s.name}? Ya no vas a ver su progreso.`)) return; await sb.from("links").delete().eq("coach_id", ME.id).eq("student_id", id); $("ovStu").classList.remove("open"); renderCoachCloud(); toast("Alumno desvinculado"); };
 }
 
