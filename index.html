@@ -2029,6 +2029,7 @@ async function submitReg(){
   }catch(e){}
   S.regNombre=nombre;
   save();
+  localStorage.setItem("1dz.registrado","1");
   hideRegOverlay();
   openSettings(true);
 }
@@ -2042,7 +2043,13 @@ document.addEventListener("DOMContentLoaded",function(){
 });
 
 render();
-if(firstRun){showRegOverlay();}else{}
+(function(){
+  var yaRegistrado = localStorage.getItem("1dz.registrado");
+  var tieneCodigoIndividual = S && (S.codigoAlumno || S.alumnoId || S.regNombre);
+  if(!yaRegistrado && !tieneCodigoIndividual && firstRun){
+    showRegOverlay();
+  }
+})();
 if("serviceWorker" in navigator&&location.protocol.startsWith("http"))window.addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));
 
 /* ================= 1dz: Entreno, Hoy, Progreso, Modo entrenadora ================= */
