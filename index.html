@@ -3265,6 +3265,14 @@ function applyPayload(P){
   if("nx" in P) S.nextAn = P.nx ? {d:P.nx, t:P.nxt||""} : null;
   (P.an || []).forEach(m => { S.antro = S.antro.filter(x => x.d !== m.d); S.antro.push(m); });
 }
+async function pullPlanOrInvite(usedCode){
+  // Try to get plan from the invite payload first (for new students)
+  if(usedCode && sb && ME){
+    const { data: inv } = await sb.from("invites").select("payload").eq("code", usedCode.toUpperCase()).maybeSingle();
+    if(inv && inv.payload){ applyPayload(inv.payload); S._planTs = Date.now(); save(); applyMods(); selDay = null; if(VIEW!=="comidas") show(VIEW); toast("¡Tu plan está listo! 💪"); return; }
+  }
+  await pullPlan();
+}
 async function pullPlan(){
   if(!sb || !ME || !MYCOACH) return;
   const { data } = await sb.from("plans").select("payload,updated_at").eq("student_id", ME.id).maybeSingle();
@@ -3350,7 +3358,7 @@ document.addEventListener("click", async e => {
   if(t.id === "linkMe"){ const c = ($("codeIn").value||"").trim(); if(!c) return toast("Escribí el código");
     const { data, error } = await sb.rpc("link_with_code", {p_code:c});
     if(error){ toast(/bad_code/.test(error.message) ? "Ese código no existe. Revisalo con tu entrenadora." : /used_code/.test(error.message) ? "Ese código ya fue usado. Pedile uno nuevo a tu entrenadora." : /self/.test(error.message) ? "Ese código lo generaste vos" : "No se pudo vincular"); return; }
-    await loadRoles(); startMsgSub(); await pushNow(); await pullPlan(); renderCloud(); toast("¡Listo! Te vinculaste con " + data + " 💪"); }
+    await loadRoles(); startMsgSub(); await pushNow(); await pullPlanOrInvite(c); renderCloud(); toast("¡Listo! Te vinculaste con " + data + " 💪"); }
   if(t.id === "unlinkMe"){ if(!confirm("¿Desvincularte? Tu entrenadora ya no va a ver tu progreso ni podrá chatear con vos.")) return;
     await sb.from("links").delete().eq("coach_id", MYCOACH.id).eq("student_id", ME.id); MYCOACH = null; startMsgSub(); renderCloud(); toast("Te desvinculaste"); }
   if(t.id === "goChatMe" || t.id === "hoyChat"){ if(MYCOACH) openChat(MYCOACH.id, ME.id, "💬 " + MYCOACH.name); }
@@ -3443,11 +3451,15 @@ async function renderCoachCloud(){
 function rndCode(){ const A = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789", b = new Uint8Array(5); crypto.getRandomValues(b); return "1DZ-" + [...b].map(x => A[x % A.length]).join(""); }
 async function newInvite(){
   const label = ($("invName").value||"").trim();
+  // Guardar plan actual junto con el código
+  readCoach();
+  const hasPlan = CS && CS.mod && CS.mod.e && CS.p && CS.p.days && CS.p.days.some(d => d.it && d.it.length);
+  const pay = hasPlan ? {v:1, n:label||CS.n||"", msg:CS.msg||"", mod:CS.mod, k:CS.k||0, mp:CS.mp||0, mc:CS.mc||0, mg:CS.mg||0, p:CS.p, an:CS.mod.a?(CS.an||[]):[], nx:CS.mod.a?(CS.nx||""):"", nxt:CS.mod.a?(CS.nxt||""):""} : null;
   let code, error;
-  for(let t = 0; t < 4; t++){ code = rndCode(); ({ error } = await sb.from("invites").insert({code, coach_id:ME.id, label: label || null})); if(!error) break; }
+  for(let t = 0; t < 4; t++){ code = rndCode(); ({ error } = await sb.from("invites").insert({code, coach_id:ME.id, label: label || null, payload: pay || null})); if(!error) break; }
   if(error){ toast("No se pudo generar el código"); return; }
   const link = location.origin + location.pathname;
-  const txt = `Hola${label?" "+label:""}! 💪 Para conectarte con 1dz:\n1) Abrí la app: ${link}\n2) Andá a Progreso → ☁️ Mi cuenta y creá tu cuenta\n3) Escribí este código: ${code}\n(Es personal y sirve una sola vez)`;
+  const txt = `Hola${label?" "+label:""}! 💪 Tu plan de 1dz está listo:\n1) Abrí la app: ${link}\n2) Andá a Progreso → ☁️ Mi cuenta y creá tu cuenta\n3) Escribí este código: ${code}\n(Es personal y sirve una sola vez)`;
   await renderCoachCloud();
   $("invOut").innerHTML = `<div class="linkbox" style="margin-top:8px;font-size:1.1rem;text-align:center;font-family:monospace"><b>${esc(code)}</b></div><div class="grid2" style="margin-top:6px"><button class="btn sec" id="invCopy">Copiar código</button><a class="btn" style="text-decoration:none;background:#1a8a4a" href="https://wa.me/?text=${encodeURIComponent(txt)}" target="_blank" rel="noopener">Enviar por WhatsApp</a></div>`;
   $("invCopy").onclick = async () => { try{ await navigator.clipboard.writeText(code); toast("Código copiado"); }catch(e){ toast(code); } };
